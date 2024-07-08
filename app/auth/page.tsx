@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -37,9 +38,11 @@ export default function SignIn() {
   const theme = useTheme();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+  });
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = (
@@ -48,9 +51,50 @@ export default function SignIn() {
     event.preventDefault();
   };
 
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-    setSuccess(false);
+  const handleSnackbarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleSignIn = async (
+    values: { email: string; password: string },
+    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+  ) => {
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email: values.email,
+        password: values.password,
+      });
+
+      if (result?.error) {
+        setSnackbar({
+          open: true,
+          message: "Invalid credentials",
+          severity: "error",
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: "Authentication successful!",
+          severity: "success",
+        });
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "An error occurred during sign in",
+        severity: "error",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -66,51 +110,21 @@ export default function SignIn() {
             theme.palette.mode === "light"
               ? "#ffffff"
               : theme.palette.background.paper,
-          padding: {
-            xs: 3, // Padding para xs (extra small)
-            sm: "24px 24px", // Padding para sm (small)
-            md: "45px 45px", // Padding para md (medium) y superiores
-          },
-          borderRadius: "16px", // Añadido bordes redondeados
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", // Opcional: añade una sombra suave
+          padding: { xs: 3, sm: 4, md: 5 },
+          borderRadius: "16px",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
         }}
       >
         <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
           <LockOutlinedIcon />
         </Avatar>
-        <Typography
-          component="h1"
-          variant="h5"
-          sx={{
-            mb: 3, // Añade un margen inferior para separar los campos
-          }}
-        >
+        <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
           Sign in
         </Typography>
         <Formik
           initialValues={{ email: "", password: "", remember: false }}
           validationSchema={SignInSchema}
-          onSubmit={async (values, { setSubmitting }) => {
-            setSubmitting(true);
-            const result = await signIn("credentials", {
-              redirect: false,
-              email: values.email,
-              password: values.password,
-            });
-
-            setSubmitting(false);
-
-            if (result?.error) {
-              setError("Invalid credentials");
-              setSnackbarOpen(true);
-            } else {
-              setSuccess(true);
-              setSnackbarOpen(true);
-              setTimeout(() => {
-                router.push("/dashboard");
-              }, 5000); // 5 segundos de retraso antes de redirigir
-            }
-          }}
+          onSubmit={handleSignIn}
         >
           {({
             isSubmitting,
@@ -125,9 +139,7 @@ export default function SignIn() {
                 margin="normal"
                 required
                 fullWidth
-                sx={{
-                  mb: 3, // Añade un margen inferior para separar los campos
-                }}
+                sx={{ mb: 3 }}
                 id="email"
                 label="Email Or Username"
                 name="email"
@@ -143,9 +155,7 @@ export default function SignIn() {
                 margin="normal"
                 required
                 fullWidth
-                sx={{
-                  mb: 3, // Añade un margen inferior para separar los campos
-                }}
+                sx={{ mb: 3 }}
                 name="password"
                 label="Password"
                 type={showPassword ? "text" : "password"}
@@ -199,21 +209,13 @@ export default function SignIn() {
               </Button>
               <Grid container>
                 <Grid item xs>
-                  <Link
-                    href="#"
-                    style={{ textDecoration: "none" }}
-                    variant="body2"
-                  >
+                  <Link href="#" variant="body2">
                     Forgot password?
                   </Link>
                 </Grid>
                 <Grid item>
-                  <Link
-                    href="#"
-                    style={{ textDecoration: "none" }}
-                    variant="body2"
-                  >
-                    {"Don't have an account? "}
+                  <Link href="#" variant="body2">
+                    {"Don't have an account? Sign Up"}
                   </Link>
                 </Grid>
               </Grid>
@@ -221,22 +223,21 @@ export default function SignIn() {
             </Form>
           )}
         </Formik>
-        <Snackbar
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-          open={snackbarOpen}
-          autoHideDuration={5000}
-          onClose={handleSnackbarClose}
-        >
-          <Alert
-            onClose={handleSnackbarClose}
-            severity={success ? "success" : "error"}
-            variant="filled"
-            sx={{ width: "100%" }}
-          >
-            {success ? "Authentication successful!" : error}
-          </Alert>
-        </Snackbar>
       </Box>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
       <Typography
         variant="body2"
         color="text.secondary"
@@ -244,17 +245,7 @@ export default function SignIn() {
         sx={{ mt: 8, mb: 4 }}
       >
         {"Copyright © "}
-        <Link
-          color="inherit"
-          style={{ textDecoration: "none" }}
-          href="https://vgeneralcontractors.com/"
-          sx={{
-            textDecoration: "none",
-            fontWeight: "bold",
-            ml: 1,
-            mr: 1,
-          }}
-        >
+        <Link color="inherit" href="https://vgeneralcontractors.com/">
           {process.env.NEXT_PUBLIC_COMPANY_NAME || "V General Contractors"}
         </Link>{" "}
         {new Date().getFullYear()}
