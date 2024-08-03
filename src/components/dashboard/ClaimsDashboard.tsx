@@ -4,7 +4,7 @@ import { DataGrid, GridToolbar, GridColDef } from "@mui/x-data-grid";
 import { Paper, Box, Chip } from "@mui/material";
 
 import { useTheme } from "@mui/material/styles";
-
+import { withRoleProtection } from "../withRoleProtection";
 // Define el tipo para tus datos
 interface ClaimData {
   id: number;
@@ -115,7 +115,7 @@ const sampleData: ClaimData[] = [
   // Agrega más filas según sea necesario
 ];
 
-export default function ClaimsReport() {
+function ClaimsReport() {
   const theme = useTheme();
   return (
     <Paper
@@ -138,6 +138,7 @@ export default function ClaimsReport() {
           sm: "79vw",
           lg: "88vw",
         },
+        border: "1px solid rgba(255, 255, 255, 0.2)",
       }}
     >
       <DataGrid
@@ -165,3 +166,8 @@ export default function ClaimsReport() {
     </Paper>
   );
 }
+export default withRoleProtection(ClaimsReport, [
+  "Super Admin",
+  "Admin",
+  "Manager",
+]);

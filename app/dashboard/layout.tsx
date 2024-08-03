@@ -1,6 +1,6 @@
 import { Container, Grid, Box, Typography, Paper, Link } from "@mui/material";
 import SideBar from "../components/SideBar";
-
+import BasicSpeedDial from "../components/SupportButton";
 export default function Layout({
   children,
 }: Readonly<{
@@ -14,6 +14,7 @@ export default function Layout({
       }}
     >
       <SideBar />
+      <BasicSpeedDial />
       {children}
     </Box>
   );

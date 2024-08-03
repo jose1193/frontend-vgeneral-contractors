@@ -33,7 +33,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreIcon from "@mui/icons-material/MoreVert";
-
+import LogoutIcon from "@mui/icons-material/Logout";
 import HouseIcon from "@mui/icons-material/House";
 import ViewKanbanIcon from "@mui/icons-material/ViewKanban";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -44,21 +44,32 @@ import PostAddIcon from "@mui/icons-material/PostAdd";
 import ContactsIcon from "@mui/icons-material/Contacts";
 import DescriptionIcon from "@mui/icons-material/Description";
 import SettingsIcon from "@mui/icons-material/Settings";
-
+import Avatar from "@mui/material/Avatar";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
+import LockIcon from "@mui/icons-material/Lock";
+import WarningIcon from "@mui/icons-material/Warning";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import ApiIcon from "@mui/icons-material/Api";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
+import { useSession } from "next-auth/react";
+import { ROLE_PERMISSIONS } from "../../src/config/roles";
+import RoleGuard from "@/components/RoleGuard";
 import Image from "next/image";
 
-import ThemeToggleButtonDashboard from "./ThemeToggleButtonDashboard"; // asegúrate de importar correctamente
+import ThemeToggleButtonDashboard from "./ThemeToggleButtonDashboard";
 
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import Collapse from "@mui/material/Collapse";
-
+import { Logout } from "../../app/lib/api";
 import SearchComponent from "../../src/components/dashboard/SearchComponent";
+
 const drawerWidth = 240;
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -87,6 +98,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   alignItems: "center",
   justifyContent: "flex-end",
   padding: theme.spacing(0, 1),
+  // necessary for content to be below app bar
   ...theme.mixins.toolbar,
 }));
 
@@ -129,45 +141,6 @@ const Drawer = styled(MuiDrawer, {
   }),
 }));
 
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    marginLeft: theme.spacing(3),
-    width: "auto",
-  },
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create("width"),
-    width: "100%",
-    [theme.breakpoints.up("md")]: {
-      width: "20ch",
-    },
-  },
-}));
-
 export default function MiniDrawer() {
   interface SubItem {
     name: string;
@@ -180,118 +153,176 @@ export default function MiniDrawer() {
     href?: string;
     icon: React.ReactNode;
     subItems?: SubItem[];
+    allowedRoles: string[];
   }
+
   const pages: PageItem[] = [
     {
       name: "Home",
       href: "/dashboard",
       icon: <HouseIcon />,
+      allowedRoles: [
+        "Super Admin",
+        "Admin",
+        "Manager",
+        "Technical Services",
+        "Lead",
+      ],
     },
     {
       name: "Prospect",
       href: "/",
       icon: <GpsFixedIcon />,
+      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
     {
       name: "Claims",
       href: "/dashboard/claims",
       icon: <PostAddIcon />,
+      allowedRoles: [
+        "Super Admin",
+        "Admin",
+        "Manager",
+        "Lead",
+        "Technical Services",
+      ],
     },
     {
       name: "Deals",
       href: "/",
       icon: <MonetizationOnIcon />,
+      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
     {
       name: "Projects",
       href: "/",
       icon: <ContentPasteSearchIcon />,
+      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
 
     {
       name: "Stages",
       href: "/dashboard/stage",
       icon: <ViewKanbanIcon />,
+      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
     {
       name: "Calendars",
       href: "/",
       icon: <CalendarMonthIcon />,
+      allowedRoles: [
+        "Super Admin",
+        "Admin",
+        "Manager",
+        "Technical Services",
+        "Lead",
+      ],
     },
     {
       name: "Contacs",
       href: "/",
       icon: <ContactsIcon />,
+      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
     {
       name: "Emails",
       href: "/",
       icon: <InboxIcon />,
+      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
+    {
+      name: "Integrations",
+      icon: <ApiIcon />,
+      allowedRoles: ["Super Admin", "Admin"],
+      subItems: [
+        {
+          name: "AI Tools",
+          href: "/dashboard/ai-tools",
+          icon: <SmartToyIcon />,
+        },
+        {
+          name: "Quickbooks API",
+          href: "/dashboard/quickbooks-api",
+          icon: <AccountBalanceIcon />,
+        },
+        {
+          name: "Company Cam API",
+          href: "/dashboard/companycam-api",
+          icon: <CameraAltIcon />,
+        },
+      ],
+    },
+
     {
       name: "Config",
       icon: <SettingsIcon />,
+      allowedRoles: ["Super Admin"],
       subItems: [
         {
           name: "Users",
           href: "/dashboard/users",
+          icon: <PeopleAltIcon />,
         },
-        // Other sub-items...
+        {
+          name: "Roles",
+          href: "/dashboard/roles",
+          icon: <AdminPanelSettingsIcon />,
+        },
+        {
+          name: "Permissions",
+          href: "/dashboard/permissions",
+          icon: <LockIcon />,
+        },
+        {
+          name: "Type Damages",
+          href: "/dashboard/type-damages",
+          icon: <WarningIcon />,
+        },
       ],
     },
   ];
-
-  const pathname = usePathname();
-
-  // Crear un componente Drawer personalizado con estilos CSS
-  const StyledDrawer = styled(Drawer)(({ theme }) => ({
-    "& .MuiDrawer-paper": {
-      overflowX: "hidden",
-      overflowY: "hidden",
-      borderRight: "none", // Añade esta línea
-      boxShadow: "0 4px 12px 0 rgba(33, 33, 33 )",
-      "&:hover": {
-        overflowY: "auto",
-      },
-      "&::-webkit-scrollbar": {
-        width: "6px",
-      },
-      "&::-webkit-scrollbar-thumb": {
-        backgroundColor: "#fff",
-        borderRadius: "3px",
-      },
-      scrollbarWidth: "thin",
-      scrollbarColor: "#fff",
-    },
-  }));
-
-  const [configAnchorEl, setConfigAnchorEl] =
-    React.useState<null | HTMLElement>(null);
-  const isConfigMenuOpen = Boolean(configAnchorEl);
-
-  const handleConfigMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setConfigAnchorEl(event.currentTarget);
-  };
-
-  const handleConfigMenuClose = () => {
-    setConfigAnchorEl(null);
-  };
-
   const router = useRouter();
+  const pathname = usePathname();
+  const { data: session, status } = useSession();
+  const userRole = session?.user?.user_role as
+    | keyof typeof ROLE_PERMISSIONS
+    | undefined;
+  // Filtrar las páginas basadas en el rol del usuario
+  const filteredPages = pages.filter((page) => {
+    if (!userRole) return false;
+    if (userRole === "Super Admin") return true; // Super Admin ve todo
 
+    const allowedRoutes = ROLE_PERMISSIONS[userRole];
+    if (!allowedRoutes) return false;
+
+    // Comprueba si la página o alguna de sus subpáginas está permitida
+    return (
+      page.allowedRoles.includes(userRole) ||
+      allowedRoutes.some(
+        (route) =>
+          route === "*" ||
+          page.href?.startsWith(route) ||
+          (page.subItems &&
+            page.subItems.some((subItem) => subItem.href.startsWith(route)))
+      )
+    );
+  });
   const handleLogout = async () => {
     try {
+      const token = session?.accessToken;
+
+      if (!token) {
+        console.error("Access token not found");
+        return;
+      }
+
       // Llamar al endpoint de logout
-      const logoutUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/logout`;
-      await fetch(logoutUrl, {
-        method: "POST",
-        credentials: "include", // Importante si estás usando cookies
-      });
+
+      const response = await Logout(token);
 
       // Realizar el logout con NextAuth
       await signOut({ redirect: false });
 
-      // Cerrar el menú
       handleMenuClose();
 
       // Redirigir al home
@@ -304,12 +335,14 @@ export default function MiniDrawer() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [openDropdown, setOpenDropdown] = React.useState<string | null>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
-
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-
+  const handleDropdownToggle = (name: string) => {
+    setOpenDropdown(openDropdown === name ? null : name);
+  };
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -317,7 +350,6 @@ export default function MiniDrawer() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
-
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -325,7 +357,6 @@ export default function MiniDrawer() {
   const handleMobileMenuClose = () => {
     setMobileMoreAnchorEl(null);
   };
-
   const handleMenuClose = () => {
     setAnchorEl(null);
     handleMobileMenuClose();
@@ -334,12 +365,10 @@ export default function MiniDrawer() {
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMobileMoreAnchorEl(event.currentTarget);
   };
-  const [isConfigMenuOpen1, setIsConfigMenuOpen1] = React.useState(false);
 
-  const [openDropdown, setOpenDropdown] = React.useState<string | null>(null);
-
-  const handleDropdownToggle = (name: string) => {
-    setOpenDropdown(openDropdown === name ? null : name);
+  const handleProfileClick = () => {
+    handleMenuClose();
+    router.push("/dashboard/profile");
   };
 
   const menuId = "primary-search-account-menu";
@@ -359,8 +388,31 @@ export default function MiniDrawer() {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleLogout}>Logout</MenuItem>
+      <MenuItem onClick={handleProfileMenuOpen}>
+        <IconButton
+          aria-label="account of current user"
+          aria-controls="primary-search-account-menu"
+          aria-haspopup="true"
+          color="inherit"
+          sx={{ ml: -2 }}
+        >
+          <AccountCircle />
+        </IconButton>
+        <p onClick={handleProfileClick}>Profile</p>
+      </MenuItem>
+      <MenuItem onClick={handleLogout}>
+        {" "}
+        <IconButton
+          aria-label="account of current user"
+          aria-controls="primary-search-account-menu"
+          aria-haspopup="true"
+          color="inherit"
+          sx={{ ml: -2 }}
+        >
+          <LogoutIcon />
+        </IconButton>
+        Logout
+      </MenuItem>
     </Menu>
   );
 
@@ -404,14 +456,16 @@ export default function MiniDrawer() {
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton
           size="large"
+          edge="end"
           aria-label="account of current user"
-          aria-controls="primary-search-account-menu"
+          aria-controls={menuId}
           aria-haspopup="true"
+          onClick={handleProfileMenuOpen}
           color="inherit"
         >
           <AccountCircle />
         </IconButton>
-        <p>Profile</p>
+        <p onClick={handleProfileClick}>Profile</p>
       </MenuItem>
     </Menu>
   );
@@ -424,7 +478,8 @@ export default function MiniDrawer() {
         open={open}
         elevation={4} // Esto agrega una sombra predefinida
         sx={{
-          boxShadow: "0 4px 5px 0 rgba(33, 33, 33, 0.5)", // Sombra personalizada más oscura
+          //boxShadow: "0 4px 5px 0 rgba(33, 33, 33, 0.5)", // Sombra personalizada más oscura
+          borderBottom: `1px solid rgba(255, 255, 255, 0.1)`,
         }}
       >
         <Toolbar
@@ -455,9 +510,7 @@ export default function MiniDrawer() {
             style={{ marginRight: "16px" }}
           />
           <SearchComponent />
-
           <Box sx={{ flexGrow: 1 }} />
-
           <Box sx={{ display: { xs: "flex", md: "flex" } }}>
             <ThemeToggleButtonDashboard />
 
@@ -488,7 +541,25 @@ export default function MiniDrawer() {
               onClick={handleProfileMenuOpen}
               color="inherit"
             >
-              <AccountCircle />
+              {session?.user?.profile_photo_path ? (
+                <Avatar
+                  alt={session?.user?.name || "User"}
+                  src={session.user.profile_photo_path}
+                  sx={{ width: 30, height: 30 }}
+                />
+              ) : (
+                <Avatar
+                  alt={session?.user?.name || "User"}
+                  sx={{
+                    width: 30,
+                    height: 30,
+                    bgcolor: "#EBF4FF",
+                    color: "#7F9CF5",
+                  }}
+                >
+                  {(session?.user?.name || "U")[0].toUpperCase()}
+                </Avatar>
+              )}
             </IconButton>
           </Box>
           <Box sx={{ display: { xs: "none", md: "none" } }}>
@@ -505,17 +576,16 @@ export default function MiniDrawer() {
           </Box>
         </Toolbar>
       </AppBar>
-      <StyledDrawer variant="permanent" open={open}>
-        <DrawerHeader sx={{ flexGrow: 1 }}>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Victor Lara
-          </Typography>
+      <Drawer variant="permanent" open={open}>
+        <DrawerHeader>
           <Typography
-            variant="subtitle1"
+            variant="h6"
             noWrap
             component="div"
-            sx={{ flexGrow: 1 }}
-          ></Typography>
+            sx={{ flexGrow: 1, ml: 2 }}
+          >
+            {session?.user?.name || "User"} {session?.user?.last_name || ""}
+          </Typography>
           <IconButton onClick={handleDrawerClose} sx={{ color: "#fff" }}>
             {theme.direction === "rtl" ? (
               <ChevronRightIcon />
@@ -526,9 +596,9 @@ export default function MiniDrawer() {
         </DrawerHeader>
         <Divider />
         <List>
-          {pages.map((page) => (
+          {filteredPages.map((page) => (
             <ListItem key={page.name} disablePadding sx={{ display: "block" }}>
-              {page.name === "Config" ? (
+              {page.subItems ? (
                 <>
                   <ListItemButton
                     onClick={() => handleDropdownToggle(page.name)}
@@ -584,102 +654,98 @@ export default function MiniDrawer() {
                     unmountOnExit
                   >
                     <List component="div" disablePadding>
-                      {page.subItems &&
-                        page.subItems.map((subItem) => (
-                          <Link
-                            key={subItem.name}
-                            href={subItem.href}
-                            passHref
-                            style={{ textDecoration: "none", color: "inherit" }}
+                      {page.subItems.map((subItem) => (
+                        <ListItemButton
+                          key={subItem.name}
+                          component={Link}
+                          href={subItem.href}
+                          sx={{
+                            pl: 4,
+                            backgroundColor:
+                              pathname === subItem.href
+                                ? theme.palette.primary.dark
+                                : "transparent",
+                            "&:hover": {
+                              backgroundColor:
+                                pathname === subItem.href
+                                  ? theme.palette.primary.dark
+                                  : "rgba(0, 0, 0, 0.04)",
+                            },
+                          }}
+                        >
+                          <ListItemIcon
+                            sx={{
+                              color:
+                                pathname === subItem.href
+                                  ? theme.palette.primary.contrastText
+                                  : "inherit",
+                            }}
                           >
-                            <ListItemButton sx={{ pl: 4 }}>
-                              <ListItemIcon>{subItem.icon}</ListItemIcon>
-                              <ListItemText primary={subItem.name} />
-                            </ListItemButton>
-                          </Link>
-                        ))}
+                            {subItem.icon}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={subItem.name}
+                            sx={{
+                              color:
+                                pathname === subItem.href
+                                  ? theme.palette.primary.contrastText
+                                  : "inherit",
+                            }}
+                          />
+                        </ListItemButton>
+                      ))}
                     </List>
                   </Collapse>
                 </>
               ) : (
-                <Link
-                  href={page.href ?? "#"}
-                  passHref
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  <ListItemButton
-                    sx={{
-                      minHeight: 48,
-                      justifyContent: open ? "initial" : "center",
-                      px: 2.5,
+                <ListItemButton
+                  component={Link}
+                  href={page.href || "#"}
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
+                    backgroundColor:
+                      pathname === page.href
+                        ? theme.palette.primary.dark
+                        : "transparent",
+                    "&:hover": {
                       backgroundColor:
                         pathname === page.href
                           ? theme.palette.primary.dark
-                          : "transparent",
-                      "&:hover": {
-                        backgroundColor:
-                          pathname === page.href
-                            ? theme.palette.primary.dark
-                            : "rgba(0, 0, 0, 0.04)",
-                      },
+                          : "rgba(0, 0, 0, 0.04)",
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 3 : "auto",
+                      justifyContent: "center",
+                      color:
+                        pathname === page.href
+                          ? theme.palette.primary.contrastText
+                          : "inherit",
                     }}
                   >
-                    <ListItemIcon
-                      sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : "auto",
-                        justifyContent: "center",
-                        color:
-                          pathname === page.href
-                            ? theme.palette.primary.contrastText
-                            : "inherit",
-                      }}
-                    >
-                      {page.icon}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={page.name}
-                      sx={{
-                        opacity: open ? 1 : 0,
-                        color:
-                          pathname === page.href
-                            ? theme.palette.primary.contrastText
-                            : "inherit",
-                      }}
-                    />
-                  </ListItemButton>
-                </Link>
+                    {page.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={page.name}
+                    sx={{
+                      opacity: open ? 1 : 0,
+                      color:
+                        pathname === page.href
+                          ? theme.palette.primary.contrastText
+                          : "inherit",
+                    }}
+                  />
+                </ListItemButton>
               )}
             </ListItem>
           ))}
         </List>
-        <Divider />
-        <List>
-          {["Scope Sheet"].map((text, index) => (
-            <ListItem key={text} disablePadding sx={{ display: "block" }}>
-              <ListItemButton
-                onClick={handleLogout}
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : "auto",
-                    justifyContent: "center",
-                  }}
-                >
-                  {index % 2 === 0 ? <DescriptionIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} sx={{ opacity: open ? 1 : 0 }} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </StyledDrawer>
+      </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
       </Box>

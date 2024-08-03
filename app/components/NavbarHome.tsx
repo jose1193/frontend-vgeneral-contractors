@@ -21,7 +21,7 @@ import Image from "next/image";
 import ThemeToggleButton from "./ThemeToggleButton"; // asegúrate de importar correctamente
 
 const pages = [
-  { name: "Home", href: "https://vgeneralcontractors.com/" },
+  //{ name: "Home", href: "/" },
   { name: "About Us", href: "https://vgeneralcontractors.com/about-us/" },
   { name: "Portfolio", href: "https://vgeneralcontractors.com/portfolio/" },
   { name: "Contact", href: "https://vgeneralcontractors.com/contact/" },

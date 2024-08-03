@@ -28,9 +28,10 @@ import { Formik, Form, Field } from "formik";
 import ButtonGoogle from "../components/ButtonGoogle";
 import { useTheme } from "@mui/material/styles";
 import CircularProgress from "@mui/material/CircularProgress";
+import AccountCircle from "@mui/icons-material/AccountCircle";
 
 const SignInSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Required"),
+  email: Yup.string().max(35).required("Required"),
   password: Yup.string().min(6, "Password too short").required("Required"),
 });
 
@@ -113,6 +114,7 @@ export default function SignIn() {
           padding: { xs: 3, sm: 4, md: 5 },
           borderRadius: "16px",
           boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
         }}
       >
         <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
@@ -150,6 +152,13 @@ export default function SignIn() {
                 onBlur={handleBlur}
                 error={touched.email && Boolean(errors.email)}
                 helperText={touched.email && errors.email}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AccountCircle />
+                    </InputAdornment>
+                  ),
+                }}
               />
               <TextField
                 margin="normal"
@@ -167,6 +176,11 @@ export default function SignIn() {
                 error={touched.password && Boolean(errors.password)}
                 helperText={touched.password && errors.password}
                 InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlinedIcon />
+                    </InputAdornment>
+                  ),
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -208,14 +222,14 @@ export default function SignIn() {
                 )}
               </Button>
               <Grid container>
-                <Grid item xs>
-                  <Link href="#" variant="body2">
-                    Forgot password?
-                  </Link>
-                </Grid>
+                <Grid item xs></Grid>
                 <Grid item>
-                  <Link href="#" variant="body2">
-                    {"Don't have an account? Sign Up"}
+                  <Link
+                    href="auth/forgot-password"
+                    variant="body2"
+                    sx={{ textDecoration: "none" }}
+                  >
+                    Forgot password?
                   </Link>
                 </Grid>
               </Grid>
@@ -245,7 +259,10 @@ export default function SignIn() {
         sx={{ mt: 8, mb: 4 }}
       >
         {"Copyright © "}
-        <Link color="inherit" href="https://vgeneralcontractors.com/">
+        <Link
+          sx={{ textDecoration: "none", fontWeight: "bold", p: 1 }}
+          href="https://vgeneralcontractors.com/"
+        >
           {process.env.NEXT_PUBLIC_COMPANY_NAME || "V General Contractors"}
         </Link>{" "}
         {new Date().getFullYear()}

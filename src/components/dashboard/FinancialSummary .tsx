@@ -10,6 +10,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+import { withRoleProtection } from "../withRoleProtection";
+
 const data = [
   { name: "Invoice", value: 4000 },
   { name: "Collection", value: 3000 },
@@ -29,6 +31,7 @@ const FinancialSummary = () => {
 
         color: "white",
         borderRadius: 2, // Añade bordes redondeados
+        border: "1px solid rgba(255, 255, 255, 0.2)",
       }}
     >
       <Grid container spacing={2}>
@@ -44,6 +47,7 @@ const FinancialSummary = () => {
                   minWidth: "120px",
                   textAlign: "center",
                   background: "rgba(255, 255, 255, 0.1)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
                 }}
               >
                 <Typography sx={{ fontWeight: "bold" }} variant="h6">
@@ -73,5 +77,8 @@ const FinancialSummary = () => {
     </Paper>
   );
 };
-
-export default FinancialSummary;
+export default withRoleProtection(FinancialSummary, [
+  "Super Admin",
+  "Admin",
+  "Manager",
+]);

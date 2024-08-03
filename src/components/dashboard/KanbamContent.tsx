@@ -12,6 +12,7 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Grid, Paper, Typography, Button } from "@mui/material";
 import { useTheme } from "../../../app/ui/StyledRoot";
+
 interface Task {
   id: string;
   content: string;

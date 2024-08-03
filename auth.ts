@@ -2,6 +2,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { User } from "next-auth";
+import { login, getUserDetails } from "./app/lib/api";
 
 export const { auth, handlers } = NextAuth({
   providers: [
@@ -13,40 +14,63 @@ export const { auth, handlers } = NextAuth({
       },
 
       async authorize(credentials): Promise<User | null> {
-        // Aquí va tu lógica de autenticación
-        // Ejemplo:
-        //const url = `${axios.defaults.baseURL}/login`;
-        //const res = await fetch(url, {
-        const loginUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/login`;
-        const res = await fetch(loginUrl, {
-          method: "POST",
-          body: JSON.stringify(credentials),
-          headers: { "Content-Type": "application/json" },
-        });
-        const user = await res.json();
+        try {
+          if (
+            !credentials ||
+            typeof credentials.email !== "string" ||
+            typeof credentials.password !== "string"
+          ) {
+            return null;
+          }
 
-        if (res.ok && user) {
-          return {
-            id: user.id,
-            name: user.name,
-            last_name: user.last_name,
-            username: user.username,
+          const userData = await login({
+            email: credentials.email,
+            password: credentials.password,
+          });
 
-            uuid: user.uuid,
-            email: user.email,
+          if (userData && userData.token) {
+            const userDetails = await getUserDetails(userData.token);
 
-            phone: user.phone,
-            address: user.address,
-            zip_code: user.zip_code,
-            city: user.city,
-            country: user.country,
-            gender: user.gender,
-            profile_photo_path: user.profile_photo_path,
-            token: user.token, // Asegúrate de que tu API devuelve un token
-            user_role: user.user_role,
-          };
+            const user: User = {
+              id: userDetails.id,
+              name: userDetails.name,
+              last_name: userDetails.last_name,
+              username: userDetails.username,
+              uuid: userDetails.uuid,
+              email: userDetails.email,
+              email_verified_at: userDetails.email_verified_at
+                ? new Date(userDetails.email_verified_at)
+                : null,
+              emailVerified: userDetails.email_verified_at
+                ? new Date(userDetails.email_verified_at)
+                : null,
+              phone: userDetails.phone,
+              address: userDetails.address,
+              zip_code: userDetails.zip_code,
+              city: userDetails.city,
+              country: userDetails.country,
+              gender: userDetails.gender,
+              profile_photo_path: userDetails.profile_photo_path,
+              token: userData.token,
+              user_role: userDetails.user_role,
+              created_at: userDetails.created_at
+                ? new Date(userDetails.created_at)
+                : null,
+              update_at: userDetails.updated_at
+                ? new Date(userDetails.updated_at)
+                : null,
+              delete_at: userDetails.delete_at
+                ? new Date(userDetails.delete_at)
+                : null,
+            };
+            return user;
+          }
+
+          return null;
+        } catch (error) {
+          console.error("Error during authentication:", error);
+          return null;
         }
-        return null;
       },
     }),
   ],
@@ -56,12 +80,16 @@ export const { auth, handlers } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.user = user;
         token.accessToken = user.token;
       }
       return token;
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken as string;
+      session.user = token.user;
+      session.accessToken = token.accessToken;
+      // Asegúrate de que el rol esté incluido en la sesión
+      session.user.user_role = token.user.user_role;
       return session;
     },
   },

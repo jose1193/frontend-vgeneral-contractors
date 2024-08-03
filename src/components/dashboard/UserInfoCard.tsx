@@ -1,11 +1,11 @@
 import React from "react";
-import { Avatar, Box, Typography } from "@mui/material";
+import { Avatar, IconButton, Box, Typography } from "@mui/material";
 import { keyframes } from "@emotion/react";
 import Image from "next/image";
-
+import { useSession } from "next-auth/react";
 interface User {
   name: string;
-  role: string;
+  user_role: string;
   lastLogin: string;
   profile_photo_path?: string;
 }
@@ -28,6 +28,7 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({ user }) => {
       .join("")
       .toUpperCase();
   };
+  const { data: session } = useSession();
 
   return (
     <Box
@@ -67,39 +68,52 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({ user }) => {
           justifyContent: "center",
           color: "white",
           zIndex: 1,
-          padding: 1, // Añadimos padding para evitar que el texto toque los bordes
+          padding: 1,
         }}
       >
-        <Avatar sx={{ width: 60, height: 60, mb: 1 }}>
-          {user.profile_photo_path ? (
-            <Image
-              src={user.profile_photo_path}
-              alt={user.name}
-              layout="fill"
-              objectFit="cover"
+        <IconButton
+          size="large"
+          edge="end"
+          aria-label="account of current user"
+          aria-haspopup="true"
+          color="inherit"
+        >
+          {session?.user?.profile_photo_path ? (
+            <Avatar
+              alt={session?.user?.name || "User"}
+              src={session?.user?.profile_photo_path}
+              sx={{ width: 50, height: 50 }}
             />
           ) : (
-            getInitials(user.name)
+            <Avatar
+              alt={user.name || "User"}
+              sx={{
+                width: 50,
+                height: 50,
+                bgcolor: "#EBF4FF",
+                color: "#7F9CF5",
+              }}
+            >
+              {getInitials(user.name || "U")}
+            </Avatar>
           )}
-        </Avatar>
+        </IconButton>
         <Typography
           variant="h6"
           sx={{ textAlign: "center", wordBreak: "break-word" }}
         >
-          {user.name}
+          {session?.user?.name}
         </Typography>
         <Typography
           variant="body2"
           sx={{ textAlign: "center", wordBreak: "break-word" }}
         >
-          {user.role}
+          {session?.user?.user_role}
         </Typography>
         <Typography
           variant="caption"
           sx={{ textAlign: "center", wordBreak: "break-word" }}
-        >
-          Last login: {user.lastLogin}
-        </Typography>
+        ></Typography>
       </Box>
     </Box>
   );

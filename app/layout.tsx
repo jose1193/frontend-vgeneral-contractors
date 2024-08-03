@@ -7,8 +7,8 @@ import "./ui/globals.css";
 import AuthGuard from "../src/components/AuthGuard";
 
 export const metadata: Metadata = {
-  title: "VGeneral Contractors Software",
-  description: "VGeneral Contractors Software",
+  title: process.env.NEXT_APP_NAME,
+  description: process.env.NEXT_APP_NAME,
 };
 
 export default function RootLayout({
@@ -18,6 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <meta name="theme-color" content="#000" />
       <body>
         <Providers>
           <AppRouterCacheProvider>

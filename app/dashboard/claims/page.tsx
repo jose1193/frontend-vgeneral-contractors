@@ -2,6 +2,7 @@ import { Box, Paper, Grid, Typography } from "@mui/material";
 import Claims from "../../../src/components/dashboard/Claims";
 import { Suspense } from "react";
 import { CircularProgress } from "@mui/material";
+
 export default function ClaimContent() {
   return (
     <Suspense fallback={<CircularProgress />}>
