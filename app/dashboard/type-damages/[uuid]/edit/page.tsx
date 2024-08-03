@@ -8,7 +8,7 @@ import { useTypeDamages } from "../../../../../src/hooks/useTypeDamage";
 import TypeDamageForm from "../../../../../src/components/Type-Damages/TypeDamagesForm";
 import { TypeDamageData } from "../../../../types/type-damage";
 import { Typography, Box, Paper } from "@mui/material";
-import RoleGuard from "@/components/RoleGuard";
+import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
 import { useSession } from "next-auth/react";
 
 const EditTypeDamagePage = () => {
@@ -46,48 +46,42 @@ const EditTypeDamagePage = () => {
   if (!typeDamage) return <div>Loading...</div>;
 
   return (
-    <RoleGuard
-      allowedRoles={["Super Admin", "Admin"]}
-      redirectTo="/unauthorized"
-    >
-      <Suspense>
-        <Box
+    <Suspense>
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflow: "hidden",
+          ml: -7,
+          mb: 10,
+          p: { xs: 3, sm: 3, md: 2, lg: 4 },
+        }}
+      >
+        <Typography
+          variant="h4"
           sx={{
-            flexGrow: 1,
-            overflow: "hidden",
-            ml: -7,
-            mb: 10,
-            p: { xs: 3, sm: 3, md: 2, lg: 4 },
+            fontSize: {
+              xs: "1.5rem",
+              sm: "1.75rem",
+              md: "2rem",
+              lg: "2.25rem",
+            },
+          }}
+          component="h1"
+          gutterBottom
+        >
+          Edit Type Damage
+        </Typography>
+        <Paper
+          elevation={3}
+          style={{
+            padding: "20px",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
           }}
         >
-          <Typography
-            variant="h4"
-            sx={{
-              fontSize: {
-                xs: "1.5rem",
-                sm: "1.75rem",
-                md: "2rem",
-                lg: "2.25rem",
-              },
-            }}
-            component="h1"
-            gutterBottom
-          >
-            Edit Type Damage
-          </Typography>
-          <Paper
-            elevation={3}
-            style={{
-              padding: "20px",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-            }}
-          >
-            <TypeDamageForm initialData={typeDamage} onSubmit={handleSubmit} />
-          </Paper>
-        </Box>
-      </Suspense>
-    </RoleGuard>
+          <TypeDamageForm initialData={typeDamage} onSubmit={handleSubmit} />
+        </Paper>
+      </Box>
+    </Suspense>
   );
 };
-
-export default EditTypeDamagePage;
+export default withRoleProtection(EditTypeDamagePage, ["Super Admin"]);

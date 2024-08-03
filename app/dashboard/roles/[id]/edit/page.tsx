@@ -7,7 +7,7 @@ import { useRoles } from "../../../../../src/hooks/useRoles";
 import { RoleForm } from "../../../../../src/components/Roles/RoleForm";
 import { RolesData } from "../../../../types/roles";
 import { Typography, Box, Paper } from "@mui/material";
-import RoleGuard from "@/components/RoleGuard";
+import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
 import { useSession } from "next-auth/react";
 
 const EditRolePage = () => {
@@ -66,22 +66,16 @@ const EditRolePage = () => {
   if (!role) return <div></div>;
 
   return (
-    <RoleGuard
-      allowedRoles={["Super Admin", "Admin"]}
-      redirectTo="/unauthorized"
-    >
-      <Box sx={{ p: 3 }}>
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h4" gutterBottom>
-            Edit Role
-          </Typography>
-          <Suspense>
-            <RoleForm initialData={role} onSubmit={handleSubmit} />
-          </Suspense>
-        </Paper>
-      </Box>
-    </RoleGuard>
+    <Box sx={{ p: 3 }}>
+      <Paper sx={{ p: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Edit Role
+        </Typography>
+        <Suspense>
+          <RoleForm initialData={role} onSubmit={handleSubmit} />
+        </Suspense>
+      </Paper>
+    </Box>
   );
 };
-
-export default EditRolePage;
+export default withRoleProtection(EditRolePage, ["Super Admin"]);

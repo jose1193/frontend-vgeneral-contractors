@@ -9,9 +9,9 @@ import { usePermissions } from "../../../../../src/hooks/usePermissions";
 import { PermissionForm } from "../../../../../src/components/Permissions/PermissionForm";
 import { PermissionData } from "../../../../types/permissions";
 import { Typography, Box, Paper } from "@mui/material";
-import RoleGuard from "@/components/RoleGuard";
-import { useSession } from "next-auth/react";
 
+import { useSession } from "next-auth/react";
+import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
 const EditPermissionPage = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -70,48 +70,42 @@ const EditPermissionPage = () => {
   if (!permission) return <div>Permission not found</div>;
 
   return (
-    <RoleGuard
-      allowedRoles={["Super Admin", "Admin"]}
-      redirectTo="/unauthorized"
-    >
-      <Suspense>
-        <Box
+    <Suspense>
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflow: "hidden",
+          ml: -7,
+          mb: 10,
+          p: { xs: 3, sm: 3, md: 2, lg: 4 },
+        }}
+      >
+        <Typography
+          variant="h4"
           sx={{
-            flexGrow: 1,
-            overflow: "hidden",
-            ml: -7,
-            mb: 10,
-            p: { xs: 3, sm: 3, md: 2, lg: 4 },
+            fontSize: {
+              xs: "1.5rem",
+              sm: "1.75rem",
+              md: "2rem",
+              lg: "2.25rem",
+            },
+          }}
+          component="h1"
+          gutterBottom
+        >
+          Edit Permission
+        </Typography>
+        <Paper
+          elevation={3}
+          style={{
+            padding: "20px",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
           }}
         >
-          <Typography
-            variant="h4"
-            sx={{
-              fontSize: {
-                xs: "1.5rem",
-                sm: "1.75rem",
-                md: "2rem",
-                lg: "2.25rem",
-              },
-            }}
-            component="h1"
-            gutterBottom
-          >
-            Edit Permission
-          </Typography>
-          <Paper
-            elevation={3}
-            style={{
-              padding: "20px",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-            }}
-          >
-            <PermissionForm initialData={permission} onSubmit={handleSubmit} />
-          </Paper>
-        </Box>
-      </Suspense>
-    </RoleGuard>
+          <PermissionForm initialData={permission} onSubmit={handleSubmit} />
+        </Paper>
+      </Box>
+    </Suspense>
   );
 };
-
-export default EditPermissionPage;
+export default withRoleProtection(EditPermissionPage, ["Super Admin"]);

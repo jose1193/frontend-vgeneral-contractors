@@ -9,7 +9,7 @@ import TypeDamagesList from "../../../src/components/Type-Damages/TypeDamagesLis
 import { Button, Box, Typography } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import RoleGuard from "@/components/RoleGuard";
+import { withRoleProtection } from "../../../src/components/withRoleProtection";
 
 const TypeDamagesPage = () => {
   const { data: session, update } = useSession();
@@ -68,5 +68,4 @@ const TypeDamagesPage = () => {
     </Suspense>
   );
 };
-
-export default TypeDamagesPage;
+export default withRoleProtection(TypeDamagesPage, ["Super Admin"]);
