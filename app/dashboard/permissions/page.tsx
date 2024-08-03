@@ -9,7 +9,7 @@ import PermissionList from "../../../src/components/Permissions/PermissionList";
 import { Button, Container, Typography, Box, Paper } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import RoleGuard from "@/components/RoleGuard";
+import { withRoleProtection } from "../../../src/components/withRoleProtection";
 const PermissionsPage = () => {
   const { data: session, update } = useSession();
 
@@ -20,57 +20,48 @@ const PermissionsPage = () => {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <RoleGuard
-      allowedRoles={["Super Admin", "Admin"]}
-      redirectTo="/unauthorized"
-    >
-      <Suspense>
-        <Box
+    <Suspense>
+      <Box
+        sx={{
+          width: "100%",
+          ml: -6,
+          overflow: "hidden",
+        }}
+      >
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
           sx={{
-            width: "100%",
-            ml: -6,
-            overflow: "hidden",
+            textAlign: "left",
+            mb: 3,
+            fontSize: {
+              xs: "1.5rem",
+              sm: "1.75rem",
+              md: "2rem",
+              lg: "2.25rem",
+            },
+            fontWeight: "bold",
+            ml: 4,
           }}
         >
-          <Typography
-            variant="h4"
-            component="h1"
-            gutterBottom
+          Permissions
+        </Typography>
+
+        <Link href="/dashboard/permissions/create" passHref>
+          <Button
+            variant="contained"
+            color="primary"
             sx={{
-              textAlign: "left",
-              mb: 3,
-              fontSize: {
-                xs: "1.5rem",
-                sm: "1.75rem",
-                md: "2rem",
-                lg: "2.25rem",
-              },
-              fontWeight: "bold",
               ml: 4,
             }}
           >
-            Permissions
-          </Typography>
-
-          <Link href="/dashboard/permissions/create" passHref>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{
-                ml: 4,
-              }}
-            >
-              Create Permission
-            </Button>
-          </Link>
-          <PermissionList
-            permissions={permissions}
-            onDelete={deletePermission}
-          />
-        </Box>
-      </Suspense>
-    </RoleGuard>
+            Create Permission
+          </Button>
+        </Link>
+        <PermissionList permissions={permissions} onDelete={deletePermission} />
+      </Box>
+    </Suspense>
   );
 };
-
-export default PermissionsPage;
+export default withRoleProtection(PermissionsPage, ["Super Admin"]);
