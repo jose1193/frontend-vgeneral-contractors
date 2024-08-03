@@ -8,14 +8,11 @@ import UserInfoCard from "@/components/dashboard/UserInfoCard";
 import ClaimsDashboard from "@/components/dashboard/ClaimsDashboard";
 import { Suspense } from "react";
 import { CircularProgress } from "@mui/material";
-import RoleGuard from "../../../src/components/RoleGuard";
+
+import { withRoleProtection } from "../../../src/components/withRoleProtection";
 
 export default function AdminDashboardPage() {
-  return (
-    <RoleGuard allowedRoles={["Admin"]} redirectTo="/unauthorized">
-      <AdminDashboardContent />
-    </RoleGuard>
-  );
+  return <AdminDashboardContent />;
 }
 
 function AdminDashboardContent() {
