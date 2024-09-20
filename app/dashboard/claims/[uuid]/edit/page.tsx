@@ -1,12 +1,11 @@
 // src/app/claims/[uuid]/edit/page.tsx
-// src/app/claims/[id]/edit/page.tsx
 "use client";
 import React, { useEffect, useState, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getData } from "../../../../lib/actions/claimsActions"; // Ajusta la importación según tu estructura de archivos
-import { useClaims } from "../../../../../src/hooks/useClaims"; // Ajusta la importación según tu estructura de archivos
-import ClaimsForm from "../../../../../src/components/Claims/ClaimsForm"; // Ajusta la importación según tu estructura de archivos
-import { ClaimsData } from "../../../../types/claims"; // Ajusta la importación según tu estructura de archivos
+import { getData } from "../../../../lib/actions/claimsActions";
+import { useClaims } from "../../../../../src/hooks/useClaims";
+import ClaimsForm from "../../../../../src/components/Claims/ClaimsForm";
+import { ClaimsData } from "../../../../types/claims";
 import { Container, Typography, Box, Paper } from "@mui/material";
 import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
 import { useSession } from "next-auth/react";
@@ -25,7 +24,7 @@ const EditClaimPage = () => {
   useEffect(() => {
     const fetchClaim = async () => {
       try {
-        const data = await getData(token, uuid as string); // Ajusta esta función según cómo recuperas los datos del reclamo
+        const data = await getData(token, uuid as string);
         setClaim(data);
         setLoading(false);
       } catch (err) {
@@ -37,9 +36,17 @@ const EditClaimPage = () => {
     fetchClaim();
   }, [uuid, token]);
 
-  const handleSubmit = async (data: ClaimsData) => {
-    await updateClaim(uuid as string, data);
-    router.push(`/dashboard/claims/${uuid}`);
+  const handleSubmit = async (
+    data: ClaimsData
+  ): Promise<string | undefined> => {
+    try {
+      await updateClaim(uuid as string, data);
+      router.push(`/dashboard/claims/${uuid}`);
+      return uuid as string;
+    } catch (error) {
+      console.error("Error updating claim:", error);
+      return undefined;
+    }
   };
 
   if (error) return <div>Error: {error}</div>;
