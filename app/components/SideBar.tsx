@@ -53,6 +53,8 @@ import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import ApiIcon from "@mui/icons-material/Api";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -177,16 +179,22 @@ export default function MiniDrawer() {
     },
     {
       name: "Claims",
-      href: "/dashboard/claims",
       icon: <PostAddIcon />,
-      allowedRoles: [
-        "Super Admin",
-        "Admin",
-        "Manager",
-        "Lead",
-        "Technical Services",
+      allowedRoles: ["Super Admin", "Admin", "Manager", "Lead"],
+      subItems: [
+        {
+          name: "New Claim",
+          href: "/dashboard/claims/create",
+          icon: <AddCircleOutlineIcon />,
+        },
+        {
+          name: "List",
+          href: "/dashboard/claims",
+          icon: <AssignmentIcon />,
+        },
       ],
     },
+
     {
       name: "Deals",
       href: "/",

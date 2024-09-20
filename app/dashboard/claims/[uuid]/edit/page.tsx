@@ -1,49 +1,49 @@
-// src/app/users/[uuid]/edit/page.tsx
+// src/app/claims/[uuid]/edit/page.tsx
+// src/app/claims/[id]/edit/page.tsx
 "use client";
 import React, { useEffect, useState, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getUser } from "../../../../lib/actions/usersActions";
-import { useUsers } from "../../../../../src/hooks/useUsers";
-import UsersForm from "../../../../../src/components/Users/UserForm";
-import { UserData } from "../../../../types/user";
+import { getData } from "../../../../lib/actions/claimsActions"; // Ajusta la importación según tu estructura de archivos
+import { useClaims } from "../../../../../src/hooks/useClaims"; // Ajusta la importación según tu estructura de archivos
+import ClaimsForm from "../../../../../src/components/Claims/ClaimsForm"; // Ajusta la importación según tu estructura de archivos
+import { ClaimsData } from "../../../../types/claims"; // Ajusta la importación según tu estructura de archivos
 import { Container, Typography, Box, Paper } from "@mui/material";
 import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
 import { useSession } from "next-auth/react";
-const EditUserPage = () => {
+import ClaimsFormSkeleton from "../../../../../src/components/skeletons/ClaimsFormSkeleton";
+const EditClaimPage = () => {
   const { uuid } = useParams();
   const router = useRouter();
-  const [user, setUser] = useState<UserData | null>(null);
+  const [claim, setClaim] = useState<ClaimsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // In a real app, you'd get the token from your auth system
-  const { data: session, update } = useSession();
-  // In a real app, you'd get the token from your auth system
+  const { data: session } = useSession();
   const token = session?.accessToken as string;
-  const { updateUser } = useUsers(token);
+  const { updateClaim } = useClaims(token);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchClaim = async () => {
       try {
-        const data = await getUser(token, uuid as string);
-        setUser(data);
+        const data = await getData(token, uuid as string); // Ajusta esta función según cómo recuperas los datos del reclamo
+        setClaim(data);
         setLoading(false);
       } catch (err) {
-        setError("Failed to fetch user");
+        setError("Failed to fetch claim");
         setLoading(false);
       }
     };
 
-    fetchUser();
+    fetchClaim();
   }, [uuid, token]);
 
-  const handleSubmit = async (data: UserData) => {
-    await updateUser(uuid as string, data);
-    router.push("/dashboard/users");
+  const handleSubmit = async (data: ClaimsData) => {
+    await updateClaim(uuid as string, data);
+    router.push(`/dashboard/claims/${uuid}`);
   };
 
   if (error) return <div>Error: {error}</div>;
-  if (!user) return <div></div>;
+  if (!claim) return <ClaimsFormSkeleton />;
 
   return (
     <Suspense>
@@ -51,7 +51,6 @@ const EditUserPage = () => {
         sx={{
           flexGrow: 1,
           overflow: "hidden",
-
           ml: -7,
           mb: 10,
           p: { xs: 3, sm: 3, md: 2, lg: 4 },
@@ -70,7 +69,7 @@ const EditUserPage = () => {
           component="h1"
           gutterBottom
         >
-          Edit User
+          Edit Claim
         </Typography>
         <Paper
           elevation={3}
@@ -79,10 +78,16 @@ const EditUserPage = () => {
             border: "1px solid rgba(255, 255, 255, 0.2)",
           }}
         >
-          <UsersForm initialData={user} onSubmit={handleSubmit} />
+          <ClaimsForm initialData={claim} onSubmit={handleSubmit} />
         </Paper>
       </Box>
     </Suspense>
   );
 };
-export default withRoleProtection(EditUserPage, ["Super Admin", "Admin"]);
+
+export default withRoleProtection(EditClaimPage, [
+  "Super Admin",
+  "Admin",
+  "Manager",
+  "Lead",
+]);

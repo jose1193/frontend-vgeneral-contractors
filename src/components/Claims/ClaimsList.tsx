@@ -1,9 +1,10 @@
-// src/components/Users/UsersList.tsx
+// src/components/Claims/ClaimsList.tsx
 
 "use client";
 
 import React, { useState } from "react";
-import { UserData } from "../../../app/types/user";
+import { ClaimsData } from "../../../app/types/claims";
+import Link from "next/link";
 import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
 import {
   Box,
@@ -17,32 +18,32 @@ import {
   Button,
   Snackbar,
   Typography,
+  Chip,
 } from "@mui/material";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Alert from "@mui/material/Alert";
-import Link from "next/link";
-import { useTheme } from "@mui/material/styles";
+import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import RestoreIcon from "@mui/icons-material/Restore";
-
+import Alert from "@mui/material/Alert";
+import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
-interface UsersListProps {
-  users: UserData[];
+
+// Define the new Claims interface
+interface ClaimsListProps {
+  claims: ClaimsData[];
   onDelete: (uuid: string) => void;
   onRestore: (uuid: string) => void;
 }
 
-const UsersList: React.FC<UsersListProps> = ({
-  users,
+const ClaimsList: React.FC<ClaimsListProps> = ({
+  claims,
   onDelete,
   onRestore,
 }) => {
   const theme = useTheme();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteDialogOpenRestore, setDeleteDialogOpenRestore] = useState(false);
-
-  const [userToDelete, setUserToDelete] = useState<any>(null);
+  const [claimToDelete, setClaimToDelete] = useState<ClaimsData | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -53,85 +54,161 @@ const UsersList: React.FC<UsersListProps> = ({
     severity: "success",
   });
 
-  const handleDeleteClick = (user: any) => {
-    setUserToDelete(user);
+  const handleDeleteClick = (claim: ClaimsData) => {
+    setClaimToDelete(claim);
     setDeleteDialogOpen(true);
   };
 
-  const handleRestoreClick = (user: any) => {
-    setUserToDelete(user);
+  const handleRestoreClick = (claim: any) => {
+    setClaimToDelete(claim);
     setDeleteDialogOpenRestore(true);
   };
-
   const handleDeleteConfirm = async () => {
-    try {
-      await onDelete(userToDelete.uuid);
-      setDeleteDialogOpen(false);
-      setSnackbar({
-        open: true,
-        message: "User deleted successfully",
-        severity: "success",
-      });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Failed to delete user",
-        severity: "error",
-      });
+    if (claimToDelete && claimToDelete.uuid) {
+      try {
+        await onDelete(claimToDelete.uuid);
+        setDeleteDialogOpen(false);
+        setSnackbar({
+          open: true,
+          message: "Claim deleted successfully",
+          severity: "success",
+        });
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: "Failed to delete claim",
+          severity: "error",
+        });
+      }
     }
   };
 
   const handleDeleteConfirmRestore = async () => {
-    try {
-      await onRestore(userToDelete.uuid);
-      setDeleteDialogOpenRestore(false);
-      setSnackbar({
-        open: true,
-        message: "User restored successfully",
-        severity: "success",
-      });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Failed to delete user",
-        severity: "error",
-      });
+    if (claimToDelete && claimToDelete.uuid) {
+      try {
+        await onRestore(claimToDelete.uuid);
+        setDeleteDialogOpenRestore(false);
+        setSnackbar({
+          open: true,
+          message: "Claim restored successfully",
+          severity: "success",
+        });
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: "Failed to delete claim",
+          severity: "error",
+        });
+      }
     }
   };
-
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const IconButtonStyled = ({ color, onClick, children }: any) => (
-    <IconButton
-      sx={{
-        padding: "8px",
-        borderRadius: "50%",
-        "&:hover": {},
-        marginRight: "8px",
-      }}
-      onClick={onClick}
-    >
-      {children}
-    </IconButton>
-  );
   const columns: GridColDef[] = [
-    { field: "user_role", headerName: "Role", width: 150 },
-    { field: "name", headerName: "Name", width: 150 },
-    { field: "last_name", headerName: "Last Name", width: 150 },
-    { field: "email", headerName: "Email", width: 200 },
-    { field: "phone", headerName: "Phone", width: 150 },
-
-    { field: "country", headerName: "Country", width: 150 },
+    {
+      field: "claim_internal_id",
+      headerName: "Claim Internal",
+      width: 180,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "policy_number",
+      headerName: "Policy Number",
+      width: 170,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "type_damage",
+      headerName: "Type Damage",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "property",
+      headerName: "Property",
+      width: 200,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "customers",
+      headerName: "Customers",
+      width: 220,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "date_of_loss",
+      headerName: "Date of Loss",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "claim_status",
+      headerName: "Status",
+      width: 130,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        let color:
+          | "default"
+          | "primary"
+          | "secondary"
+          | "error"
+          | "info"
+          | "success"
+          | "warning";
+        let label;
+        switch (params.value) {
+          case "Completed":
+            color = "success";
+            label = "Completed";
+            break;
+          case "In Progress":
+            color = "primary";
+            label = "In Progress";
+            break;
+          case "Pending":
+            color = "default";
+            label = "Pending";
+            break;
+          default:
+            color = "default";
+            label = params.value;
+        }
+        return <Chip label={label} color={color} />;
+      },
+    },
+    {
+      field: "created_at",
+      headerName: "Created At",
+      width: 200,
+      headerAlign: "center",
+      align: "center",
+    },
     {
       field: "actions",
       headerName: "Actions",
       width: 250,
+      headerAlign: "center",
+      align: "center",
       renderCell: (params) => (
         <>
-          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <Link href={`/dashboard/users/${params.row.uuid}`} passHref>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Link href={`/dashboard/claims/${params.row.uuid}`} passHref>
               <Button
                 size="small"
                 variant="contained"
@@ -145,7 +222,7 @@ const UsersList: React.FC<UsersListProps> = ({
                 <VisibilityIcon fontSize="small" />
               </Button>
             </Link>
-            <Link href={`/dashboard/users/${params.row.uuid}/edit`} passHref>
+            <Link href={`/dashboard/claims/${params.row.uuid}/edit`} passHref>
               <Button
                 size="small"
                 variant="contained"
@@ -188,16 +265,22 @@ const UsersList: React.FC<UsersListProps> = ({
     },
   ];
 
-  const rows = users.map((user) => ({
-    user_role: user.user_role,
-    id: user.uuid,
-    uuid: user.uuid,
-    name: user.name,
-    last_name: user.last_name,
-    email: user.email,
-    phone: user.phone,
-    city: user.city,
-    country: user.country,
+  const rows = claims.map((claim) => ({
+    uuid: claim.uuid,
+    claim_internal_id: claim.claim_internal_id,
+    property: claim.property,
+    policy_number: claim.policy_number,
+    type_damage: claim.type_damage,
+    customers: Array.isArray(claim.customers)
+      ? claim.customers
+          .map((customer) => `${customer.name} ${customer.last_name}`)
+          .join(", ")
+      : claim.customers || "",
+
+    date_of_loss: claim.date_of_loss,
+
+    claim_status: claim.claim_status,
+    created_at: claim.created_at,
   }));
 
   return (
@@ -230,6 +313,7 @@ const UsersList: React.FC<UsersListProps> = ({
             <DataGrid
               rows={rows}
               columns={columns}
+              getRowId={(row) => row.uuid}
               slots={{ toolbar: GridToolbar }}
               checkboxSelection
               disableRowSelectionOnClick
@@ -269,7 +353,7 @@ const UsersList: React.FC<UsersListProps> = ({
               fontWeight: "bold",
             }}
           >
-            Are you sure you want to suspend this user?
+            Are you sure you want to delete this claim?
           </Typography>
           <Typography
             variant="body1"
@@ -279,9 +363,9 @@ const UsersList: React.FC<UsersListProps> = ({
               mb: 2,
             }}
           >
-            Name:
+            Claim Internal ID:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {userToDelete?.name}
+              {claimToDelete?.claim_internal_id}
             </span>
           </Typography>
           <Typography
@@ -289,12 +373,12 @@ const UsersList: React.FC<UsersListProps> = ({
             gutterBottom
             sx={{
               textAlign: "left",
+              mb: 2,
             }}
           >
-            Email:
+            Policy Number:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {" "}
-              {userToDelete?.email}
+              {claimToDelete?.policy_number}
             </span>
           </Typography>
         </DialogContent>
@@ -322,7 +406,7 @@ const UsersList: React.FC<UsersListProps> = ({
             fontWeight: "bold",
           }}
         >
-          Confirm Restore User
+          Confirm Restore Claim
         </DialogTitle>
         <DialogContent>
           <Typography
@@ -334,7 +418,7 @@ const UsersList: React.FC<UsersListProps> = ({
               fontWeight: "bold",
             }}
           >
-            Are you sure you want to Restore this user?
+            Are you sure you want to Restore this Claim?
           </Typography>
           <Typography
             variant="body1"
@@ -344,9 +428,9 @@ const UsersList: React.FC<UsersListProps> = ({
               mb: 2,
             }}
           >
-            Name:
+            Claim Internal ID:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {userToDelete?.name}
+              {claimToDelete?.claim_internal_id}
             </span>
           </Typography>
           <Typography
@@ -356,10 +440,10 @@ const UsersList: React.FC<UsersListProps> = ({
               textAlign: "left",
             }}
           >
-            Email:
+            Policy Number:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
               {" "}
-              {userToDelete?.email}
+              {claimToDelete?.policy_number}
             </span>
           </Typography>
         </DialogContent>
@@ -376,10 +460,9 @@ const UsersList: React.FC<UsersListProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={5000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
@@ -395,4 +478,4 @@ const UsersList: React.FC<UsersListProps> = ({
   );
 };
 
-export default withRoleProtection(UsersList, ["Super Admin", "Admin"]);
+export default withRoleProtection(ClaimsList, ["Super Admin"]);
