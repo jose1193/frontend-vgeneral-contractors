@@ -1,18 +1,18 @@
-// src/components/TypeDamages/TypeDamageForm.tsx
-import React from "react";
+import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { TextField, Button, Box } from "@mui/material";
+import { TextField, Button, Box, CircularProgress } from "@mui/material";
 import { TypeDamageData } from "../../../app/types/type-damage";
 
 interface TypeDamageFormProps {
   initialData?: TypeDamageData;
-  onSubmit: (data: TypeDamageData) => void;
+  onSubmit: (data: TypeDamageData) => Promise<void>;
 }
 
 const TypeDamagesForm: React.FC<TypeDamageFormProps> = ({
   initialData,
   onSubmit,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     control,
     handleSubmit,
@@ -24,8 +24,19 @@ const TypeDamagesForm: React.FC<TypeDamageFormProps> = ({
     },
   });
 
+  const onSubmitHandler = async (data: TypeDamageData) => {
+    setIsSubmitting(true);
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmitHandler)}>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Controller
           name="type_damage_name"
@@ -58,8 +69,20 @@ const TypeDamagesForm: React.FC<TypeDamageFormProps> = ({
           )}
         />
 
-        <Button type="submit" variant="contained" color="primary">
-          {initialData ? "Update" : "Create"} Type Damage
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={isSubmitting}
+          startIcon={
+            isSubmitting ? <CircularProgress size={20} color="inherit" /> : null
+          }
+        >
+          {isSubmitting
+            ? "Submitting..."
+            : initialData
+            ? "Update Type Damage"
+            : "Create Type Damage"}
         </Button>
       </Box>
     </form>

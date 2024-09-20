@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import {
@@ -23,6 +23,7 @@ import { useSession } from "next-auth/react";
 import { customerSchema } from "../../components/Validations/customersValidation";
 import { CustomerData } from "../../../app/types/customer";
 import { useCustomerContext } from "../../../app/contexts/CustomerContext";
+import PhoneInputField from "../../../app/components/PhoneInputField";
 
 interface CustomerFormProps {
   open: boolean;
@@ -40,15 +41,17 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
   const { data: session } = useSession();
   const token = session?.accessToken as string;
   const { createCustomer } = useCustomers(token);
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<CustomerData>({
+  const methods = useForm<CustomerData>({
     resolver: yupResolver(customerSchema),
     mode: "onChange",
   });
+
+  const {
+    handleSubmit,
+    reset,
+    control,
+    formState: { errors },
+  } = methods;
 
   const onSubmit = async (data: CustomerData) => {
     setIsSubmitting(true);
@@ -63,8 +66,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
         message: "Customer created successfully",
         severity: "success",
       });
-      onClose(); // Close the modal after successful submission
-      reset(); // Reset the form
+      onClose();
+      reset();
     } catch (error) {
       console.error("Failed to create customer:", error);
       setSnackbar({
@@ -80,10 +83,12 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
+
   const handleCancel = () => {
     reset();
     onClose();
   };
+
   return (
     <>
       <Dialog open={open} onClose={onClose}>
@@ -100,131 +105,73 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
             <PermContactCalendarIcon sx={{ mr: 1 }} /> New Customer
           </Box>
         </DialogTitle>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogContent>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="name"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Name"
-                      variant="outlined"
-                      error={!!errors.name}
-                      helperText={errors.name?.message}
-                    />
-                  )}
-                />
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <DialogContent>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Name"
+                    {...methods.register("name")}
+                    error={!!errors.name}
+                    helperText={errors.name?.message}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Last Name"
+                    {...methods.register("last_name")}
+                    error={!!errors.last_name}
+                    helperText={errors.last_name?.message}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <PhoneInputField name="cell_phone" label="Cell Phone" />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <PhoneInputField name="home_phone" label="Home Phone" />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    type="email"
+                    {...methods.register("email")}
+                    error={!!errors.email}
+                    helperText={errors.email?.message}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Occupation"
+                    {...methods.register("occupation")}
+                    error={!!errors.occupation}
+                    helperText={errors.occupation?.message}
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="last_name"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Last Name"
-                      variant="outlined"
-                      error={!!errors.last_name}
-                      helperText={errors.last_name?.message}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="cell_phone"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Cell Phone"
-                      variant="outlined"
-                      error={!!errors.cell_phone}
-                      helperText={errors.cell_phone?.message}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Controller
-                  name="home_phone"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Home Phone"
-                      variant="outlined"
-                      error={!!errors.home_phone}
-                      helperText={errors.home_phone?.message}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Controller
-                  name="email"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Email"
-                      variant="outlined"
-                      type="email"
-                      error={!!errors.email}
-                      helperText={errors.email?.message}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Controller
-                  name="occupation"
-                  control={control}
-                  defaultValue=""
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="Occupation"
-                      variant="outlined"
-                      error={!!errors.occupation}
-                      helperText={errors.occupation?.message}
-                    />
-                  )}
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCancel}>Cancel</Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={isSubmitting}
-              startIcon={
-                isSubmitting ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : null
-              }
-            >
-              {isSubmitting ? "Submitting..." : "Submit"}
-            </Button>
-          </DialogActions>
-        </form>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCancel}>Cancel</Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={isSubmitting}
+                startIcon={
+                  isSubmitting ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : null
+                }
+              >
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </Button>
+            </DialogActions>
+          </form>
+        </FormProvider>
       </Dialog>
       <Snackbar
         open={snackbar.open}

@@ -43,7 +43,7 @@ const EditTypeDamagePage = () => {
   };
 
   if (error) return <div>Error: {error}</div>;
-  if (!typeDamage) return <div>Loading...</div>;
+  if (!typeDamage) return <div></div>;
 
   return (
     <Suspense>
