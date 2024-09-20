@@ -6,11 +6,7 @@ export const propertySchema = yup.object().shape({
   property_city: yup.string().required("Property city is required"),
   property_postal_code: yup
     .string()
-    .required("Property postal code is required")
-    .matches(
-      /^\d{5}(-\d{4})?$/,
-      "Postal code must be in the format 12345 or 12345-6789"
-    ),
+    .required("Property postal code is required"),
   property_country: yup.string().required("Property country is required"),
   customer_id: yup
     .array()

@@ -32,12 +32,14 @@ export const useProperties = (token: string) => {
     fetchProperties();
   }, [token]);
 
-  const createProperty = async (propertyData: PropertyData) => {
+  const createProperty = async (propertyData: Omit<PropertyData, "id">) => {
     try {
       const newProperty = await propertyActions.createData(token, propertyData);
       setProperties([...properties, newProperty]);
+      return newProperty;
     } catch (err) {
-      setError("Failed to create property");
+      setError("Failed to create customer");
+      throw err;
     }
   };
 

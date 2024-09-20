@@ -20,7 +20,7 @@ export interface ClaimsData {
   user_id_ref_by?: number;
   claim_number?: string;
   claim_internal_id?: string;
-  claim_status: string | null;
+  claim_status?: string;
   date_of_loss: string | null;
   description_of_loss: string | null;
   number_of_floors?: number | null;

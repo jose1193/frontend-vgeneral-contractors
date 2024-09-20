@@ -6,6 +6,7 @@ import { Providers } from "./components/Providers";
 import "./ui/globals.css";
 import AuthGuard from "../src/components/AuthGuard";
 import { CustomerProvider } from "../app/contexts/CustomerContext";
+import { PropertyProvider } from "../app/contexts/PropertyContext";
 export const metadata: Metadata = {
   title: process.env.NEXT_APP_NAME,
   description: process.env.NEXT_APP_NAME,
@@ -27,7 +28,9 @@ export default function RootLayout({
             <StyledRoot>
               {" "}
               <AuthGuard>
-                <CustomerProvider>{children}</CustomerProvider>
+                <PropertyProvider>
+                  <CustomerProvider>{children}</CustomerProvider>
+                </PropertyProvider>
               </AuthGuard>
             </StyledRoot>
           </AppRouterCacheProvider>

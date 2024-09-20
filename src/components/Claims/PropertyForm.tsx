@@ -21,12 +21,15 @@ import {
   Checkbox,
   ListItemText,
   OutlinedInput,
+  Box,
 } from "@mui/material";
+import GiteIcon from "@mui/icons-material/Gite";
 import { useProperties } from "../../hooks/useProperties";
 import { useSession } from "next-auth/react";
 import { propertySchema } from "../Validations/propertyValidation";
 import { PropertyData } from "../../../app/types/property";
 import { useCustomerContext } from "../../../app/contexts/CustomerContext";
+import { usePropertyContext } from "../../../app/contexts/PropertyContext";
 import EnhancedCustomerSelection from "../EnhancedCustomerSelection";
 interface PropertyFormProps {
   open: boolean;
@@ -34,6 +37,7 @@ interface PropertyFormProps {
 }
 
 const PropertyForm: React.FC<PropertyFormProps> = ({ open, onClose }) => {
+  const { addProperty } = usePropertyContext();
   const { customers } = useCustomerContext();
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -66,7 +70,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ open, onClose }) => {
   const onSubmit = async (data: PropertyData) => {
     setIsSubmitting(true);
     try {
-      await createProperty(data);
+      const newProperty = await createProperty(data);
+      addProperty(newProperty); // Añade la nueva propiedad al contexto
       setSnackbar({
         open: true,
         message: "Property created successfully",
@@ -105,7 +110,11 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ open, onClose }) => {
             fontWeight: "bold",
           }}
         >
-          New Property
+          {" "}
+          <Box display="flex" alignItems="center" justifyContent="center">
+            <GiteIcon sx={{ mr: 1 }} /> {/* Margen a la derecha del icono */}
+            New Property
+          </Box>
         </DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>

@@ -5,10 +5,16 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import EditIcon from "@mui/icons-material/Edit";
 import ShareIcon from "@mui/icons-material/Share";
 import { ClaimsData } from "../../../app/types/claims";
+import Link from "next/link";
+
 interface ClaimDetailsProps {
   claim: ClaimsData | null;
 }
+
 const ClaimHeader: React.FC<ClaimDetailsProps> = ({ claim }) => {
+  const theme = useTheme();
+  const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
+
   if (!claim) {
     return (
       <Paper elevation={3} sx={{ p: 5, mb: 7 }}>
@@ -18,9 +24,6 @@ const ClaimHeader: React.FC<ClaimDetailsProps> = ({ claim }) => {
       </Paper>
     );
   }
-
-  const theme = useTheme();
-  const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
 
   return (
     <Box
@@ -65,17 +68,17 @@ const ClaimHeader: React.FC<ClaimDetailsProps> = ({ claim }) => {
         >
           Scope Sheet
         </Button>
-
-        <Button
-          variant="contained"
-          color="warning"
-          fullWidth={isMdDown}
-          startIcon={<EditIcon />}
-          size={isMdDown ? "small" : "medium"}
-        >
-          Edit
-        </Button>
-
+        <Link href={`/dashboard/claims/${claim.uuid}/edit`} passHref>
+          <Button
+            variant="contained"
+            color="warning"
+            fullWidth={isMdDown}
+            startIcon={<EditIcon />}
+            size={isMdDown ? "small" : "medium"}
+          >
+            Edit
+          </Button>
+        </Link>
         <Button
           variant="contained"
           fullWidth={isMdDown}

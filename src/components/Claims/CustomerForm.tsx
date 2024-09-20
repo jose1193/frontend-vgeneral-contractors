@@ -15,7 +15,9 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  Box,
 } from "@mui/material";
+import PermContactCalendarIcon from "@mui/icons-material/PermContactCalendar";
 import { useCustomers } from "../../hooks/useCustomers";
 import { useSession } from "next-auth/react";
 import { customerSchema } from "../../components/Validations/customersValidation";
@@ -94,7 +96,9 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
             fontWeight: "bold",
           }}
         >
-          New Customer
+          <Box display="flex" alignItems="center" justifyContent="center">
+            <PermContactCalendarIcon sx={{ mr: 1 }} /> New Customer
+          </Box>
         </DialogTitle>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>

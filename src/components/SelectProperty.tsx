@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Controller, Control } from "react-hook-form";
 import {
   FormControl,
@@ -8,49 +8,18 @@ import {
   FormHelperText,
 } from "@mui/material";
 import { PropertyData } from "../../app/types/property";
-import { checkPropertiesAvailable } from "../../app/lib/actions/claimsActions";
-import { useSession } from "next-auth/react";
+import { usePropertyContext } from "../../app/contexts/PropertyContext";
 
 interface SelectPropertyProps {
   control: Control<any>;
 }
 
 const SelectProperty: React.FC<SelectPropertyProps> = ({ control }) => {
-  const { data: session } = useSession();
-  const [properties, setProperties] = useState<PropertyData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { properties, loading, error } = usePropertyContext();
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        setLoading(true);
-        const token = session?.accessToken as string;
-        const response = await checkPropertiesAvailable(token);
-        console.log("Fetched properties response:", response);
-
-        if (response.success && Array.isArray(response.data)) {
-          setProperties(response.data);
-          setError(null);
-        } else {
-          console.error(
-            "Fetched data is not in the expected format:",
-            response
-          );
-          setProperties([]);
-          setError("Received invalid data format");
-        }
-      } catch (err) {
-        console.error("Error fetching properties:", err);
-        setProperties([]);
-        setError("Failed to fetch properties");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProperties();
-  }, [session?.accessToken]);
+  const formatPropertyLabel = (option: PropertyData): string => {
+    return `${option.property_address.toUpperCase()}, ${option.property_city.toUpperCase()}, ${option.property_state.toUpperCase()} ${option.property_postal_code.toUpperCase()}, ${option.property_country.toUpperCase()}`;
+  };
 
   return (
     <Controller
@@ -61,17 +30,18 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({ control }) => {
         fieldState: { error: fieldError },
       }) => (
         <FormControl fullWidth>
-          <Autocomplete
+          <Autocomplete<PropertyData, false, false, false>
             {...rest}
             options={properties}
-            getOptionLabel={(option) => {
+            getOptionLabel={(option: PropertyData | string): string => {
               if (typeof option === "string") {
-                return option;
+                return option.toUpperCase();
               }
-
-              // Concatenar los campos para mostrar
-              return `${option.property_address}, ${option.property_city}, ${option.property_state} ${option.property_postal_code}, ${option.property_country}`;
+              return formatPropertyLabel(option);
             }}
+            renderOption={(props, option: PropertyData) => (
+              <li {...props}>{formatPropertyLabel(option)}</li>
+            )}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -92,13 +62,14 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({ control }) => {
               />
             )}
             loading={loading}
-            onChange={(_, newValue) => {
+            onChange={(_, newValue: PropertyData | null) => {
               onChange(newValue ? newValue.id : null);
             }}
             value={properties.find((property) => property.id === value) || null}
-            isOptionEqualToValue={(option, value) =>
-              option.id === (value?.id ?? value)
-            }
+            isOptionEqualToValue={(
+              option: PropertyData,
+              value: PropertyData | string
+            ) => option.id === (typeof value === "string" ? value : value.id)}
           />
           {error && <FormHelperText error>{error}</FormHelperText>}
         </FormControl>
