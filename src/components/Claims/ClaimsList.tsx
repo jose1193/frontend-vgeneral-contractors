@@ -478,4 +478,9 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
   );
 };
 
-export default withRoleProtection(ClaimsList, ["Super Admin"]);
+export default withRoleProtection(ClaimsList, [
+  "Super Admin",
+  "Admin",
+  "Manager",
+  "Lead",
+]);

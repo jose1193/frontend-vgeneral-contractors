@@ -18,8 +18,6 @@ const ClaimsPage = () => {
   const { claims, loading, error, deleteClaim, restoreClaim } =
     useClaims(token);
 
-  if (error) return <div>Error: {error}</div>;
-
   return (
     <Suspense>
       <Box
