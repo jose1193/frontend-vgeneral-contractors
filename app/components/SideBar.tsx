@@ -55,10 +55,12 @@ import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import DocumentScannerIcon from "@mui/icons-material/DocumentScanner";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ROLE_PERMISSIONS } from "../../src/config/roles";
+import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import RoleGuard from "@/components/RoleGuard";
 import Image from "next/image";
 
@@ -285,6 +287,11 @@ export default function MiniDrawer() {
           name: "Type Damages",
           href: "/dashboard/type-damages",
           icon: <WarningIcon />,
+        },
+        {
+          name: "Company",
+          href: "/dashboard/company-signature",
+          icon: <DriveFileRenameOutlineIcon />,
         },
       ],
     },

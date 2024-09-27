@@ -1,11 +1,18 @@
 import { Box, Skeleton } from "@mui/material";
 
 const DataSkeletonList = () => {
-  const rows = 5; // Number of skeleton rows to display
-  const columns = 4; // Number of columns in your data grid
+  const rows = 5;
+  const columns = 4;
 
   return (
-    <Box sx={{ width: "100%", overflow: "hidden" }}>
+    <Box
+      sx={{
+        width: "100%",
+        overflow: "hidden",
+        marginLeft: -3,
+        p: { xs: 3, sm: 3, md: 2, lg: 4 },
+      }}
+    >
       {/* Header */}
       <Box sx={{ display: "flex", mb: 2 }}>
         {[...Array(columns)].map((_, index) => (
