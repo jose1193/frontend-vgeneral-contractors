@@ -10,17 +10,17 @@ import {
   CircularProgress,
   Grid,
   Snackbar,
+  Alert,
   Typography,
 } from "@mui/material";
 import { CompanySignatureData } from "../../../app/types/company-signature";
 import { companySignatureValidation } from "../Validations/companySignatureValidation";
+import useFormSnackbar from "../../hooks/useFormSnackbar";
 
-const Alert = lazy(() => import("@mui/material/Alert"));
 const PhoneInputField = lazy(
   () => import("../../../app/components/PhoneInputField")
 );
 const SignaturePad = lazy(() => import("../../../app/components/SignaturePad"));
-import type { SignaturePadRef } from "../../../app/components/SignaturePad";
 
 interface CompanySignatureFormProps {
   initialData?: CompanySignatureData;
@@ -32,15 +32,7 @@ const CompanySignatureForm: React.FC<CompanySignatureFormProps> = ({
   onSubmit,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error";
-  }>({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+  const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
 
   const methods = useForm<CompanySignatureData>({
     defaultValues: initialData || {},
@@ -54,15 +46,10 @@ const CompanySignatureForm: React.FC<CompanySignatureFormProps> = ({
     control,
   } = methods;
 
-  const handleSnackbarClose = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const onSubmitHandler = async (data: CompanySignatureData) => {
     setIsSubmitting(true);
     try {
       await onSubmit(data);
-      console.log("submitting form:", data);
       setSnackbar({
         open: true,
         message: "Signature submitted successfully!",
@@ -75,8 +62,6 @@ const CompanySignatureForm: React.FC<CompanySignatureFormProps> = ({
           error instanceof Error ? error.message : "An unknown error occurred",
         severity: "error",
       });
-      console.error("Error submitting form:", error);
-      console.log("submitting form:", data);
     } finally {
       setIsSubmitting(false);
     }
@@ -105,7 +90,7 @@ const CompanySignatureForm: React.FC<CompanySignatureFormProps> = ({
             </Grid>
             <Grid item xs={12} sm={6}>
               <Suspense fallback={<CircularProgress />}>
-                <PhoneInputField name="phone" label="" />
+                <PhoneInputField name="phone" label="Phone" />
               </Suspense>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -169,12 +154,7 @@ const CompanySignatureForm: React.FC<CompanySignatureFormProps> = ({
               <Typography
                 variant="body1"
                 component="label"
-                sx={{
-                  display: "block",
-                  fontWeight: "500",
-                  mb: 3,
-                  mt: 2,
-                }}
+                sx={{ display: "block", fontWeight: "500", mb: 3, mt: 2 }}
               >
                 Signature Company
               </Typography>

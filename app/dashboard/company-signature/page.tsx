@@ -1,10 +1,9 @@
-// src/app/company-signature/page.tsx
 "use client";
 
 import React, { Suspense } from "react";
 import { useCompanySignatures } from "../../../src/hooks/useCompanySignature";
 import CompanySignaturesList from "../../../src/components/Company-Signature/CompanySignaturesList";
-import { Button, Box, Typography } from "@mui/material";
+import { Button, Box, Typography, CircularProgress } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
@@ -44,18 +43,10 @@ const CompanySignaturesPage = () => {
           </Button>
         </Link>
 
-        {companySignatures.length === 0 ? (
-          <Box sx={{ textAlign: "center", mt: 5 }}>
-            <Typography variant="h6" component="p" color="textSecondary">
-              No company signatures found.
-            </Typography>
-          </Box>
-        ) : (
-          <CompanySignaturesList
-            companySignatures={companySignatures}
-            onDelete={deleteCompanySignature}
-          />
-        )}
+        <CompanySignaturesList
+          companySignatures={companySignatures}
+          onDelete={deleteCompanySignature}
+        />
       </Box>
     </Suspense>
   );
