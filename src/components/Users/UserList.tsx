@@ -9,7 +9,6 @@ import {
   Box,
   Grid,
   Paper,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -17,20 +16,22 @@ import {
   Button,
   Snackbar,
   Typography,
+  Chip,
+  CircularProgress,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import RestoreIcon from "@mui/icons-material/Restore";
 import Alert from "@mui/material/Alert";
 import Link from "next/link";
 import { useTheme } from "@mui/material/styles";
-import RestoreIcon from "@mui/icons-material/Restore";
-
 import { withRoleProtection } from "../withRoleProtection";
+
 interface UsersListProps {
   users: UserData[];
-  onDelete: (uuid: string) => void;
-  onRestore: (uuid: string) => void;
+  onDelete: (uuid: string) => Promise<void>;
+  onRestore: (uuid: string) => Promise<void>;
 }
 
 const UsersList: React.FC<UsersListProps> = ({
@@ -40,9 +41,9 @@ const UsersList: React.FC<UsersListProps> = ({
 }) => {
   const theme = useTheme();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteDialogOpenRestore, setDeleteDialogOpenRestore] = useState(false);
-
-  const [userToDelete, setUserToDelete] = useState<any>(null);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [userToAction, setUserToAction] = useState<UserData | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -53,49 +54,59 @@ const UsersList: React.FC<UsersListProps> = ({
     severity: "success",
   });
 
-  const handleDeleteClick = (user: any) => {
-    setUserToDelete(user);
+  const handleDeleteClick = (user: UserData) => {
+    setUserToAction(user);
     setDeleteDialogOpen(true);
   };
 
-  const handleRestoreClick = (user: any) => {
-    setUserToDelete(user);
-    setDeleteDialogOpenRestore(true);
+  const handleRestoreClick = (user: UserData) => {
+    setUserToAction(user);
+    setRestoreDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
-    try {
-      await onDelete(userToDelete.uuid);
-      setDeleteDialogOpen(false);
-      setSnackbar({
-        open: true,
-        message: "User deleted successfully",
-        severity: "success",
-      });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Failed to delete user",
-        severity: "error",
-      });
+    if (userToAction?.uuid) {
+      setIsSubmitting(true);
+      try {
+        await onDelete(userToAction.uuid);
+        setDeleteDialogOpen(false);
+        setSnackbar({
+          open: true,
+          message: "User suspended successfully",
+          severity: "success",
+        });
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: "Failed to suspend user",
+          severity: "error",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
-  const handleDeleteConfirmRestore = async () => {
-    try {
-      await onRestore(userToDelete.uuid);
-      setDeleteDialogOpenRestore(false);
-      setSnackbar({
-        open: true,
-        message: "User restored successfully",
-        severity: "success",
-      });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Failed to delete user",
-        severity: "error",
-      });
+  const handleRestoreConfirm = async () => {
+    if (userToAction?.uuid) {
+      setIsSubmitting(true);
+      try {
+        await onRestore(userToAction.uuid);
+        setRestoreDialogOpen(false);
+        setSnackbar({
+          open: true,
+          message: "User restored successfully",
+          severity: "success",
+        });
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: "Failed to restore user",
+          severity: "error",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -103,61 +114,112 @@ const UsersList: React.FC<UsersListProps> = ({
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const IconButtonStyled = ({ color, onClick, children }: any) => (
-    <IconButton
-      sx={{
-        padding: "8px",
-        borderRadius: "50%",
-        "&:hover": {},
-        marginRight: "8px",
-      }}
-      onClick={onClick}
-    >
-      {children}
-    </IconButton>
-  );
   const columns: GridColDef[] = [
-    { field: "user_role", headerName: "Role", width: 150 },
-    { field: "name", headerName: "Name", width: 150 },
-    { field: "last_name", headerName: "Last Name", width: 150 },
-    { field: "email", headerName: "Email", width: 200 },
-    { field: "phone", headerName: "Phone", width: 150 },
-
-    { field: "country", headerName: "Country", width: 150 },
+    {
+      field: "username",
+      headerName: "Username",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "name",
+      headerName: "Name",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "last_name",
+      headerName: "Last Name",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "email",
+      headerName: "Email",
+      width: 200,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "phone",
+      headerName: "Phone",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "city",
+      headerName: "City",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "state",
+      headerName: "State",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "user_role",
+      headerName: "Role",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 120,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color={params.value === "Active" ? "success" : "error"}
+        />
+      ),
+    },
     {
       field: "actions",
       headerName: "Actions",
       width: 250,
+      headerAlign: "center",
+      align: "center",
       renderCell: (params) => (
-        <>
-          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <Link href={`/dashboard/users/${params.row.uuid}`} passHref>
-              <Button
-                size="small"
-                variant="contained"
-                sx={{
-                  minWidth: "unset",
-                  padding: "8px 12px",
-                  backgroundColor: "#2563eb",
-                  "&:hover": { backgroundColor: "#3b82f6" },
-                }}
-              >
-                <VisibilityIcon fontSize="small" />
-              </Button>
-            </Link>
-            <Link href={`/dashboard/users/${params.row.uuid}/edit`} passHref>
-              <Button
-                size="small"
-                variant="contained"
-                color="warning"
-                sx={{
-                  minWidth: "unset",
-                  padding: "8px 12px",
-                }}
-              >
-                <EditIcon fontSize="small" />
-              </Button>
-            </Link>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <Link href={`/dashboard/users/${params.row.uuid}`} passHref>
+            <Button
+              size="small"
+              variant="contained"
+              sx={{
+                minWidth: "unset",
+                padding: "8px 12px",
+                backgroundColor: "#2563eb",
+                "&:hover": { backgroundColor: "#3b82f6" },
+              }}
+            >
+              <VisibilityIcon fontSize="small" />
+            </Button>
+          </Link>
+          <Link href={`/dashboard/users/${params.row.uuid}/edit`} passHref>
+            <Button
+              size="small"
+              variant="contained"
+              color="warning"
+              sx={{
+                minWidth: "unset",
+                padding: "8px 12px",
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </Button>
+          </Link>
+          {params.row.status === "Active" && (
             <Button
               size="small"
               variant="contained"
@@ -170,6 +232,8 @@ const UsersList: React.FC<UsersListProps> = ({
             >
               <DeleteIcon fontSize="small" />
             </Button>
+          )}
+          {params.row.status === "Suspended" && (
             <Button
               size="small"
               variant="contained"
@@ -182,14 +246,15 @@ const UsersList: React.FC<UsersListProps> = ({
             >
               <RestoreIcon fontSize="small" />
             </Button>
-          </Box>
-        </>
+          )}
+        </Box>
       ),
     },
   ];
 
   const rows = users.map((user) => ({
     user_role: user.user_role,
+    username: user.username,
     id: user.uuid,
     uuid: user.uuid,
     name: user.name,
@@ -197,7 +262,9 @@ const UsersList: React.FC<UsersListProps> = ({
     email: user.email,
     phone: user.phone,
     city: user.city,
+    state: user.state,
     country: user.country,
+    status: user.deleted_at ? "Suspended" : "Active",
   }));
 
   return (
@@ -257,7 +324,7 @@ const UsersList: React.FC<UsersListProps> = ({
             fontWeight: "bold",
           }}
         >
-          Confirm Delete
+          Confirm Suspend
         </DialogTitle>
         <DialogContent>
           <Typography
@@ -281,7 +348,7 @@ const UsersList: React.FC<UsersListProps> = ({
           >
             Name:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {userToDelete?.name}
+              {userToAction?.name} {userToAction?.last_name}
             </span>
           </Typography>
           <Typography
@@ -293,8 +360,7 @@ const UsersList: React.FC<UsersListProps> = ({
           >
             Email:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {" "}
-              {userToDelete?.email}
+              {userToAction?.email}
             </span>
           </Typography>
         </DialogContent>
@@ -304,14 +370,23 @@ const UsersList: React.FC<UsersListProps> = ({
             variant="contained"
             onClick={handleDeleteConfirm}
             color="error"
+            disabled={isSubmitting}
           >
-            Delete
+            {isSubmitting ? (
+              <>
+                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                Suspending...
+              </>
+            ) : (
+              "Suspend"
+            )}
           </Button>
         </DialogActions>
       </Dialog>
+
       <Dialog
-        open={deleteDialogOpenRestore}
-        onClose={() => setDeleteDialogOpenRestore(false)}
+        open={restoreDialogOpen}
+        onClose={() => setRestoreDialogOpen(false)}
       >
         <DialogTitle
           sx={{
@@ -334,7 +409,7 @@ const UsersList: React.FC<UsersListProps> = ({
               fontWeight: "bold",
             }}
           >
-            Are you sure you want to Restore this user?
+            Are you sure you want to restore this user?
           </Typography>
           <Typography
             variant="body1"
@@ -346,7 +421,7 @@ const UsersList: React.FC<UsersListProps> = ({
           >
             Name:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {userToDelete?.name}
+              {userToAction?.name} {userToAction?.last_name}
             </span>
           </Typography>
           <Typography
@@ -358,21 +433,26 @@ const UsersList: React.FC<UsersListProps> = ({
           >
             Email:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {" "}
-              {userToDelete?.email}
+              {userToAction?.email}
             </span>
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpenRestore(false)}>
-            Cancel
-          </Button>
+          <Button onClick={() => setRestoreDialogOpen(false)}>Cancel</Button>
           <Button
             variant="contained"
-            onClick={handleDeleteConfirmRestore}
             color="success"
+            onClick={handleRestoreConfirm}
+            disabled={isSubmitting}
           >
-            Restore
+            {isSubmitting ? (
+              <>
+                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                Restoring...
+              </>
+            ) : (
+              "Restore"
+            )}
           </Button>
         </DialogActions>
       </Dialog>

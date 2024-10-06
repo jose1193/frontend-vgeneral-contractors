@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import {
@@ -24,6 +24,8 @@ import { customerSchema } from "../../components/Validations/customersValidation
 import { CustomerData } from "../../../app/types/customer";
 import { useCustomerContext } from "../../../app/contexts/CustomerContext";
 import PhoneInputField from "../../../app/components/PhoneInputField";
+import useCapitalizeWords from "../../hooks/useCapitalizeWords";
+import EmailCustomerInputField from "../Customers/EmailCustomerInputField";
 
 interface CustomerFormProps {
   open: boolean;
@@ -31,6 +33,7 @@ interface CustomerFormProps {
 }
 
 const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
+  const capitalizeWords = useCapitalizeWords();
   const { addCustomer, refreshCustomers } = useCustomerContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -110,21 +113,39 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
             <DialogContent>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Name"
-                    {...methods.register("name")}
-                    error={!!errors.name}
-                    helperText={errors.name?.message}
+                  <Controller
+                    name="name"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        label="Name"
+                        onChange={(e) =>
+                          field.onChange(capitalizeWords(e.target.value))
+                        }
+                        error={!!errors.name}
+                        helperText={errors.name?.message}
+                      />
+                    )}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Last Name"
-                    {...methods.register("last_name")}
-                    error={!!errors.last_name}
-                    helperText={errors.last_name?.message}
+                  <Controller
+                    name="last_name"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        label="Last Name"
+                        onChange={(e) =>
+                          field.onChange(capitalizeWords(e.target.value))
+                        }
+                        error={!!errors.last_name}
+                        helperText={errors.last_name?.message}
+                      />
+                    )}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -134,22 +155,39 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
                   <PhoneInputField name="home_phone" label="Home Phone" />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    type="email"
-                    {...methods.register("email")}
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
+                  <Controller
+                    name="email"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <EmailCustomerInputField
+                        field={field}
+                        form={{
+                          touched: { email: fieldState.isTouched },
+                          errors: { email: fieldState.error?.message },
+                          setFieldValue: (name: string, value: string) =>
+                            field.onChange(value),
+                        }}
+                        uuid=""
+                      />
+                    )}
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Occupation"
-                    {...methods.register("occupation")}
-                    error={!!errors.occupation}
-                    helperText={errors.occupation?.message}
+                  <Controller
+                    name="occupation"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        label="Occupation"
+                        onChange={(e) =>
+                          field.onChange(capitalizeWords(e.target.value))
+                        }
+                        error={!!errors.occupation}
+                        helperText={errors.occupation?.message}
+                      />
+                    )}
                   />
                 </Grid>
               </Grid>

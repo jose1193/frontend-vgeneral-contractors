@@ -10,7 +10,7 @@ import { Button, Box, Typography } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
-
+import ButtonCreate from "../../components/ButtonCreate";
 const RolesPage = () => {
   const { data: session, update } = useSession();
 
@@ -49,15 +49,7 @@ const RolesPage = () => {
         </Typography>
 
         <Link href="/dashboard/roles/create" passHref>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              ml: 4,
-            }}
-          >
-            Create Role
-          </Button>
+          <ButtonCreate sx={{ ml: 4 }}>Create Role</ButtonCreate>
         </Link>
         <RoleList roles={roles} onDelete={deleteRole} />
       </Box>

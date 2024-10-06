@@ -9,6 +9,8 @@ import { Button, Container, Typography, Box, Paper } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import RoleGuard from "@/components/RoleGuard";
+import UserInfo from "@/components/UserInfo";
+import ButtonCreate from "../../components/ButtonCreate";
 const UsersPage = () => {
   const { data: session, update } = useSession();
 
@@ -46,15 +48,7 @@ const UsersPage = () => {
       </Typography>
 
       <Link href="/dashboard/users/create" passHref>
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{
-            ml: 4,
-          }}
-        >
-          Create User
-        </Button>
+        <ButtonCreate sx={{ ml: 4 }}>Create User</ButtonCreate>
       </Link>
       <UsersList users={users} onDelete={deleteUser} onRestore={restoreUser} />
     </Box>

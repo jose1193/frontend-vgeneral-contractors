@@ -1,3 +1,4 @@
+import { CustomerSignatureData } from "./customer-signature";
 export interface CustomerData {
   id?: number;
   uuid?: string;
@@ -7,6 +8,9 @@ export interface CustomerData {
   home_phone?: string | null;
   email: string;
   occupation?: string | null;
+
   created_at?: string | null;
-  update_at?: string | null;
+  updated_at?: string | null;
+  deleted_at?: string | null;
+  signature_customer?: CustomerSignatureData;
 }

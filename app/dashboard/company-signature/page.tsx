@@ -7,7 +7,7 @@ import { Button, Box, Typography, CircularProgress } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
-
+import ButtonCreate from "../../components/ButtonCreate";
 const CompanySignaturesPage = () => {
   const { data: session } = useSession();
   const token = session?.accessToken as string;
@@ -38,9 +38,7 @@ const CompanySignaturesPage = () => {
         </Typography>
 
         <Link href="/dashboard/company-signature/create" passHref>
-          <Button variant="contained" color="primary" sx={{ ml: 4 }}>
-            Create Company Signature
-          </Button>
+          <ButtonCreate sx={{ ml: 4 }}> Create Company Signature</ButtonCreate>
         </Link>
 
         <CompanySignaturesList

@@ -10,6 +10,7 @@ import { Button, Container, Typography, Box, Paper } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
+import ButtonCreate from "../../components/ButtonCreate";
 const PermissionsPage = () => {
   const { data: session, update } = useSession();
 
@@ -49,15 +50,7 @@ const PermissionsPage = () => {
         </Typography>
 
         <Link href="/dashboard/permissions/create" passHref>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              ml: 4,
-            }}
-          >
-            Create Permission
-          </Button>
+          <ButtonCreate sx={{ ml: 4 }}> Create Permission</ButtonCreate>
         </Link>
         <PermissionList permissions={permissions} onDelete={deletePermission} />
       </Box>

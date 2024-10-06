@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import { useSession } from "next-auth/react";
-import { checkUsersAvailable } from "../../app/lib/actions/claimsActions"; // Ajusta la importación según tu estructura de proyecto
+import { checkUsersAvailable } from "../../app/lib/actions/claimsActions";
 
 interface PublicAdjuster {
   id: string;

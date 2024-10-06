@@ -14,6 +14,7 @@ export const ROLE_ROUTES = {
   Admin: "/dashboard/admin",
   Manager: "/dashboard/manager",
   Lead: "/dashboard/lead",
+  Salesperson: "/dashboard/salesperson",
   "Technical Services": "/dashboard/technical-services",
 };
 
@@ -24,5 +25,6 @@ export const ROLE_PERMISSIONS = {
   Admin: ["/dashboard/admin", "/dashboard/manager", "/dashboard/lead"],
   Manager: ["/dashboard/manager"],
   Lead: ["/dashboard/lead"],
+  Salesperson: ["/dashboard/salesperson"],
   "Technical Services": ["/dashboard/technical-services"],
 };

@@ -56,6 +56,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import DocumentScannerIcon from "@mui/icons-material/DocumentScanner";
+import BorderColorIcon from "@mui/icons-material/BorderColor";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -170,19 +171,31 @@ export default function MiniDrawer() {
         "Admin",
         "Manager",
         "Technical Services",
-        "Lead",
+        "Salesperson",
       ],
     },
     {
-      name: "Prospect",
-      href: "/",
-      icon: <GpsFixedIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager"],
+      name: "Profile",
+      href: "/dashboard/profile",
+      icon: <AccountCircle />,
+      allowedRoles: [
+        "Super Admin",
+        "Admin",
+        "Manager",
+        "Technical Services",
+        "Salesperson",
+      ],
+    },
+    {
+      name: "Customers",
+      href: "/dashboard/customers",
+      icon: <ContactsIcon />,
+      allowedRoles: ["Super Admin", "Admin", "Manager", "Salesperson"],
     },
     {
       name: "Claims",
       icon: <PostAddIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager", "Lead"],
+      allowedRoles: ["Super Admin", "Admin", "Manager", "Salesperson"],
       subItems: [
         {
           name: "New Claim",
@@ -195,6 +208,18 @@ export default function MiniDrawer() {
           icon: <AssignmentIcon />,
         },
       ],
+    },
+    {
+      name: "Sign. SalesPerson",
+      href: "/dashboard/salesperson-signature",
+      icon: <BorderColorIcon />,
+      allowedRoles: ["Super Admin", "Salesperson"],
+    },
+    {
+      name: "Prospect",
+      href: "/",
+      icon: <GpsFixedIcon />,
+      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
 
     {
@@ -225,15 +250,10 @@ export default function MiniDrawer() {
         "Admin",
         "Manager",
         "Technical Services",
-        "Lead",
+        "Salesperson",
       ],
     },
-    {
-      name: "Contacs",
-      href: "/",
-      icon: <ContactsIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager"],
-    },
+
     {
       name: "Emails",
       href: "/",
@@ -491,7 +511,7 @@ export default function MiniDrawer() {
       <AppBar
         position="fixed"
         open={open}
-        elevation={4} // Esto agrega una sombra predefinida
+        elevation={4}
         sx={{
           //boxShadow: "0 4px 5px 0 rgba(33, 33, 33, 0.5)", // Sombra personalizada más oscura
           borderBottom: `1px solid rgba(255, 255, 255, 0.1)`,

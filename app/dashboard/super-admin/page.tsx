@@ -9,7 +9,7 @@ import ClaimsDashboard from "@/components/dashboard/ClaimsDashboard";
 import { Suspense } from "react";
 import { CircularProgress } from "@mui/material";
 import RoleGuard from "../../../src/components/RoleGuard";
-
+import Footer from "../../components/Footer";
 export default function SuperAdminDashboardPage() {
   return (
     <RoleGuard allowedRoles={["Super Admin"]}>
@@ -115,22 +115,8 @@ function SuperAdminDashboardContent() {
         </Grid>
       </Grid>
 
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        align="center"
-        sx={{ mt: 8, mb: 4 }}
-      >
-        {`Copyright © ${new Date().getFullYear()} | `}
-        <Link
-          href="https://vgeneralcontractors.com/"
-          color="primary"
-          sx={{ textDecoration: "none", fontWeight: "bold", ml: 1, mr: 1 }}
-        >
-          {process.env.NEXT_PUBLIC_COMPANY_NAME || "V General Contractors"}
-        </Link>
-        {" | V.1.0"}
-      </Typography>
+      {/* Footer */}
+      <Footer />
     </Box>
   );
 }

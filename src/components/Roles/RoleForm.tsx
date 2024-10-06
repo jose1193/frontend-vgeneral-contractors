@@ -57,7 +57,7 @@ export const RoleForm: React.FC<RoleFormProps> = ({
           render={({ field, fieldState: { error } }) => (
             <TextField
               {...field}
-              label="Name"
+              label="Role Name"
               error={!!error}
               helperText={error?.message}
             />

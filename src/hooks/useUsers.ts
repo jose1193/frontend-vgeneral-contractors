@@ -1,6 +1,4 @@
-// src/hooks/useUsers.ts
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { UserData } from "../../app/types/user";
 import * as usersActions from "../../app/lib/actions/usersActions";
 
@@ -9,31 +7,28 @@ export const useUsers = (token: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await usersActions.getUsers(token);
-        console.log("Fetched users response:", response);
+  const fetchUsers = useCallback(async () => {
+    try {
+      const response = await usersActions.getUsers(token);
+      console.log("Fetched users response:", response);
 
-        if (response.success && Array.isArray(response.data)) {
-          setUsers(response.data);
-        } else {
-          console.error(
-            "Fetched data is not in the expected format:",
-            response
-          );
-          setError("Received invalid data format");
-        }
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        setError("Failed to fetch users");
-        setLoading(false);
+      if (response.success && Array.isArray(response.data)) {
+        setUsers(response.data);
+      } else {
+        console.error("Fetched data is not in the expected format:", response);
+        setError("Received invalid data format");
       }
-    };
-
-    fetchUsers();
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      setError("Failed to fetch users");
+      setLoading(false);
+    }
   }, [token]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const createUser = async (userData: UserData) => {
     try {
@@ -53,25 +48,45 @@ export const useUsers = (token: string) => {
     }
   };
 
-  const deleteUser = async (uuid: string) => {
-    try {
-      const deletedUser = await usersActions.deleteUser(token, uuid);
-      setUsers(users.filter((user) => (user.uuid ? deletedUser : user)));
-    } catch (err) {
-      setError("Failed to delete user");
-    }
-  };
+  const deleteUser = useCallback(
+    async (uuid: string) => {
+      console.log("Attempting to delete user with uuid:", uuid);
+      try {
+        await usersActions.deleteUser(token, uuid);
+        console.log("User deleted successfully");
 
-  const restoreUser = async (uuid: string) => {
-    try {
-      const restoredUser = await usersActions.restoreUser(token, uuid);
-      setUsers(users.map((user) => (user.uuid === uuid ? restoredUser : user)));
-      // O si prefieres recargar toda la lista de usuarios:
-      // await fetchUsers();
-    } catch (err) {
-      setError("Failed to restore user");
-    }
-  };
+        // Update the local state
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.uuid === uuid ? { ...user, active: false } : user
+          )
+        );
+
+        // Fetch the updated list of users
+        await fetchUsers();
+      } catch (err) {
+        console.error("Error deleting user:", err);
+        setError("Failed to delete user");
+      }
+    },
+    [token, fetchUsers]
+  );
+
+  const restoreUser = useCallback(
+    async (uuid: string) => {
+      try {
+        await usersActions.restoreUser(token, uuid);
+        console.log("User restored successfully");
+
+        // Fetch the updated list of users
+        await fetchUsers();
+      } catch (err) {
+        console.error("Error restoring user:", err);
+        setError("Failed to restore user");
+      }
+    },
+    [token, fetchUsers]
+  );
 
   return {
     users,

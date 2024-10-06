@@ -10,7 +10,6 @@ import {
   Box,
   Grid,
   Paper,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -19,6 +18,7 @@ import {
   Snackbar,
   Typography,
   Chip,
+  CircularProgress,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -28,22 +28,24 @@ import Alert from "@mui/material/Alert";
 import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
 
-// Define the new Claims interface
 interface ClaimsListProps {
   claims: ClaimsData[];
-  onDelete: (uuid: string) => void;
-  onRestore: (uuid: string) => void;
+  onDelete: (uuid: string) => Promise<void>;
+  onRestore: (uuid: string) => Promise<void>;
+  userRole: string | undefined;
 }
 
 const ClaimsList: React.FC<ClaimsListProps> = ({
   claims,
   onDelete,
   onRestore,
+  userRole,
 }) => {
   const theme = useTheme();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteDialogOpenRestore, setDeleteDialogOpenRestore] = useState(false);
-  const [claimToDelete, setClaimToDelete] = useState<ClaimsData | null>(null);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [claimToAction, setClaimToAction] = useState<ClaimsData | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -55,39 +57,44 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
   });
 
   const handleDeleteClick = (claim: ClaimsData) => {
-    setClaimToDelete(claim);
+    setClaimToAction(claim);
     setDeleteDialogOpen(true);
   };
 
-  const handleRestoreClick = (claim: any) => {
-    setClaimToDelete(claim);
-    setDeleteDialogOpenRestore(true);
+  const handleRestoreClick = (claim: ClaimsData) => {
+    setClaimToAction(claim);
+    setRestoreDialogOpen(true);
   };
+
   const handleDeleteConfirm = async () => {
-    if (claimToDelete && claimToDelete.uuid) {
+    if (claimToAction?.uuid) {
+      setIsSubmitting(true);
       try {
-        await onDelete(claimToDelete.uuid);
+        await onDelete(claimToAction.uuid);
         setDeleteDialogOpen(false);
         setSnackbar({
           open: true,
-          message: "Claim deleted successfully",
+          message: "Claim suspended successfully",
           severity: "success",
         });
       } catch (error) {
         setSnackbar({
           open: true,
-          message: "Failed to delete claim",
+          message: "Failed to suspend claim",
           severity: "error",
         });
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
 
-  const handleDeleteConfirmRestore = async () => {
-    if (claimToDelete && claimToDelete.uuid) {
+  const handleRestoreConfirm = async () => {
+    if (claimToAction?.uuid) {
+      setIsSubmitting(true);
       try {
-        await onRestore(claimToDelete.uuid);
-        setDeleteDialogOpenRestore(false);
+        await onRestore(claimToAction.uuid);
+        setRestoreDialogOpen(false);
         setSnackbar({
           open: true,
           message: "Claim restored successfully",
@@ -96,12 +103,15 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
       } catch (error) {
         setSnackbar({
           open: true,
-          message: "Failed to delete claim",
+          message: "Failed to restore claim",
           severity: "error",
         });
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
+
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
@@ -151,7 +161,7 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
     },
     {
       field: "claim_status",
-      headerName: "Status",
+      headerName: "Claim Status",
       width: 130,
       headerAlign: "center",
       align: "center",
@@ -164,26 +174,34 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
           | "info"
           | "success"
           | "warning";
-        let label;
         switch (params.value) {
           case "Completed":
             color = "success";
-            label = "Completed";
             break;
           case "In Progress":
             color = "primary";
-            label = "In Progress";
             break;
           case "Pending":
-            color = "default";
-            label = "Pending";
+            color = "warning";
             break;
           default:
             color = "default";
-            label = params.value;
         }
-        return <Chip label={label} color={color} />;
+        return <Chip label={params.value} color={color} />;
       },
+    },
+    {
+      field: "data_status",
+      headerName: "Data Status",
+      width: 130,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => (
+        <Chip
+          label={params.value ? "Available" : "Suspended"}
+          color={params.value ? "success" : "error"}
+        />
+      ),
     },
     {
       field: "created_at",
@@ -198,16 +216,31 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
       width: 250,
       headerAlign: "center",
       align: "center",
-      renderCell: (params) => (
-        <>
-          <Box
-            sx={{
-              display: "flex",
-              gap: 1,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+      renderCell: (params) => {
+        if (
+          userRole === "Technical Services" ||
+          userRole === "Technical Supervisor"
+        ) {
+          return (
+            <Link href={`/dashboard/claims/${params.row.uuid}`} passHref>
+              <Button
+                size="small"
+                variant="contained"
+                sx={{
+                  minWidth: "unset",
+                  padding: "8px 12px",
+                  backgroundColor: "#2563eb",
+                  "&:hover": { backgroundColor: "#3b82f6" },
+                }}
+              >
+                <VisibilityIcon fontSize="small" />
+              </Button>
+            </Link>
+          );
+        }
+
+        return (
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             <Link href={`/dashboard/claims/${params.row.uuid}`} passHref>
               <Button
                 size="small"
@@ -235,33 +268,37 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
                 <EditIcon fontSize="small" />
               </Button>
             </Link>
-            <Button
-              size="small"
-              variant="contained"
-              color="error"
-              onClick={() => handleDeleteClick(params.row)}
-              sx={{
-                minWidth: "unset",
-                padding: "8px 12px",
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
-              color="success"
-              onClick={() => handleRestoreClick(params.row)}
-              sx={{
-                minWidth: "unset",
-                padding: "8px 12px",
-              }}
-            >
-              <RestoreIcon fontSize="small" />
-            </Button>
+            {params.row.data_status && userRole !== "Salesperson" && (
+              <Button
+                size="small"
+                variant="contained"
+                color="error"
+                onClick={() => handleDeleteClick(params.row)}
+                sx={{
+                  minWidth: "unset",
+                  padding: "8px 12px",
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </Button>
+            )}
+            {!params.row.data_status && (
+              <Button
+                size="small"
+                variant="contained"
+                color="success"
+                onClick={() => handleRestoreClick(params.row)}
+                sx={{
+                  minWidth: "unset",
+                  padding: "8px 12px",
+                }}
+              >
+                <RestoreIcon fontSize="small" />
+              </Button>
+            )}
           </Box>
-        </>
-      ),
+        );
+      },
     },
   ];
 
@@ -276,10 +313,9 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
           .map((customer) => `${customer.name} ${customer.last_name}`)
           .join(", ")
       : claim.customers || "",
-
     date_of_loss: claim.date_of_loss,
-
     claim_status: claim.claim_status,
+    data_status: !claim.deleted_at,
     created_at: claim.created_at,
   }));
 
@@ -341,7 +377,7 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
             fontWeight: "bold",
           }}
         >
-          Confirm Delete
+          Confirm Suspend
         </DialogTitle>
         <DialogContent>
           <Typography
@@ -353,7 +389,7 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
               fontWeight: "bold",
             }}
           >
-            Are you sure you want to delete this claim?
+            Are you sure you want to suspend this claim?
           </Typography>
           <Typography
             variant="body1"
@@ -365,7 +401,7 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
           >
             Claim Internal ID:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {claimToDelete?.claim_internal_id}
+              {claimToAction?.claim_internal_id}
             </span>
           </Typography>
           <Typography
@@ -378,7 +414,7 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
           >
             Policy Number:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {claimToDelete?.policy_number}
+              {claimToAction?.policy_number}
             </span>
           </Typography>
         </DialogContent>
@@ -388,14 +424,23 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
             variant="contained"
             onClick={handleDeleteConfirm}
             color="error"
+            disabled={isSubmitting}
           >
-            Delete
+            {isSubmitting ? (
+              <>
+                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                Suspending...
+              </>
+            ) : (
+              "Suspend"
+            )}
           </Button>
         </DialogActions>
       </Dialog>
+
       <Dialog
-        open={deleteDialogOpenRestore}
-        onClose={() => setDeleteDialogOpenRestore(false)}
+        open={restoreDialogOpen}
+        onClose={() => setRestoreDialogOpen(false)}
       >
         <DialogTitle
           sx={{
@@ -418,7 +463,7 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
               fontWeight: "bold",
             }}
           >
-            Are you sure you want to Restore this Claim?
+            Are you sure you want to restore this claim?
           </Typography>
           <Typography
             variant="body1"
@@ -430,7 +475,7 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
           >
             Claim Internal ID:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {claimToDelete?.claim_internal_id}
+              {claimToAction?.claim_internal_id}
             </span>
           </Typography>
           <Typography
@@ -442,24 +487,30 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
           >
             Policy Number:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {" "}
-              {claimToDelete?.policy_number}
+              {claimToAction?.policy_number}
             </span>
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpenRestore(false)}>
-            Cancel
-          </Button>
+          <Button onClick={() => setRestoreDialogOpen(false)}>Cancel</Button>
           <Button
             variant="contained"
-            onClick={handleDeleteConfirmRestore}
             color="success"
+            onClick={handleRestoreConfirm}
+            disabled={isSubmitting}
           >
-            Restore
+            {isSubmitting ? (
+              <>
+                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                Restoring...
+              </>
+            ) : (
+              "Restore"
+            )}
           </Button>
         </DialogActions>
       </Dialog>
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={5000}
@@ -482,5 +533,6 @@ export default withRoleProtection(ClaimsList, [
   "Super Admin",
   "Admin",
   "Manager",
-  "Lead",
+  "Technical Services",
+  "Technical Supervisor",
 ]);

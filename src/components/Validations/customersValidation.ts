@@ -3,8 +3,21 @@ import * as yup from "yup";
 
 export const customerSchema = yup.object().shape({
   id: yup.number().optional(),
-  name: yup.string().required("Name is required"),
-  last_name: yup.string().required("Last name is required"),
+  name: yup
+    .string()
+    .matches(
+      /^[a-zA-ZÀ-ÿ\s'-]+$/,
+      "Name should only contain letters, spaces, apostrophes, and hyphens"
+    )
+    .required("Name is required"),
+
+  last_name: yup
+    .string()
+    .matches(
+      /^[a-zA-ZÀ-ÿ\s'-]+$/,
+      "Last name should only contain letters, spaces, apostrophes, and hyphens"
+    )
+    .required("Last name is required"),
   cell_phone: yup
     .string()
     .nullable()
@@ -23,6 +36,6 @@ export const customerSchema = yup.object().shape({
     ),
 
   created_at: yup.string().nullable(),
-  update_at: yup.string().nullable(),
+  updated_at: yup.string().nullable(),
   delete_at: yup.string().nullable(),
 });

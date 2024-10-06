@@ -53,5 +53,5 @@ export interface ClaimsData {
   property: PropertyData;
   created_at?: string;
   updated_at?: string;
-  delete_at?: string;
+  deleted_at?: string;
 }

@@ -10,11 +10,13 @@ import { Button, Box, Typography } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
-
+import UserInfo from "@/components/UserInfo";
+import ButtonCreate from "../../components/ButtonCreate";
 const ClaimsPage = () => {
   const { data: session, update } = useSession();
 
   const token = session?.accessToken as string;
+  const userRole = session?.user?.user_role;
   const { claims, loading, error, deleteClaim, restoreClaim } =
     useClaims(token);
 
@@ -48,20 +50,13 @@ const ClaimsPage = () => {
         </Typography>
 
         <Link href="/dashboard/claims/create" passHref>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              ml: 4,
-            }}
-          >
-            Create Claim
-          </Button>
+          <ButtonCreate sx={{ ml: 4 }}> Create Claim </ButtonCreate>
         </Link>
         <ClaimsList
           claims={claims}
           onDelete={deleteClaim}
           onRestore={restoreClaim}
+          userRole={userRole}
         />
       </Box>
     </Suspense>

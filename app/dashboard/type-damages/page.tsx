@@ -10,7 +10,7 @@ import { Button, Box, Typography } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
-
+import ButtonCreate from "../../components/ButtonCreate";
 const TypeDamagesPage = () => {
   const { data: session, update } = useSession();
 
@@ -50,15 +50,7 @@ const TypeDamagesPage = () => {
         </Typography>
 
         <Link href="/dashboard/type-damages/create" passHref>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              ml: 4,
-            }}
-          >
-            Create Type Damage
-          </Button>
+          <ButtonCreate sx={{ ml: 4 }}>Create Type Damage</ButtonCreate>
         </Link>
         <TypeDamagesList
           typeDamages={typeDamages}

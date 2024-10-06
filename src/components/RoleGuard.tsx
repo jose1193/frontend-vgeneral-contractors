@@ -9,6 +9,7 @@ const ROLE_ROUTES = {
   Admin: "/dashboard/admin",
   Manager: "/dashboard/manager",
   Lead: "/dashboard/lead",
+  Seller: "/dashboard/seller",
   "Technical Services": "/dashboard/technical-services",
 };
 

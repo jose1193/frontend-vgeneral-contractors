@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { getUser } from "../../../lib/actions/usersActions";
 import { UserData } from "../../../types/user";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Container,
   Typography,
@@ -14,6 +15,7 @@ import {
   Avatar,
   IconButton,
   Box,
+  Button,
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 interface DetailRowProps {
@@ -71,6 +73,14 @@ const UserPage = () => {
           p: { xs: 3, sm: 3, md: 2, lg: 4 },
         }}
       >
+        <Button
+          variant="outlined"
+          onClick={() => window.history.back()}
+          startIcon={<ArrowBackIcon />}
+          style={{ marginBottom: "20px" }}
+        >
+          Back
+        </Button>
         <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 5 }}>
           User Details
         </Typography>
@@ -119,7 +129,7 @@ const UserPage = () => {
           <DetailRow label="City" value={user.city} />
           <DetailRow label="Country" value={user.country} />
           <DetailRow label="Register Date" value={user.created_at} />
-          <DetailRow label="Delete Date" value={user.delete_at} />
+          <DetailRow label="Delete Date" value={user.deleted_at} />
         </Paper>
       </Box>
     </Suspense>

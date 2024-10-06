@@ -37,7 +37,7 @@ const CreateCompanySignaturePage = () => {
       >
         <Button
           variant="outlined"
-          onClick={() => window.history.back()} // O manejarlo con una ruta específica
+          onClick={() => window.history.back()}
           startIcon={<ArrowBackIcon />}
           style={{ marginBottom: "20px" }}
         >

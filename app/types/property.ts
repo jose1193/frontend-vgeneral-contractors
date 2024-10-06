@@ -6,6 +6,8 @@ export interface PropertyData {
   property_city: string;
   property_postal_code: string;
   property_country: string;
+  property_latitude?: number | null;
+  property_longitude?: number | null;
   customer_id: number[];
   created_at?: string | null;
   updated_at?: string | null;
