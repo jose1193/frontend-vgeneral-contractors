@@ -99,7 +99,7 @@ const UserPage = () => {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-        mt: 2,
+
         ml: -6,
         mb: 10,
         p: { xs: 3, sm: 3, md: 2, lg: 4 },
@@ -113,7 +113,12 @@ const UserPage = () => {
       >
         Back
       </Button>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 5 }}>
+      <Typography
+        variant="h4"
+        component="h1"
+        gutterBottom
+        sx={{ mb: 5, fontWeight: "bold" }}
+      >
         User Details
       </Typography>
       <Paper

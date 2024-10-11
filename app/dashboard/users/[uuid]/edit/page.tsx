@@ -70,6 +70,7 @@ const EditUserPage = () => {
           variant="h4"
           sx={{
             mb: 5,
+            fontWeight: "bold",
             fontSize: {
               xs: "1.5rem",
               sm: "1.75rem",
