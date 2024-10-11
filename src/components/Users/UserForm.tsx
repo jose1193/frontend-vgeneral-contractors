@@ -8,9 +8,9 @@ import UsernameField from "../../../app/components/UsernameInputField";
 import { checkRolesAvailable } from "../../../app/lib/api";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { validationSchema } from "./validationSchema";
-import AddressAutocomplete from "../../../src/components/AddressAutocomplete";
-import GoogleMapComponent from "../GoogleMap";
+
 import useCapitalizeWords from "../../hooks/useCapitalizeWords";
+import dynamic from "next/dynamic";
 import {
   Grid,
   TextField,
@@ -36,6 +36,21 @@ interface UsersFormProps {
   initialData?: UserData;
   onSubmit: (data: UserData) => Promise<void>;
 }
+
+// Dynamic import for AddressAutocomplete
+const AddressAutocomplete = dynamic(
+  () => import("../../../src/components/AddressAutocomplete"),
+  {
+    loading: () => <CircularProgress />,
+    ssr: false,
+  }
+);
+
+// Dynamic import for GoogleMapComponent
+const GoogleMapComponent = dynamic(() => import("../GoogleMap"), {
+  loading: () => <CircularProgress />,
+  ssr: false,
+});
 
 const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -175,12 +190,12 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
           </Grid>
           <Grid item xs={12}>
             {mapCoordinates.lat !== 0 && mapCoordinates.lng !== 0 && (
-              <Grid item xs={12}>
+              <Box height={400} width="100%" position="relative">
                 <GoogleMapComponent
                   latitude={mapCoordinates.lat}
                   longitude={mapCoordinates.lng}
                 />
-              </Grid>
+              </Box>
             )}
           </Grid>
           <Grid item xs={12} sm={6}>
