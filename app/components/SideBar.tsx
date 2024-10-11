@@ -74,7 +74,10 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import Collapse from "@mui/material/Collapse";
 import { Logout } from "../../app/lib/api";
 import SearchComponent from "../../src/components/dashboard/SearchComponent";
-
+import SecurityIcon from "@mui/icons-material/Security";
+import BusinessIcon from "@mui/icons-material/Business";
+import DomainIcon from "@mui/icons-material/Domain";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 const drawerWidth = 240;
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -261,10 +264,32 @@ export default function MiniDrawer() {
       allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
     {
+      name: "Companies",
+      icon: <DomainIcon />,
+      allowedRoles: ["Super Admin", "Admin", "Manager"],
+      subItems: [
+        {
+          name: "Insurance",
+          href: "/dashboard/insurance-companies",
+          icon: <SecurityIcon />,
+        },
+        {
+          name: "Public Company",
+          href: "/dashboard/public-company",
+          icon: <BusinessIcon />,
+        },
+      ],
+    },
+    {
       name: "Integrations",
       icon: <ApiIcon />,
       allowedRoles: ["Super Admin", "Admin"],
       subItems: [
+        {
+          name: "Docusign API",
+          href: "/dashboard/docusign-api",
+          icon: <AssignmentTurnedInIcon />,
+        },
         {
           name: "AI Tools",
           href: "/dashboard/ai-tools",

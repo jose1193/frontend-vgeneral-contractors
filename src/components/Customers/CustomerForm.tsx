@@ -86,6 +86,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                     fullWidth
                     error={!!errors.name}
                     helperText={errors.name?.message}
+                    autoComplete="off"
                   />
                 )}
               />
@@ -105,6 +106,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                     fullWidth
                     error={!!errors.last_name}
                     helperText={errors.last_name?.message}
+                    autoComplete="off"
                   />
                 )}
               />
@@ -143,6 +145,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                     fullWidth
                     error={!!errors.occupation}
                     helperText={errors.occupation?.message}
+                    autoComplete="off"
                   />
                 )}
               />
