@@ -188,16 +188,23 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               defaultValue={initialData?.address || ""}
             />
           </Grid>
-          <Grid item xs={12}>
-            {mapCoordinates.lat !== 0 && mapCoordinates.lng !== 0 && (
-              <Box height={400} width="100%" position="relative" sx={{ mb: 5 }}>
-                <GoogleMapComponent
-                  latitude={mapCoordinates.lat}
-                  longitude={mapCoordinates.lng}
-                />
-              </Box>
-            )}
-          </Grid>
+          {initialData && (
+            <Grid item xs={12}>
+              {mapCoordinates.lat !== 0 && mapCoordinates.lng !== 0 && (
+                <Box
+                  height={400}
+                  width="100%"
+                  position="relative"
+                  sx={{ mb: 5 }}
+                >
+                  <GoogleMapComponent
+                    latitude={mapCoordinates.lat}
+                    longitude={mapCoordinates.lng}
+                  />
+                </Box>
+              )}
+            </Grid>
+          )}
           <Grid item xs={12} sm={6}>
             <Controller
               name="address_2"
