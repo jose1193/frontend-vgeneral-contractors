@@ -190,7 +190,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
           </Grid>
           <Grid item xs={12}>
             {mapCoordinates.lat !== 0 && mapCoordinates.lng !== 0 && (
-              <Box height={400} width="100%" position="relative">
+              <Box height={400} width="100%" position="relative" sx={{ mb: 5 }}>
                 <GoogleMapComponent
                   latitude={mapCoordinates.lat}
                   longitude={mapCoordinates.lng}
