@@ -1,5 +1,5 @@
 import React, { useState, Suspense } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import {
@@ -48,6 +48,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import AddHomeWorkIcon from "@mui/icons-material/AddHomeWork";
 import CustomerForm from "./CustomerForm";
 import PropertyForm from "./PropertyForm";
+import PhoneInputField from "../../../app/components/PhoneInputField";
 import { claimsSchema } from "../../components/Validations/claimsValidation";
 import useUpperCase from "../../hooks/useUpperCase";
 interface ClaimsDataFormProps {
@@ -74,6 +75,9 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
     open: false,
     message: "",
     severity: "success",
+  });
+  const methods = useForm<ClaimsData>({
+    defaultValues: initialData || {},
   });
 
   const handleSnackbarClose = () => {
@@ -105,7 +109,7 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
   };
 
   return (
-    <>
+    <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmitHandler)}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -153,6 +157,7 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
                           field.onChange(upperCase(e.target.value))
                         }
                         fullWidth
+                        autoComplete="off"
                       />
                     )}
                   />
@@ -169,6 +174,7 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
                           field.onChange(upperCase(e.target.value))
                         }
                         fullWidth
+                        autoComplete="off"
                       />
                     )}
                   />
@@ -316,21 +322,16 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
                         onChange={(e) =>
                           field.onChange(upperCase(e.target.value))
                         }
+                        autoComplete="off"
                       />
                     )}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Controller
+
+                <Grid item xs={12} sm={6} sx={{ mt: -2 }}>
+                  <PhoneInputField
                     name="affidavit.mortgage_company_phone"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Mortgage Company Phone"
-                        fullWidth
-                      />
-                    )}
+                    label="Mortgage Company Phone"
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -452,7 +453,7 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
         open={openPropertyModal}
         onClose={() => setOpenPropertyModal(false)}
       />
-    </>
+    </FormProvider>
   );
 };
 

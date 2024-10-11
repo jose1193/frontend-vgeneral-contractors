@@ -341,16 +341,9 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
           <Typography variant="subtitle2" sx={{ color: "black" }}>
             Alliance Company:{" "}
             <span style={{ fontWeight: "bold" }}>
-              {Array.isArray(claim.alliance_companies) &&
-              claim.alliance_companies.length > 0 ? (
-                <ul>
-                  {claim.alliance_companies.map((company) => (
-                    <li key={company.id}>{company.alliance_company_name}</li>
-                  ))}
-                </ul>
-              ) : (
-                "No alliance companies available"
-              )}
+              {claim.alliance_companies
+                ? claim.alliance_companies.alliance_company_name
+                : "N/A"}
             </span>
           </Typography>
         </Grid>

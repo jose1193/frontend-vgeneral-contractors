@@ -149,6 +149,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
                   fullWidth
                   error={!!error}
                   helperText={error?.message}
+                  autoComplete="off"
                 />
               )}
             />
@@ -167,6 +168,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
                   fullWidth
                   error={!!error}
                   helperText={error?.message}
+                  autoComplete="off"
                 />
               )}
             />
@@ -216,6 +218,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
                   fullWidth
                   error={!!error}
                   helperText={error?.message}
+                  autoComplete="off"
                 />
               )}
             />

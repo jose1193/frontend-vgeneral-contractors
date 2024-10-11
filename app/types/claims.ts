@@ -41,7 +41,7 @@ export interface ClaimsData {
   service_request_id: number[] | null;
   scope_of_work: string | null;
   alliance_company_id?: number | null;
-  alliance_companies: AllianceCompanyData[];
+  alliance_companies: AllianceCompanyData;
   requested_services: ServiceRequestData[];
 
   affidavit: {
