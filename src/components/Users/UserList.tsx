@@ -191,7 +191,14 @@ const UsersList: React.FC<UsersListProps> = ({
       headerAlign: "center",
       align: "center",
       renderCell: (params) => (
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <Link href={`/dashboard/users/${params.row.uuid}`} passHref>
             <Button
               size="small"

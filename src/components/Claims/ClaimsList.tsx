@@ -162,32 +162,22 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
     {
       field: "claim_status",
       headerName: "Claim Status",
-      width: 130,
+      width: 150,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
-        let color:
-          | "default"
-          | "primary"
-          | "secondary"
-          | "error"
-          | "info"
-          | "success"
-          | "warning";
-        switch (params.value) {
-          case "Completed":
-            color = "success";
-            break;
-          case "In Progress":
-            color = "primary";
-            break;
-          case "Pending":
-            color = "warning";
-            break;
-          default:
-            color = "default";
-        }
-        return <Chip label={params.value} color={color} />;
+        return (
+          params.value && (
+            <Chip
+              label={params.value.claim_status_name}
+              sx={{
+                backgroundColor: params.value.background_color || "#e0e0e0",
+                color: "#ffffff",
+                fontWeight: "bold",
+              }}
+            />
+          )
+        );
       },
     },
     {

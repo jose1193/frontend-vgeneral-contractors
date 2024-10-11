@@ -120,6 +120,15 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ open, onClose }) => {
           <DialogContent>
             <Grid container spacing={2}>
               <Grid item xs={12}>
+                <Grid item xs={12}>
+                  <EnhancedCustomerSelection
+                    control={control}
+                    customers={customers}
+                    errors={errors}
+                  />
+                </Grid>
+              </Grid>
+              <Grid item xs={12}>
                 <Controller
                   name="property_address"
                   control={control}
@@ -204,15 +213,6 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ open, onClose }) => {
                     />
                   )}
                 />
-              </Grid>
-              <Grid item xs={12}>
-                <Grid item xs={12}>
-                  <EnhancedCustomerSelection
-                    control={control}
-                    customers={customers}
-                    errors={errors}
-                  />
-                </Grid>
               </Grid>
             </Grid>
           </DialogContent>

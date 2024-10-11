@@ -5,12 +5,12 @@
 import React, { Suspense } from "react";
 import { useClaims } from "../../../../src/hooks/useClaims";
 import ClaimsForm from "../../../../src/components/Claims/ClaimsForm";
-import { Typography, Box, Paper } from "@mui/material";
+import { Typography, Box, Paper, Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { ClaimsData } from "../../../../app/types/claims";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
-
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 const CreateClaimPage = () => {
   const { data: session } = useSession();
   const router = useRouter();
@@ -45,6 +45,14 @@ const CreateClaimPage = () => {
           p: { xs: 3, sm: 3, md: 2, lg: 4 },
         }}
       >
+        <Button
+          variant="outlined"
+          onClick={() => window.history.back()}
+          startIcon={<ArrowBackIcon />}
+          style={{ marginBottom: "20px" }}
+        >
+          Back
+        </Button>
         <Typography
           variant="h4"
           component="h1"

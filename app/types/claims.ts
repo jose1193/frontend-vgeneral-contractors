@@ -3,6 +3,10 @@ import { CustomerData } from "./customer";
 import { PropertyData } from "./property";
 import { AllianceCompanyData } from "./alliance-company";
 import { ServiceRequestData } from "./service-request";
+import { ClaimStatusData } from "./claim-status";
+import { CauseOfLossData } from "./cause-of-loss";
+import { UserData } from "./user";
+
 export interface TechnicalAssignment {
   id: number;
   technical_user_name: string;
@@ -20,7 +24,7 @@ export interface ClaimsData {
   user_id_ref_by?: number;
   claim_number?: string;
   claim_internal_id?: string;
-  claim_status?: string;
+  claim_status?: ClaimStatusData;
   date_of_loss: string | null;
   description_of_loss: string | null;
   number_of_floors?: number | null;
@@ -28,10 +32,11 @@ export interface ClaimsData {
   insurance_company_assignment: string | null;
   public_company_id: number | null;
   public_adjuster_id: number | null;
-  public_adjuster_assignment: string | null;
+  public_adjuster_assignment: UserData;
   public_company_assignment: string | null;
   technical_user_id: number[] | null;
   technical_assignments: TechnicalAssignment[];
+  cause_of_loss_id: CauseOfLossData[];
   work_date: string | null;
   service_request_id: number[] | null;
   scope_of_work: string | null;

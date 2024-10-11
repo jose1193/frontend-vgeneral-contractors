@@ -9,6 +9,7 @@ export interface UserData {
   email: string;
   phone?: string | null;
   address?: string | null;
+  address_2?: string | null;
   zip_code?: string | null;
   city?: string | null;
   state?: string | null;
@@ -16,6 +17,7 @@ export interface UserData {
   latitude?: number | null;
   longitude?: number | null;
   user_role: string;
+  generate_password?: boolean;
   profile_photo_path?: string | null;
   created_at?: string | null;
   updated_at?: string | null;

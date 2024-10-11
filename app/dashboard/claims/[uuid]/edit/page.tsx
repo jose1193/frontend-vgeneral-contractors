@@ -6,10 +6,11 @@ import { getData } from "../../../../lib/actions/claimsActions";
 import { useClaims } from "../../../../../src/hooks/useClaims";
 import ClaimsForm from "../../../../../src/components/Claims/ClaimsForm";
 import { ClaimsData } from "../../../../types/claims";
-import { Container, Typography, Box, Paper } from "@mui/material";
+import { Container, Typography, Box, Paper, Button } from "@mui/material";
 import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
 import { useSession } from "next-auth/react";
 import ClaimsFormSkeleton from "../../../../../src/components/skeletons/ClaimsFormSkeleton";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 const EditClaimPage = () => {
   const { uuid } = useParams();
   const router = useRouter();
@@ -63,6 +64,14 @@ const EditClaimPage = () => {
           p: { xs: 3, sm: 3, md: 2, lg: 4 },
         }}
       >
+        <Button
+          variant="outlined"
+          onClick={() => window.history.back()}
+          startIcon={<ArrowBackIcon />}
+          style={{ marginBottom: "25px" }}
+        >
+          Back
+        </Button>
         <Typography
           variant="h4"
           sx={{
@@ -72,6 +81,7 @@ const EditClaimPage = () => {
               md: "2rem",
               lg: "2.25rem",
             },
+            marginBottom: 5,
           }}
           component="h1"
           gutterBottom
@@ -96,5 +106,5 @@ export default withRoleProtection(EditClaimPage, [
   "Super Admin",
   "Admin",
   "Manager",
-  "Lead",
+  "Salesperson",
 ]);

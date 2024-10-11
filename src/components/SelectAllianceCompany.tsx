@@ -66,27 +66,19 @@ const SelectAllianceCompany: React.FC<SelectAllianceCompanyProps> = ({
           <Select
             labelId="alliance-select-label"
             {...rest}
-            value={value ? value.toString() : ""}
+            value={value ?? ""}
             onChange={(e) => {
               const selectedValue = e.target.value;
-              onChange(selectedValue ? parseInt(selectedValue, 10) : null);
+              onChange(selectedValue === "" ? null : Number(selectedValue));
             }}
             label="Alliance Company"
           >
             <MenuItem value="">N/A</MenuItem>
-            {Array.isArray(allianceCompanies) &&
-            allianceCompanies.length > 0 ? (
-              allianceCompanies.map((company) => (
-                <MenuItem
-                  key={company.id ?? company.alliance_company_name}
-                  value={company.id ? company.id.toString() : ""}
-                >
-                  {company.alliance_company_name}
-                </MenuItem>
-              ))
-            ) : (
-              <MenuItem disabled>No alliance companies available</MenuItem>
-            )}
+            {allianceCompanies.map((company) => (
+              <MenuItem key={company.id} value={company.id}>
+                {company.alliance_company_name}
+              </MenuItem>
+            ))}
           </Select>
           {error && <FormHelperText error>{error}</FormHelperText>}
         </FormControl>

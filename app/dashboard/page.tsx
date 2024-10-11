@@ -21,7 +21,7 @@ export default function HomePage() {
   };
 
   console.log("Session status:", status);
-  console.log("Session data:", session);
+  //console.log("Session data:", session);
 
   if (status === "unauthenticated") {
     return (

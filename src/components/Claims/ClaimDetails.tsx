@@ -1,5 +1,13 @@
 import React from "react";
-import { Box, Typography, Grid, Paper, Button, Skeleton } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Grid,
+  Paper,
+  Button,
+  Skeleton,
+  Chip,
+} from "@mui/material";
 import { ClaimsData } from "../../../app/types/claims";
 import { PropertyData } from "../../../app/types/property";
 
@@ -17,6 +25,12 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
       </Paper>
     );
   }
+  // Helper cause of loss
+  const causeOfLossString =
+    Array.isArray(claim.cause_of_loss_id) && claim.cause_of_loss_id.length > 0
+      ? claim.cause_of_loss_id.map((cause) => cause.cause_loss_name).join(", ")
+      : "No cause of loss available";
+
   // Helper function to render property address
   const renderPropertyAddress = (property: PropertyData | string) => {
     if (typeof property === "string") {
@@ -63,20 +77,42 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
           .map((service) => service.requested_service)
           .join(", ")
       : "No requested services available";
+
   return (
     <Paper elevation={3} sx={{ p: 5, mb: 7 }}>
       {/* Header section */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12}>
-          <Typography
-            variant="h6"
-            sx={{ color: "#662401", fontWeight: "bold", mb: 2 }}
-          >
-            🏷️ Claim Internal ID -
-            <span style={{ color: "black", fontWeight: "bold", marginLeft: 4 }}>
-              {claim.claim_internal_id}
-            </span>
-          </Typography>
+          <Box display="flex" alignItems="center">
+            <Typography
+              variant="h6"
+              sx={{ color: "#662401", fontWeight: "bold", mb: 2, flexGrow: 1 }}
+            >
+              🏷️ Claim Internal ID -
+              <span
+                style={{ color: "black", fontWeight: "bold", marginLeft: 4 }}
+              >
+                {claim.claim_internal_id}
+              </span>
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{ color: "#662401", fontWeight: "bold", mr: 2 }}
+            >
+              Status:
+            </Typography>
+            {claim.claim_status && (
+              <Chip
+                label={claim.claim_status.claim_status_name}
+                sx={{
+                  backgroundColor:
+                    claim.claim_status.background_color || "#e0e0e0",
+                  color: "#ffffff",
+                  fontWeight: "bold",
+                }}
+              />
+            )}
+          </Box>
           <Typography variant="body1" sx={{ color: "black" }}>
             Date:{" "}
             <span style={{ color: "black", fontWeight: "bold" }}>
@@ -152,6 +188,10 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
           <Typography variant="subtitle2" sx={{ color: "black" }}>
             Claim Number:{" "}
             <span style={{ fontWeight: "bold" }}>{claim.claim_number}</span>
+          </Typography>
+          <Typography variant="subtitle2" sx={{ color: "black" }}>
+            Cause of Loss:
+            <span style={{ fontWeight: "bold" }}> {causeOfLossString}</span>
           </Typography>
           <Typography variant="subtitle2" sx={{ color: "black" }}>
             Date of Loss:{" "}
@@ -253,9 +293,9 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
           <Typography variant="subtitle2" sx={{ color: "black" }}>
             Public Adjuster:{" "}
             <span style={{ fontWeight: "bold" }}>
-              <span style={{ fontWeight: "bold" }}>
-                {claim.public_adjuster_assignment || "N/A"}
-              </span>
+              {claim.public_adjuster_assignment
+                ? `${claim.public_adjuster_assignment.name} ${claim.public_adjuster_assignment.last_name}`
+                : "N/A"}
             </span>
           </Typography>
 

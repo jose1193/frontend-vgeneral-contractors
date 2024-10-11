@@ -9,19 +9,26 @@ import {
 import Autocomplete from "@mui/material/Autocomplete";
 import { useSession } from "next-auth/react";
 import { checkUsersAvailable } from "../../app/lib/actions/claimsActions";
+import { ClaimsData } from "../../app/types/claims";
 
 interface PublicAdjuster {
-  id: string;
+  id: number;
   name: string;
-  last_name: string;
+  last_name: string | null;
 }
 
 interface SelectPublicAdjusterProps {
-  control: Control<any>;
+  control: Control<ClaimsData>;
+  publicAdjusterAssignment?: {
+    id?: number;
+    name: string;
+    last_name?: string | null;
+  } | null;
 }
 
 const SelectPublicAdjuster: React.FC<SelectPublicAdjusterProps> = ({
   control,
+  publicAdjusterAssignment,
 }) => {
   const { data: session } = useSession();
   const [publicAdjusters, setPublicAdjusters] = useState<PublicAdjuster[]>([]);
@@ -34,9 +41,7 @@ const SelectPublicAdjuster: React.FC<SelectPublicAdjusterProps> = ({
         setLoading(true);
         const token = session?.accessToken as string;
         const role = "Public Adjuster";
-
         const response = await checkUsersAvailable(token, role);
-
         if (response.success && Array.isArray(response.data)) {
           setPublicAdjusters(response.data);
           setError(null);
@@ -51,14 +56,14 @@ const SelectPublicAdjuster: React.FC<SelectPublicAdjusterProps> = ({
         setLoading(false);
       }
     };
-
-    fetchPublicAdjusters(); // Ejecuta la función al cargar el componente
+    fetchPublicAdjusters();
   }, [session?.accessToken]);
 
   return (
     <Controller
       name="public_adjuster_id"
       control={control}
+      defaultValue={publicAdjusterAssignment?.id || null}
       render={({
         field: { onChange, value, ...rest },
         fieldState: { error: fieldError },
@@ -67,7 +72,11 @@ const SelectPublicAdjuster: React.FC<SelectPublicAdjusterProps> = ({
           <Autocomplete
             {...rest}
             options={publicAdjusters}
-            getOptionLabel={(option) => `${option.name} ${option.last_name}`}
+            getOptionLabel={(option) =>
+              typeof option === "string"
+                ? option
+                : `${option.name} ${option.last_name || ""}`
+            }
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -92,7 +101,9 @@ const SelectPublicAdjuster: React.FC<SelectPublicAdjusterProps> = ({
               onChange(newValue ? newValue.id : null);
             }}
             value={
-              publicAdjusters.find((adjuster) => adjuster.id === value) || null
+              publicAdjusters.find((adjuster) => adjuster.id === value) ||
+              publicAdjusterAssignment ||
+              null
             }
             isOptionEqualToValue={(option, value) =>
               option.id === (value?.id ?? value)

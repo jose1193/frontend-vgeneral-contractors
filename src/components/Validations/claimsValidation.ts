@@ -42,6 +42,7 @@ export const claimsSchema = yup.object().shape({
   alliance_company_id: yup.array().of(yup.number()).nullable(),
   alliance_companies: yup.array().of(yup.object()),
   requested_services: yup.array().of(yup.object()).required(),
+  cause_of_loss_id: yup.array().of(yup.object()).required(),
 
   affidavit: yup.object().shape({
     mortgage_company_name: yup.string().nullable(),

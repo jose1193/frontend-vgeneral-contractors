@@ -18,10 +18,10 @@ const SelectWorkDate: React.FC<SelectWorkDateProps> = ({ control }) => {
         <MobileDatePicker
           {...restField}
           label="Work Date"
-          format="YYYY-MM-DD"
+          format="MM-DD-YYYY"
           value={value ? dayjs(value) : null}
           onChange={(newValue: Dayjs | null) => {
-            onChange(newValue ? newValue.format("YYYY-MM-DD") : null);
+            onChange(newValue ? newValue.format("MM-DD-YYYY") : null);
           }}
           minDate={today}
           slotProps={{

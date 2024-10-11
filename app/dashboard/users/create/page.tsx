@@ -5,12 +5,12 @@ import React, { Suspense } from "react";
 
 import { useUsers } from "../../../../src/hooks/useUsers";
 import UsersForm from "../../../../src/components/Users/UserForm";
-import { Container, Typography, Box, Paper } from "@mui/material";
+import { Container, Typography, Box, Paper, Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { UserData } from "../../../../app/types/user";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
-
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 const CreateUserPage = () => {
   const { data: session, update } = useSession();
   const router = useRouter();
@@ -30,12 +30,20 @@ const CreateUserPage = () => {
         sx={{
           flexGrow: 1,
           overflow: "hidden",
-
+          mt: -3,
           ml: -7,
           mb: 10,
           p: { xs: 3, sm: 3, md: 2, lg: 4 },
         }}
       >
+        <Button
+          variant="outlined"
+          onClick={() => window.history.back()}
+          startIcon={<ArrowBackIcon />}
+          style={{ marginBottom: "20px" }}
+        >
+          Back
+        </Button>
         <Typography
           variant="h4"
           component="h1"

@@ -34,6 +34,9 @@ export const validationSchema = Yup.object().shape({
   address: Yup.string()
     .nullable()
     .max(255, "Address can't be longer than 255 characters"),
+  address_2: Yup.string()
+    .nullable()
+    .max(255, "Address 2 can't be longer than 255 characters"),
   city: Yup.string()
     .nullable()
     .matches(/^[A-Za-z\s]+$/, "City can only contain letters")

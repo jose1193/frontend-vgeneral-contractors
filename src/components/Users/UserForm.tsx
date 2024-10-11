@@ -9,6 +9,7 @@ import { checkRolesAvailable } from "../../../app/lib/api";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { validationSchema } from "./validationSchema";
 import AddressAutocomplete from "../../../src/components/AddressAutocomplete";
+import GoogleMapComponent from "../GoogleMap";
 import useCapitalizeWords from "../../hooks/useCapitalizeWords";
 import {
   Grid,
@@ -21,6 +22,8 @@ import {
   FormHelperText,
   Box,
   CircularProgress,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 
@@ -37,6 +40,7 @@ interface UsersFormProps {
 const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mapCoordinates, setMapCoordinates] = useState({ lat: 0, lng: 0 });
   const { data: session } = useSession();
   const capitalizeWords = useCapitalizeWords();
   const methods = useForm<UserData>({
@@ -51,6 +55,16 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
         const token = session?.accessToken as string;
         const rolesData = await checkRolesAvailable(token);
         setRoles(rolesData);
+
+        // Si tenemos initialData y roles, buscamos el rol por nombre
+        if (initialData?.user_role && rolesData.length > 0) {
+          const initialRole = rolesData.find(
+            (role: Role) => role.name === initialData.user_role
+          );
+          if (initialRole) {
+            methods.setValue("user_role", initialRole.id);
+          }
+        }
       } catch (error) {
         console.error("Error fetching roles:", error);
         setRoles([]);
@@ -58,7 +72,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
     };
 
     fetchRoles();
-  }, [session?.accessToken]);
+  }, [session?.accessToken, initialData, methods]);
 
   const handleSubmit = async (data: UserData) => {
     console.log("Form submitted with data:", data);
@@ -71,46 +85,36 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
       setIsSubmitting(false);
     }
   };
-
-  const handleAddressSelect = (addressDetails: {
-    formatted_address: string;
-    address_components: {
-      long_name: string;
-      short_name: string;
-      types: string[];
-    }[];
-  }) => {
-    console.log("Address details received in UsersForm:", addressDetails);
-
-    methods.setValue("address", addressDetails.formatted_address);
-
-    let zip_code = "";
-    let city = "";
-    let state = "";
-    let country = "";
-
-    addressDetails.address_components.forEach((component) => {
-      const { types, long_name } = component;
-
-      if (types.includes("postal_code")) {
-        zip_code = long_name;
-      } else if (types.includes("locality") || types.includes("postal_town")) {
-        city = long_name;
-      } else if (types.includes("administrative_area_level_1")) {
-        state = long_name;
-      } else if (types.includes("country")) {
-        country = long_name;
+  useEffect(() => {
+    if (initialData && initialData.address) {
+      methods.setValue("address", initialData.address);
+      if (initialData.latitude && initialData.longitude) {
+        setMapCoordinates({
+          lat: initialData.latitude,
+          lng: initialData.longitude,
+        });
       }
-    });
+    }
+  }, [initialData, methods]);
 
-    methods.setValue("zip_code", zip_code);
-    methods.setValue("city", city);
-    methods.setValue("state", state);
-    methods.setValue("country", country);
-
-    console.log("Set values:", { zip_code, city, state, country });
-
-    methods.trigger(["address", "zip_code", "city", "state", "country"]);
+  const handleAddressSelect = (addressDetails: any) => {
+    console.log("Address details received in UsersForm:", addressDetails);
+    if (addressDetails.latitude && addressDetails.longitude) {
+      setMapCoordinates({
+        lat: addressDetails.latitude,
+        lng: addressDetails.longitude,
+      });
+      methods.setValue("latitude", addressDetails.latitude);
+      methods.setValue("longitude", addressDetails.longitude);
+      methods.setValue("address", addressDetails.address);
+      // Opcionalmente, actualiza otros campos si están disponibles en addressDetails
+      if (addressDetails.city) methods.setValue("city", addressDetails.city);
+      if (addressDetails.state) methods.setValue("state", addressDetails.state);
+      if (addressDetails.country)
+        methods.setValue("country", addressDetails.country);
+      if (addressDetails.zip_code)
+        methods.setValue("zip_code", addressDetails.zip_code);
+    }
   };
   return (
     <FormProvider {...methods}>
@@ -161,47 +165,32 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
           <Grid item xs={12} sm={6}>
             <PhoneInputField name="phone" label="Phone" />
           </Grid>
-          <Grid item xs={12}>
-            <AddressAutocomplete onAddressSelect={handleAddressSelect} />
-          </Grid>
           <Grid item xs={12} sm={6}>
-            <Controller
-              name="zip_code"
-              control={methods.control}
-              render={({ field, fieldState: { error } }) => (
-                <TextField
-                  {...field}
-                  label="Zip Code"
-                  fullWidth
-                  error={!!error}
-                  helperText={error?.message}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Controller
+            <AddressAutocomplete
+              onAddressSelect={handleAddressSelect}
               name="address"
-              control={methods.control}
-              render={({ field, fieldState: { error } }) => (
-                <TextField
-                  {...field}
-                  label="Address"
-                  fullWidth
-                  error={!!error}
-                  helperText={error?.message}
-                />
-              )}
+              label="Address"
+              defaultValue={initialData?.address || ""}
             />
+          </Grid>
+          <Grid item xs={12}>
+            {mapCoordinates.lat !== 0 && mapCoordinates.lng !== 0 && (
+              <Grid item xs={12}>
+                <GoogleMapComponent
+                  latitude={mapCoordinates.lat}
+                  longitude={mapCoordinates.lng}
+                />
+              </Grid>
+            )}
           </Grid>
           <Grid item xs={12} sm={6}>
             <Controller
-              name="city"
+              name="address_2"
               control={methods.control}
               render={({ field, fieldState: { error } }) => (
                 <TextField
                   {...field}
-                  label="City"
+                  label="Address 2 (Optional)"
                   fullWidth
                   error={!!error}
                   helperText={error?.message}
@@ -209,36 +198,14 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               )}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <Controller
-              name="state"
-              control={methods.control}
-              render={({ field, fieldState: { error } }) => (
-                <TextField
-                  {...field}
-                  label="State"
-                  fullWidth
-                  error={!!error}
-                  helperText={error?.message}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Controller
-              name="country"
-              control={methods.control}
-              render={({ field, fieldState: { error } }) => (
-                <TextField
-                  {...field}
-                  label="Country"
-                  fullWidth
-                  error={!!error}
-                  helperText={error?.message}
-                />
-              )}
-            />
-          </Grid>
+
+          <input type="hidden" {...methods.register("city")} />
+          <input type="hidden" {...methods.register("state")} />
+          <input type="hidden" {...methods.register("country")} />
+          <input type="hidden" {...methods.register("zip_code")} />
+          <input type="hidden" {...methods.register("latitude")} />
+          <input type="hidden" {...methods.register("longitude")} />
+
           <Grid item xs={12} sm={6}>
             <Controller
               name="user_role"
@@ -248,7 +215,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
                   <InputLabel>User Role</InputLabel>
                   <Select {...field} label="User Role">
                     {Array.isArray(roles) &&
-                      roles.map((role) => (
+                      roles.map((role: Role) => (
                         <MenuItem key={role.id} value={role.id}>
                           {role.name}
                         </MenuItem>
@@ -259,6 +226,22 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               )}
             />
           </Grid>
+          {initialData && (
+            <Grid item xs={12}>
+              <Controller
+                name="generate_password"
+                control={methods.control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox {...field} checked={field.value || false} />
+                    }
+                    label="Generate New Password"
+                  />
+                )}
+              />
+            </Grid>
+          )}
           <Grid item xs={12}>
             <Box display="flex" justifyContent="center">
               <Button

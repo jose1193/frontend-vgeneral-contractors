@@ -18,6 +18,10 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -37,12 +41,15 @@ import SelectServiceRequest from "../SelectServiceRequest";
 import SelectTechnicalServices from "../SelectTechnicalServices";
 import SelectDateOfLoss from "../SelectDateOfLoss";
 import SelectWorkDate from "../SelectWorkDate";
+import SelectCauseOfLoss from "../SelectCauseOfLoss";
+import SelectClaimStatus from "../SelectClaimStatus";
+import PriorLossSelection from "../PriorLossSelection";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import AddHomeWorkIcon from "@mui/icons-material/AddHomeWork";
 import CustomerForm from "./CustomerForm";
 import PropertyForm from "./PropertyForm";
 import { claimsSchema } from "../../components/Validations/claimsValidation";
-
+import useUpperCase from "../../hooks/useUpperCase";
 interface ClaimsDataFormProps {
   initialData?: ClaimsData;
   onSubmit: (data: ClaimsData) => Promise<string | undefined>;
@@ -52,9 +59,10 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
   initialData,
   onSubmit,
 }) => {
+  const upperCase = useUpperCase();
   const [openCustomerModal, setOpenCustomerModal] = useState(false);
   const [openPropertyModal, setOpenPropertyModal] = useState(false);
-  const { control, handleSubmit } = useForm<ClaimsData>({
+  const { control, handleSubmit, setValue } = useForm<ClaimsData>({
     defaultValues: initialData || {},
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -138,7 +146,14 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
                     name="policy_number"
                     control={control}
                     render={({ field }) => (
-                      <TextField {...field} label="Policy Number" fullWidth />
+                      <TextField
+                        {...field}
+                        label="Policy Number"
+                        onChange={(e) =>
+                          field.onChange(upperCase(e.target.value))
+                        }
+                        fullWidth
+                      />
                     )}
                   />
                 </Grid>
@@ -147,13 +162,18 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
                     name="claim_number"
                     control={control}
                     render={({ field }) => (
-                      <TextField {...field} label="Claim Number" fullWidth />
+                      <TextField
+                        {...field}
+                        label="Claim Number"
+                        onChange={(e) =>
+                          field.onChange(upperCase(e.target.value))
+                        }
+                        fullWidth
+                      />
                     )}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <SelectDateOfLoss control={control} />
-                </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <SelectTypeDamage control={control} />
                 </Grid>
@@ -172,6 +192,13 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
                     )}
                   />
                 </Grid>
+                <Grid item xs={12} sm={6}>
+                  <SelectCauseOfLoss control={control} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <SelectDateOfLoss control={control} />
+                </Grid>
+
                 <Grid item xs={12}>
                   <Controller
                     name="description_of_loss"
@@ -204,7 +231,12 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
                   <SelectPublicCompany control={control} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <SelectPublicAdjuster control={control} />
+                  <SelectPublicAdjuster
+                    control={control}
+                    publicAdjusterAssignment={
+                      initialData?.public_adjuster_assignment
+                    }
+                  />
                 </Grid>
               </Grid>
             </Box>
@@ -226,12 +258,22 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
                     name="number_of_floors"
                     control={control}
                     render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Number of Floors"
-                        type="number"
-                        fullWidth
-                      />
+                      <FormControl fullWidth>
+                        <InputLabel id="number-of-floors-label">
+                          Number of Floors
+                        </InputLabel>
+                        <Select
+                          {...field}
+                          labelId="number-of-floors-label"
+                          label="Number of Floors"
+                        >
+                          {[1, 2, 3, 4, 5].map((num) => (
+                            <MenuItem key={num} value={num}>
+                              {num}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     )}
                   />
                 </Grid>
@@ -271,6 +313,9 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
                         {...field}
                         label="Mortgage Company Name"
                         fullWidth
+                        onChange={(e) =>
+                          field.onChange(upperCase(e.target.value))
+                        }
                       />
                     )}
                   />
@@ -330,54 +375,32 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
                     )}
                   />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
-                  <Controller
-                    name="affidavit.never_had_prior_loss"
-                    control={control}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            {...field}
-                            checked={Boolean(value)}
-                            onChange={(e) => onChange(e.target.checked)}
-                          />
-                        }
-                        label="I have never had prior loss"
-                      />
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Controller
-                    name="affidavit.has_never_had_prior_loss"
-                    control={control}
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            {...field}
-                            checked={Boolean(value)}
-                            onChange={(e) => onChange(e.target.checked)}
-                          />
-                        }
-                        label="I have had a prior loss"
-                      />
-                    )}
-                  />
+                  <PriorLossSelection control={control} setValue={setValue} />
                 </Grid>
               </Grid>
             </Box>
 
-            {/* Alliance Company Section */}
             <Box>
-              <Typography variant="h6" gutterBottom>
-                Alliance Company
-              </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
+                  <Typography variant="h6" gutterBottom>
+                    Alliance Company
+                  </Typography>
                   <SelectAllianceCompany control={control} />
                 </Grid>
+                {initialData && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="h6" gutterBottom>
+                      Claim Status
+                    </Typography>
+                    <SelectClaimStatus
+                      control={control}
+                      initialValue={initialData.claim_status}
+                    />
+                  </Grid>
+                )}
               </Grid>
             </Box>
           </Box>

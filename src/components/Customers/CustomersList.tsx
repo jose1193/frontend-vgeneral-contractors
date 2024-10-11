@@ -149,45 +149,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
       headerAlign: "center",
       align: "center",
     },
-    {
-      field: "signature",
-      headerName: "Signature",
-      width: 150,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => (
-        <Link
-          href={`/dashboard/customers/${params.row.uuid}/signature`}
-          passHref
-        >
-          <Button
-            size="small"
-            variant="contained"
-            color={params.value ? "success" : "error"}
-            sx={{
-              minWidth: "unset",
-              padding: "8px 12px",
-            }}
-          >
-            {params.value ? (
-              <>
-                <EditIcon fontSize="small" />
-                <Typography variant="caption" sx={{ ml: 1 }}>
-                  Created
-                </Typography>
-              </>
-            ) : (
-              <>
-                <EditIcon fontSize="small" />
-                <Typography variant="caption" sx={{ ml: 1 }}>
-                  Create
-                </Typography>
-              </>
-            )}
-          </Button>
-        </Link>
-      ),
-    },
+
     {
       field: "status",
       headerName: "Status",

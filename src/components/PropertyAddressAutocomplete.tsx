@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import { TextField, Box, Typography, CircularProgress } from "@mui/material";
 import { useGoogleMapsApi } from "../hooks/useGoogleMapsApi";
-import { useFormContext } from "react-hook-form";
+import { UseFormSetValue } from "react-hook-form";
 
 interface AddressComponent {
   long_name: string;
@@ -16,64 +16,63 @@ interface AddressDetails {
   longitude: number;
 }
 
-interface AddressAutocompleteProps {
+interface PropertyAddressAutocompleteProps {
   onAddressSelect: (addressDetails: AddressDetails) => void;
   name: string;
   label: string;
-  defaultValue?: string;
+  setValue: UseFormSetValue<any>;
 }
 
-export default function AddressAutocomplete({
+export default function PropertyAddressAutocomplete({
   onAddressSelect,
   name,
   label,
-  defaultValue = "",
-}: AddressAutocompleteProps) {
+  setValue,
+}: PropertyAddressAutocompleteProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const { setValue } = useFormContext();
 
   const populateAddressFields = useCallback(
     (addressDetails: AddressDetails) => {
-      let address = "";
-      let address2 = "";
-      let zipCode = "";
-      let city = "";
-      let state = "";
-      let country = "";
+      let propertyAddress = "";
+      let propertyCity = "";
+      let propertyState = "";
+      let propertyPostalCode = "";
+      let propertyCountry = "";
 
       addressDetails.address_components.forEach((component) => {
         const { types, long_name, short_name } = component;
 
-        if (types.includes("street_number")) {
-          address = long_name + " ";
-        } else if (types.includes("route")) {
-          address += long_name;
-        } else if (types.includes("subpremise")) {
-          address2 = long_name;
-        } else if (types.includes("postal_code")) {
-          zipCode = long_name;
+        if (types.includes("street_number") || types.includes("route")) {
+          propertyAddress += propertyAddress ? " " + long_name : long_name;
         } else if (
           types.includes("locality") ||
           types.includes("postal_town")
         ) {
-          city = long_name;
+          propertyCity = long_name;
         } else if (types.includes("administrative_area_level_1")) {
-          state = short_name;
+          propertyState = short_name;
+        } else if (types.includes("postal_code")) {
+          propertyPostalCode = long_name;
         } else if (types.includes("country")) {
-          country = long_name;
+          propertyCountry = long_name;
         }
       });
 
-      setValue("address", address, { shouldValidate: true });
-      setValue("address_2", address2, { shouldValidate: true });
-      setValue("zip_code", zipCode, { shouldValidate: true });
-      setValue("city", city, { shouldValidate: true });
-      setValue("state", state, { shouldValidate: true });
-      setValue("country", country, { shouldValidate: true });
-      setValue("latitude", addressDetails.latitude, { shouldValidate: true });
-      setValue("longitude", addressDetails.longitude, { shouldValidate: true });
+      setValue("property_address", propertyAddress, { shouldValidate: true });
+      setValue("property_city", propertyCity, { shouldValidate: true });
+      setValue("property_state", propertyState, { shouldValidate: true });
+      setValue("property_postal_code", propertyPostalCode, {
+        shouldValidate: true,
+      });
+      setValue("property_country", propertyCountry, { shouldValidate: true });
+      setValue("property_latitude", addressDetails.latitude, {
+        shouldValidate: true,
+      });
+      setValue("property_longitude", addressDetails.longitude, {
+        shouldValidate: true,
+      });
     },
     [setValue]
   );
@@ -133,9 +132,8 @@ export default function AddressAutocomplete({
         variant="outlined"
         fullWidth
         id={name}
-        placeholder={`Enter your ${label.toLowerCase()}`}
+        placeholder={`Enter the property ${label.toLowerCase()}`}
         disabled={!isLoaded}
-        defaultValue={defaultValue}
         InputProps={{
           endAdornment: !isLoaded && (
             <CircularProgress color="inherit" size={20} />
