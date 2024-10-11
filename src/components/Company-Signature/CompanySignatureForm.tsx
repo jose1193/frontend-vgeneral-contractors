@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, lazy, Suspense } from "react";
+import React, { useState, lazy, Suspense, useEffect } from "react";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
@@ -16,11 +16,27 @@ import {
 import { CompanySignatureData } from "../../../app/types/company-signature";
 import { companySignatureValidation } from "../Validations/companySignatureValidation";
 import useFormSnackbar from "../../hooks/useFormSnackbar";
+import dynamic from "next/dynamic";
 
 const PhoneInputField = lazy(
   () => import("../../../app/components/PhoneInputField")
 );
 const SignaturePad = lazy(() => import("../../../app/components/SignaturePad"));
+
+// Dynamic import for AddressAutocomplete
+const CompanySignatureAutocomplete = dynamic(
+  () => import("../../../src/components/CompanySignatureAutocomplete"),
+  {
+    loading: () => <CircularProgress />,
+    ssr: false,
+  }
+);
+
+// Dynamic import for GoogleMapComponent
+const GoogleMapComponent = dynamic(() => import("../GoogleMap"), {
+  loading: () => <CircularProgress />,
+  ssr: false,
+});
 
 interface CompanySignatureFormProps {
   initialData?: CompanySignatureData;
@@ -33,6 +49,7 @@ const CompanySignatureForm: React.FC<CompanySignatureFormProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
+  const [mapCoordinates, setMapCoordinates] = useState({ lat: 0, lng: 0 });
 
   const methods = useForm<CompanySignatureData>({
     defaultValues: initialData || {},
@@ -44,7 +61,33 @@ const CompanySignatureForm: React.FC<CompanySignatureFormProps> = ({
     handleSubmit,
     formState: { errors },
     control,
+    setValue,
   } = methods;
+
+  useEffect(() => {
+    if (initialData && initialData.address) {
+      setValue("address", initialData.address);
+      if (initialData.latitude && initialData.longitude) {
+        setMapCoordinates({
+          lat: initialData.latitude,
+          lng: initialData.longitude,
+        });
+      }
+    }
+  }, [initialData, setValue]);
+
+  const handleAddressSelect = (addressDetails: any) => {
+    console.log("Address details received:", addressDetails);
+    if (addressDetails.latitude && addressDetails.longitude) {
+      setMapCoordinates({
+        lat: addressDetails.latitude,
+        lng: addressDetails.longitude,
+      });
+      setValue("latitude", addressDetails.latitude);
+      setValue("longitude", addressDetails.longitude);
+      setValue("address", addressDetails.address);
+    }
+  };
 
   const onSubmitHandler = async (data: CompanySignatureData) => {
     setIsSubmitting(true);
@@ -126,23 +169,33 @@ const CompanySignatureForm: React.FC<CompanySignatureFormProps> = ({
               />
             </Grid>
             <Grid item xs={12}>
-              <Controller
+              <CompanySignatureAutocomplete
+                onAddressSelect={(addressDetails) => {
+                  console.log(addressDetails.formatted_address);
+                  // Aquí puedes hacer lo que necesites con la dirección completa
+                }}
                 name="address"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Address"
-                    variant="outlined"
-                    fullWidth
-                    multiline
-                    rows={2}
-                    error={!!errors.address}
-                    helperText={errors.address?.message}
-                  />
-                )}
+                label="Company Address"
+                defaultValue={initialData?.address || ""}
               />
             </Grid>
+            {initialData && (
+              <Grid item xs={12}>
+                {mapCoordinates.lat !== 0 && mapCoordinates.lng !== 0 && (
+                  <Box
+                    height={300}
+                    width="100%"
+                    position="relative"
+                    sx={{ mb: 5 }}
+                  >
+                    <GoogleMapComponent
+                      latitude={mapCoordinates.lat}
+                      longitude={mapCoordinates.lng}
+                    />
+                  </Box>
+                )}
+              </Grid>
+            )}
             <Grid
               item
               xs={12}
@@ -173,6 +226,9 @@ const CompanySignatureForm: React.FC<CompanySignatureFormProps> = ({
               />
             </Grid>
           </Grid>
+
+          <input type="hidden" {...methods.register("latitude")} />
+          <input type="hidden" {...methods.register("longitude")} />
 
           <Box sx={{ mt: 8, display: "flex", justifyContent: "center" }}>
             <Button

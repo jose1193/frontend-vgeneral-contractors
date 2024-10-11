@@ -19,6 +19,17 @@ import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import Image from "next/image";
 import DetailsSkeleton from "../../../../src/components/skeletons/DetailsSkeleton";
+import dynamic from "next/dynamic";
+
+// Dynamic import of GoogleMapComponent
+const GoogleMapComponent = dynamic(
+  () => import("../../../../src/components/GoogleMap"),
+  {
+    loading: () => <CircularProgress />,
+    ssr: false,
+  }
+);
+
 interface DetailRowProps {
   label: string;
   value: string | number | null | undefined;
@@ -31,6 +42,10 @@ const CompanySignaturePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSession();
+  const [mapCoordinates, setMapCoordinates] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   useEffect(() => {
     const fetchCompanySignature = async () => {
@@ -38,6 +53,12 @@ const CompanySignaturePage = () => {
         const token = session?.accessToken as string;
         const data = await getData(token, uuid as string);
         setCompanySignature(data);
+        if (data.latitude && data.longitude) {
+          setMapCoordinates({
+            lat: Number(data.latitude),
+            lng: Number(data.longitude),
+          });
+        }
         setLoading(false);
       } catch (err) {
         setError("No company signature found");
@@ -86,7 +107,7 @@ const CompanySignaturePage = () => {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-        mt: 2,
+
         ml: -6,
         mb: 10,
         p: { xs: 3, sm: 3, md: 2, lg: 4 },
@@ -108,6 +129,7 @@ const CompanySignaturePage = () => {
         style={{
           padding: "20px",
           border: "1px solid rgba(255, 255, 255, 0.2)",
+          marginBottom: "20px",
         }}
       >
         <IconButton
@@ -149,6 +171,35 @@ const CompanySignaturePage = () => {
         <DetailRow label="Email" value={companySignature.email} />
         <DetailRow label="Address" value={companySignature.address} />
       </Paper>
+      {mapCoordinates ? (
+        <Paper
+          elevation={3}
+          style={{
+            padding: "20px",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Company Location
+          </Typography>
+          <Box height={400} width="100%" position="relative">
+            <GoogleMapComponent
+              latitude={mapCoordinates.lat}
+              longitude={mapCoordinates.lng}
+            />
+          </Box>
+        </Paper>
+      ) : (
+        <Paper
+          elevation={3}
+          style={{
+            padding: "20px",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+          }}
+        >
+          <Typography variant="body1">No location data available</Typography>
+        </Paper>
+      )}
     </Box>
   );
 };
