@@ -1,13 +1,12 @@
 // src/app/users/[uuid]/page.tsx
-
 "use client";
-
 import React, { useEffect, useState, Suspense } from "react";
 import { useParams } from "next/navigation";
 import { getUser } from "../../../lib/actions/usersActions";
 import { UserData } from "../../../types/user";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import GoogleMapComponent from "../../../../src/components/GoogleMap";
 import {
   Container,
   Typography,
@@ -18,16 +17,22 @@ import {
   Button,
 } from "@mui/material";
 import { useSession } from "next-auth/react";
+
 interface DetailRowProps {
   label: string;
   value: string | number | null | undefined;
 }
+
 const UserPage = () => {
   const { uuid } = useParams();
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { data: session, update } = useSession();
+  const { data: session } = useSession();
+  const [mapCoordinates, setMapCoordinates] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -35,6 +40,12 @@ const UserPage = () => {
         const token = session?.accessToken as string;
         const data = await getUser(token, uuid as string);
         setUser(data);
+        if (data.latitude && data.longitude) {
+          setMapCoordinates({
+            lat: Number(data.latitude),
+            lng: Number(data.longitude),
+          });
+        }
         setLoading(false);
       } catch (err) {
         setError("Failed to fetch user");
@@ -45,9 +56,9 @@ const UserPage = () => {
     fetchUser();
   }, [uuid, session?.accessToken]);
 
-  if (!user) {
-    return <Typography></Typography>;
-  }
+  if (loading) return <Typography>Loading...</Typography>;
+  if (error) return <Typography>Error: {error}</Typography>;
+  if (!user) return <Typography>User not found</Typography>;
 
   const DetailRow: React.FC<DetailRowProps> = ({ label, value }) => (
     <Box display="flex" alignItems="center" my={1}>
@@ -55,14 +66,13 @@ const UserPage = () => {
         {label}:
       </Typography>
       <Typography variant="body1" component="span" fontWeight="bold">
-        {value ?? "N/A"}
+        {value?.toString() ?? "N/A"}
       </Typography>
     </Box>
   );
-  if (error) return <div>Error: {error}</div>;
 
   return (
-    <Suspense>
+    <Suspense fallback={<Typography>Loading...</Typography>}>
       <Box
         sx={{
           flexGrow: 1,
@@ -89,6 +99,7 @@ const UserPage = () => {
           style={{
             padding: "20px",
             border: "1px solid rgba(255, 255, 255, 0.2)",
+            marginBottom: "20px",
           }}
         >
           <IconButton
@@ -131,8 +142,26 @@ const UserPage = () => {
           <DetailRow label="Register Date" value={user.created_at} />
           <DetailRow label="Delete Date" value={user.deleted_at} />
         </Paper>
+        {mapCoordinates && (
+          <Paper
+            elevation={3}
+            style={{
+              padding: "20px",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              User Location
+            </Typography>
+            <GoogleMapComponent
+              latitude={mapCoordinates.lat}
+              longitude={mapCoordinates.lng}
+            />
+          </Paper>
+        )}
       </Box>
     </Suspense>
   );
 };
+
 export default withRoleProtection(UserPage, ["Super Admin", "Admin"]);

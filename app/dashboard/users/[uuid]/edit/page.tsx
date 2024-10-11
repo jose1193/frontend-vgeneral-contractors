@@ -6,9 +6,10 @@ import { getUser } from "../../../../lib/actions/usersActions";
 import { useUsers } from "../../../../../src/hooks/useUsers";
 import UsersForm from "../../../../../src/components/Users/UserForm";
 import { UserData } from "../../../../types/user";
-import { Container, Typography, Box, Paper } from "@mui/material";
+import { Container, Typography, Box, Paper, Button } from "@mui/material";
 import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
 import { useSession } from "next-auth/react";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 const EditUserPage = () => {
   const { uuid } = useParams();
   const router = useRouter();
@@ -57,9 +58,18 @@ const EditUserPage = () => {
           p: { xs: 3, sm: 3, md: 2, lg: 4 },
         }}
       >
+        <Button
+          variant="outlined"
+          onClick={() => window.history.back()}
+          startIcon={<ArrowBackIcon />}
+          style={{ marginBottom: "20px" }}
+        >
+          Back
+        </Button>
         <Typography
           variant="h4"
           sx={{
+            mb: 5,
             fontSize: {
               xs: "1.5rem",
               sm: "1.75rem",
