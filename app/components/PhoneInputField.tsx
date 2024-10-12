@@ -73,6 +73,7 @@ const CustomPhoneInput: React.FC<{
           marginBottom: "10px",
         }}
         preferredCountries={["us", "gb", "ca"]}
+        disableDropdown={true}
       />
     </FormControl>
   );

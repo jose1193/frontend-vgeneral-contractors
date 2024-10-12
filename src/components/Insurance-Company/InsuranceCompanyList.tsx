@@ -23,7 +23,7 @@ import Alert from "@mui/material/Alert";
 import Link from "next/link";
 import { useTheme } from "@mui/material/styles";
 import useFormSnackbar from "../../hooks/useFormSnackbar";
-
+import usePhoneFormatter from "../../hooks/usePhoneFormatter ";
 interface InsuranceCompanyListProps {
   insuranceCompanies: InsuranceCompanyData[];
   onDelete: (uuid: string) => void;
@@ -69,7 +69,8 @@ const InsuranceCompanyList: React.FC<InsuranceCompanyListProps> = ({
       }
     }
   };
-
+  // Hook Format Phone
+  const formatPhoneNumber = usePhoneFormatter();
   const columns: GridColDef[] = [
     {
       field: "name",
@@ -91,6 +92,7 @@ const InsuranceCompanyList: React.FC<InsuranceCompanyListProps> = ({
       flex: 1,
       headerAlign: "center",
       align: "center",
+      renderCell: (params) => formatPhoneNumber(params.value),
     },
     {
       field: "address",

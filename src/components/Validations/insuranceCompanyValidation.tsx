@@ -17,12 +17,7 @@ export const insuranceCompanyValidation = yup.object().shape({
   prohibited_alliances: yup
     .array()
     .of(yup.number().integer().positive())
-    .nullable()
-    .test(
-      "min",
-      "At least one prohibited alliance must be selected",
-      (value) => !value || value.length > 0
-    ),
+    .nullable(),
   created_at: yup.string().nullable(),
   updated_at: yup.string().nullable(),
 });

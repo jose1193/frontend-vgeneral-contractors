@@ -25,6 +25,7 @@ import Alert from "@mui/material/Alert";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
+import usePhoneFormatter from "../../hooks/usePhoneFormatter ";
 
 interface CompanySignaturesListProps {
   companySignatures: CompanySignatureData[];
@@ -82,6 +83,9 @@ function Component({
     setSnackbar({ ...snackbar, open: false });
   };
 
+  // Hook Format Phone
+  const formatPhoneNumber = usePhoneFormatter();
+
   const columns: GridColDef[] = [
     {
       field: "company_name",
@@ -96,6 +100,7 @@ function Component({
       width: 200,
       headerAlign: "center",
       align: "center",
+      renderCell: (params) => formatPhoneNumber(params.value),
     },
     {
       field: "email",

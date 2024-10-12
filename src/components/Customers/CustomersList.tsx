@@ -27,7 +27,7 @@ import Alert from "@mui/material/Alert";
 import Link from "next/link";
 import { useTheme } from "@mui/material/styles";
 import useFormSnackbar from "../../hooks/useFormSnackbar";
-
+import usePhoneFormatter from "../../hooks/usePhoneFormatter ";
 interface CustomerListProps {
   customers: CustomerData[];
   onDelete: (uuid: string) => void;
@@ -106,6 +106,9 @@ const CustomerList: React.FC<CustomerListProps> = ({
     }
   };
 
+  // Hook Format Phone
+  const formatPhoneNumber = usePhoneFormatter();
+
   const columns: GridColDef[] = [
     {
       field: "name",
@@ -134,6 +137,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
       width: 150,
       headerAlign: "center",
       align: "center",
+      renderCell: (params) => formatPhoneNumber(params.value),
     },
     {
       field: "home_phone",
@@ -141,13 +145,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
       width: 150,
       headerAlign: "center",
       align: "center",
-    },
-    {
-      field: "occupation",
-      headerName: "Occupation",
-      width: 150,
-      headerAlign: "center",
-      align: "center",
+      renderCell: (params) => formatPhoneNumber(params.value),
     },
 
     {

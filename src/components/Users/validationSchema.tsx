@@ -1,8 +1,5 @@
 import * as Yup from "yup";
 
-const phoneRegExp =
-  /^(\+?\d{0,4})?\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{3}\)?)\s?-?\s?(\(?\d{4}\)?)?$/;
-
 export const validationSchema = Yup.object().shape({
   name: Yup.string()
     .required("Name is required")
@@ -26,8 +23,7 @@ export const validationSchema = Yup.object().shape({
     .max(255, "Email can't be longer than 255 characters"),
   phone: Yup.string()
     .nullable()
-    .matches(phoneRegExp, "Phone number is not valid")
-    .max(20, "Phone number can't be longer than 20 characters"),
+    .matches(/^\d{11}$/, "Phone number must be in US format (XXX)-XXX-XXXX"),
   zip_code: Yup.string()
     .nullable()
     .max(10, "Zip code can't be longer than 10 characters"),

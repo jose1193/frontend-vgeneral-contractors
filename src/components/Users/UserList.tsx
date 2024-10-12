@@ -27,6 +27,7 @@ import Alert from "@mui/material/Alert";
 import Link from "next/link";
 import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
+import usePhoneFormatter from "../../hooks/usePhoneFormatter ";
 
 interface UsersListProps {
   users: UserData[];
@@ -114,6 +115,9 @@ const UsersList: React.FC<UsersListProps> = ({
     setSnackbar({ ...snackbar, open: false });
   };
 
+  // Hook Format Phone
+  const formatPhoneNumber = usePhoneFormatter();
+
   const columns: GridColDef[] = [
     {
       field: "username",
@@ -125,21 +129,15 @@ const UsersList: React.FC<UsersListProps> = ({
     {
       field: "name",
       headerName: "Name",
-      width: 150,
+      width: 200,
       headerAlign: "center",
       align: "center",
     },
-    {
-      field: "last_name",
-      headerName: "Last Name",
-      width: 150,
-      headerAlign: "center",
-      align: "center",
-    },
+
     {
       field: "email",
       headerName: "Email",
-      width: 200,
+      width: 220,
       headerAlign: "center",
       align: "center",
     },
@@ -149,20 +147,7 @@ const UsersList: React.FC<UsersListProps> = ({
       width: 150,
       headerAlign: "center",
       align: "center",
-    },
-    {
-      field: "city",
-      headerName: "City",
-      width: 150,
-      headerAlign: "center",
-      align: "center",
-    },
-    {
-      field: "state",
-      headerName: "State",
-      width: 150,
-      headerAlign: "center",
-      align: "center",
+      renderCell: (params) => formatPhoneNumber(params.value),
     },
     {
       field: "user_role",
@@ -264,7 +249,7 @@ const UsersList: React.FC<UsersListProps> = ({
     username: user.username,
     id: user.uuid,
     uuid: user.uuid,
-    name: user.name,
+    name: `${user.name || ""} ${user.last_name || ""}`.trim(),
     last_name: user.last_name,
     email: user.email,
     phone: user.phone,
