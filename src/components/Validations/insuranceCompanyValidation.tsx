@@ -14,10 +14,7 @@ export const insuranceCompanyValidation = yup.object().shape({
     .string()
     .nullable()
     .matches(websiteRegExp, "Website must be in the format www.company.com"),
-  prohibited_alliances: yup
-    .array()
-    .of(yup.number().integer().positive())
-    .nullable(),
+  prohibited_alliances: yup.array().nullable(),
   created_at: yup.string().nullable(),
   updated_at: yup.string().nullable(),
 });

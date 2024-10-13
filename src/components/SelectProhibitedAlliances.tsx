@@ -42,15 +42,14 @@ const SelectProhibitedAlliances: React.FC<SelectProhibitedAlliancesProps> = ({
       try {
         setLoading(true);
         const token = session?.accessToken as string;
-
         const response = await checkAllianceCompaniesAvailable(token);
 
         if (response.success && Array.isArray(response.data)) {
-          // Combinar las alianzas iniciales con las obtenidas de la API
           const combinedAlliances = [...initialAlliances, ...response.data];
-          // Eliminar duplicados basados en el uuid
           const uniqueAlliances = Array.from(
-            new Map(combinedAlliances.map((item) => [item.uuid, item])).values()
+            new Map(
+              combinedAlliances.map((item) => [getCompanyId(item), item])
+            ).values()
           );
           setAllianceCompanies(uniqueAlliances);
           setError(null);
@@ -75,18 +74,21 @@ const SelectProhibitedAlliances: React.FC<SelectProhibitedAlliancesProps> = ({
       .includes(searchTerm.toLowerCase())
   );
 
-  // Helper function to get a unique identifier for each company
   const getCompanyId = (company: AllianceCompanyData): string => {
     return (
-      company.uuid || company.id?.toString() || company.alliance_company_name
+      company.id?.toString() || company.uuid || company.alliance_company_name
     );
+  };
+
+  const getCompanyById = (id: string): AllianceCompanyData | undefined => {
+    return allianceCompanies.find((company) => getCompanyId(company) === id);
   };
 
   return (
     <Controller
       name="prohibited_alliances"
       control={control}
-      defaultValue={initialAlliances.map((alliance) => getCompanyId(alliance))}
+      defaultValue={initialAlliances.map(getCompanyId)}
       render={({ field, fieldState: { error: fieldError } }) => (
         <FormControl fullWidth error={!!fieldError || !!error}>
           <InputLabel id="prohibited-alliances-label">
@@ -96,14 +98,12 @@ const SelectProhibitedAlliances: React.FC<SelectProhibitedAlliancesProps> = ({
             {...field}
             multiple
             labelId="prohibited-alliances-label"
-            label="Prohibited With Alliances"
+            label="Prohibited Alliances"
             input={<OutlinedInput label="Prohibited Alliances" />}
             renderValue={(selected) => (
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
                 {(selected as string[]).map((id) => {
-                  const company = allianceCompanies.find(
-                    (c) => getCompanyId(c) === id
-                  );
+                  const company = getCompanyById(id);
                   return company ? (
                     <Chip
                       key={id}

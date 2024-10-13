@@ -75,7 +75,8 @@ const InsuranceCompanyList: React.FC<InsuranceCompanyListProps> = ({
     {
       field: "name",
       headerName: "Name",
-      flex: 1,
+      flex: 2,
+
       headerAlign: "center",
       align: "center",
     },
@@ -94,13 +95,7 @@ const InsuranceCompanyList: React.FC<InsuranceCompanyListProps> = ({
       align: "center",
       renderCell: (params) => formatPhoneNumber(params.value),
     },
-    {
-      field: "address",
-      headerName: "Address",
-      flex: 1.5,
-      headerAlign: "center",
-      align: "center",
-    },
+
     {
       field: "actions",
       headerName: "Actions",
