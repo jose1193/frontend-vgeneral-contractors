@@ -1,14 +1,12 @@
-// UsersForm.tsx
 import React, { useState, useEffect } from "react";
 import { useForm, Controller, FormProvider } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { UserData } from "../../../app/types/user";
 import PhoneInputField from "../../../app/components/PhoneInputField";
 import EmailField from "../../../app/components/EmailInputField";
 import UsernameField from "../../../app/components/UsernameInputField";
 import { checkRolesAvailable } from "../../../app/lib/api";
-import { yupResolver } from "@hookform/resolvers/yup";
 import { validationSchema } from "./validationSchema";
-
 import useCapitalizeWords from "../../hooks/useCapitalizeWords";
 import dynamic from "next/dynamic";
 import {
@@ -24,6 +22,8 @@ import {
   CircularProgress,
   Checkbox,
   FormControlLabel,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 
@@ -37,7 +37,6 @@ interface UsersFormProps {
   onSubmit: (data: UserData) => Promise<void>;
 }
 
-// Dynamic import for AddressAutocomplete
 const AddressAutocomplete = dynamic(
   () => import("../../../src/components/AddressAutocomplete"),
   {
@@ -46,7 +45,6 @@ const AddressAutocomplete = dynamic(
   }
 );
 
-// Dynamic import for GoogleMapComponent
 const GoogleMapComponent = dynamic(() => import("../GoogleMap"), {
   loading: () => <CircularProgress />,
   ssr: false,
@@ -58,6 +56,17 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
   const [mapCoordinates, setMapCoordinates] = useState({ lat: 0, lng: 0 });
   const { data: session } = useSession();
   const capitalizeWords = useCapitalizeWords();
+
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
   const methods = useForm<UserData>({
     defaultValues: initialData || {},
     resolver: yupResolver(validationSchema),
@@ -71,7 +80,6 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
         const rolesData = await checkRolesAvailable(token);
         setRoles(rolesData);
 
-        // Si tenemos initialData y roles, buscamos el rol por nombre
         if (initialData?.user_role && rolesData.length > 0) {
           const initialRole = rolesData.find(
             (role: Role) => role.name === initialData.user_role
@@ -89,17 +97,6 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
     fetchRoles();
   }, [session?.accessToken, initialData, methods]);
 
-  const handleSubmit = async (data: UserData) => {
-    console.log("Form submitted with data:", data);
-    setIsSubmitting(true);
-    try {
-      await onSubmit(data);
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
   useEffect(() => {
     if (initialData && initialData.address) {
       methods.setValue("address", initialData.address);
@@ -112,6 +109,30 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
     }
   }, [initialData, methods]);
 
+  const handleSubmit = async (data: UserData) => {
+    //console.log("Form submitted with data:", data);
+    setIsSubmitting(true);
+    try {
+      await onSubmit(data);
+      setSnackbar({
+        open: true,
+        message: initialData
+          ? "User updated successfully!"
+          : "User created successfully!",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setSnackbar({
+        open: true,
+        message: "An error occurred. Please try again.",
+        severity: "error",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleAddressSelect = (addressDetails: any) => {
     console.log("Address details received in UsersForm:", addressDetails);
     if (addressDetails.latitude && addressDetails.longitude) {
@@ -122,7 +143,6 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
       methods.setValue("latitude", addressDetails.latitude);
       methods.setValue("longitude", addressDetails.longitude);
       methods.setValue("address", addressDetails.address);
-      // Opcionalmente, actualiza otros campos si están disponibles en addressDetails
       if (addressDetails.city) methods.setValue("city", addressDetails.city);
       if (addressDetails.state) methods.setValue("state", addressDetails.state);
       if (addressDetails.country)
@@ -131,6 +151,17 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
         methods.setValue("zip_code", addressDetails.zip_code);
     }
   };
+
+  const handleSnackbarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   return (
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(handleSubmit)}>
@@ -291,6 +322,20 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
           </Grid>
         </Grid>
       </form>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </FormProvider>
   );
 };

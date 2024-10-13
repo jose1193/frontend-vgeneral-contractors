@@ -1,27 +1,35 @@
 import { useCallback } from "react";
 
 const usePhoneFormatter = () => {
-  const formatPhoneNumber = useCallback((phoneNumber: string): string => {
-    // Remove all non-digit characters
-    const cleaned = phoneNumber.replace(/\D/g, "");
+  const formatPhoneNumber = useCallback(
+    (phoneNumber: string | null | undefined): string => {
+      // If phoneNumber is null or undefined, return an empty string
+      if (phoneNumber == null) {
+        return "";
+      }
 
-    // Check if the number starts with the country code (e.g., 1 for US)
-    const hasCountryCode = cleaned.length === 11 && cleaned.startsWith("1");
+      // Remove all non-digit characters
+      const cleaned = phoneNumber.replace(/\D/g, "");
 
-    // If it has a country code, remove it
-    const numberToFormat = hasCountryCode ? cleaned.slice(1) : cleaned;
+      // Check if the number starts with the country code (e.g., 1 for US)
+      const hasCountryCode = cleaned.length === 11 && cleaned.startsWith("1");
 
-    // Ensure the number has exactly 10 digits
-    if (numberToFormat.length !== 10) {
-      return phoneNumber; // Return the original if not 10 digits
-    }
+      // If it has a country code, remove it
+      const numberToFormat = hasCountryCode ? cleaned.slice(1) : cleaned;
 
-    // Format the number (XXX) XXX-XXXX
-    return `(${numberToFormat.slice(0, 3)}) ${numberToFormat.slice(
-      3,
-      6
-    )}-${numberToFormat.slice(6)}`;
-  }, []);
+      // If the number doesn't have 10 digits, return the original input
+      if (numberToFormat.length !== 10) {
+        return phoneNumber;
+      }
+
+      // Format the number (XXX) XXX-XXXX
+      return `(${numberToFormat.slice(0, 3)}) ${numberToFormat.slice(
+        3,
+        6
+      )}-${numberToFormat.slice(6)}`;
+    },
+    []
+  );
 
   return formatPhoneNumber;
 };

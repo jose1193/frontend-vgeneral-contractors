@@ -72,27 +72,13 @@ const InsuranceCompanyForm: React.FC<InsuranceCompanyFormProps> = ({
         message: "Insurance company data submitted successfully!",
         severity: "success",
       });
-    } catch (error: any) {
-      if (error.response && error.response.status === 422) {
-        const validationErrors = error.response.data.errors;
-        Object.keys(validationErrors).forEach((key) => {
-          setError(key as keyof InsuranceCompanyData, {
-            type: "manual",
-            message: validationErrors[key][0],
-          });
-        });
-        setSnackbar({
-          open: true,
-          message: "Validation errors occurred. Please check the form.",
-          severity: "error",
-        });
-      } else {
-        setSnackbar({
-          open: true,
-          message: error.message || "An unknown error occurred",
-          severity: "error",
-        });
-      }
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message:
+          error instanceof Error ? error.message : "An unknown error occurred",
+        severity: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }
