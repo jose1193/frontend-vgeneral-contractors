@@ -21,11 +21,18 @@ export const customerSchema = yup.object().shape({
   cell_phone: yup
     .string()
     .nullable()
-    .max(20, "Cell phone must be at most 20 characters"),
+    .matches(
+      /^\d{11}$/,
+      "Cell Phone number must be in US format (XXX)-XXX-XXXX"
+    ),
   home_phone: yup
     .string()
     .nullable()
-    .max(20, "Home phone must be at most 20 characters"),
+    .matches(
+      /^\d{11}$/,
+      "Cell Phone number must be in US format (XXX)-XXX-XXXX"
+    ),
+
   email: yup.string().email("Invalid email").required("Email is required"),
   occupation: yup
     .string()

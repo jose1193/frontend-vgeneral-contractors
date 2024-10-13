@@ -8,7 +8,10 @@ export const insuranceCompanyValidation = yup.object().shape({
     .required("Insurance company name is required")
     .max(255, "Insurance company name must be at most 255 characters"),
   address: yup.string().nullable(),
-  phone: yup.string().nullable().max(20, "Phone must be at most 20 characters"),
+  phone: yup
+    .string()
+    .nullable()
+    .matches(/^\d{11}$/, "Phone number must be in US format (XXX)-XXX-XXXX"),
   email: yup.string().nullable().email("Invalid email format"),
   website: yup
     .string()
