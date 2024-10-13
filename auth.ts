@@ -3,7 +3,8 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import type { User } from "next-auth";
 import { login, getUserDetails } from "./app/lib/api";
-
+import GoogleProvider from "next-auth/providers/google";
+import { socialLogin } from "./app/lib/actions/socialLoginActions";
 export const { auth, handlers } = NextAuth({
   providers: [
     CredentialsProvider({
@@ -73,15 +74,45 @@ export const { auth, handlers } = NextAuth({
         }
       },
     }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
   pages: {
     signIn: "/login",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.user = user;
         token.accessToken = user.token;
+      }
+      if (account && account.provider === "google") {
+        try {
+          const response = await socialLogin("google", account.access_token!);
+
+          if (response.success) {
+            if (Array.isArray(response.data)) {
+              console.error("Unexpected array response from social login");
+              // Handle unexpected array response
+              // You might want to throw an error or handle this case differently
+            } else if (
+              typeof response.data === "object" &&
+              response.data !== null
+            ) {
+              // Assuming response.data contains user information and token
+              token.user = response.data.user;
+              token.accessToken = response.data.token;
+            } else {
+              console.error("Unexpected response format from social login");
+            }
+          } else {
+            console.error("Social login failed:", response);
+          }
+        } catch (error) {
+          console.error("Error during social login:", error);
+        }
       }
       return token;
     },
