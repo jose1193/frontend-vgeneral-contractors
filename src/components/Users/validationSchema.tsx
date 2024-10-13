@@ -23,7 +23,7 @@ export const validationSchema = Yup.object().shape({
     .max(255, "Email can't be longer than 255 characters"),
   phone: Yup.string()
     .nullable()
-    .matches(/^\d{11}$/, "Phone number must be in US format (XXX)-XXX-XXXX"),
+    .matches(/^\d{11}$/, "Phone number must be in US format +1 (XXX)-XXX-XXXX"),
   zip_code: Yup.string()
     .nullable()
     .max(10, "Zip code can't be longer than 10 characters"),

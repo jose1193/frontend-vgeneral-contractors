@@ -11,7 +11,7 @@ export const insuranceCompanyValidation = yup.object().shape({
   phone: yup
     .string()
     .nullable()
-    .matches(/^\d{11}$/, "Phone number must be in US format (XXX)-XXX-XXXX"),
+    .matches(/^\d{11}$/, "Phone number must be in US format +1 (XXX)-XXX-XXXX"),
   email: yup.string().nullable().email("Invalid email format"),
   website: yup
     .string()

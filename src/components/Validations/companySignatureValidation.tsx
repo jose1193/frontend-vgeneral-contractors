@@ -8,7 +8,7 @@ export const companySignatureValidation = yup.object().shape({
   phone: yup
     .string()
     .required()
-    .matches(/^\d{11}$/, "Phone number must be in US format (XXX)-XXX-XXXX"),
+    .matches(/^\d{11}$/, "Phone number must be in US format +1 (XXX)-XXX-XXXX"),
   email: yup.string().required().email("Invalid email"),
   website: yup
     .string()
