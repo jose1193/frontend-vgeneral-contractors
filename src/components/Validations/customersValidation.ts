@@ -20,7 +20,7 @@ export const customerSchema = yup.object().shape({
     .required("Last name is required"),
   cell_phone: yup
     .string()
-    .nullable()
+    .required()
     .matches(
       /^\d{11}$/,
       "Cell Phone number must be in US format (XXX)-XXX-XXXX"
