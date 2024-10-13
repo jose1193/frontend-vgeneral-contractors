@@ -401,7 +401,12 @@ export default function MiniDrawer() {
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
   const handleDropdownToggle = (name: string) => {
-    setOpenDropdown(openDropdown === name ? null : name);
+    if (open) {
+      setOpenDropdown(openDropdown === name ? null : name);
+    } else {
+      setOpen(true);
+      setOpenDropdown(name);
+    }
   };
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -709,7 +714,7 @@ export default function MiniDrawer() {
                       ))}
                   </ListItemButton>
                   <Collapse
-                    in={openDropdown === page.name && open}
+                    in={openDropdown === page.name}
                     timeout="auto"
                     unmountOnExit
                   >
