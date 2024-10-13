@@ -1,14 +1,13 @@
 //middleware.ts
 import { NextResponse } from "next/server";
 import { auth } from "./auth";
-
 export default auth((req) => {
   const isLoggedIn = !!req.auth?.user;
   const userRole = req.auth?.user?.user_role;
 
   console.log("Middleware - Is logged in:", isLoggedIn);
   console.log("Middleware - User role:", userRole);
-
+  //console.log("Middleware - User:", req.auth?.user);
   const pathname = req.nextUrl.pathname;
 
   if (isLoggedIn) {
@@ -44,8 +43,8 @@ function getDashboardRouteForRole(role: string | undefined): string {
       return "/dashboard/admin";
     case "Manager":
       return "/dashboard/manager";
-    case "Lead":
-      return "/dashboard/lead";
+    case "Sales Person":
+      return "/dashboard/salesperson";
     case "Technical Services":
       return "/dashboard/technical-services";
     default:
@@ -63,8 +62,8 @@ function hasAccessToRoute(role: string | undefined, pathname: string): boolean {
   if (pathname.startsWith("/dashboard/manager")) {
     return role === "Super Admin" || role === "Admin" || role === "Manager";
   }
-  if (pathname.startsWith("/dashboard/lead")) {
-    return role === "Super Admin" || role === "Admin" || role === "Lead";
+  if (pathname.startsWith("/dashboard/salesperson")) {
+    return role === "Super Admin" || role === "Admin" || role === "Salesperson";
   }
   if (pathname.startsWith("/dashboard/technical-services")) {
     return (

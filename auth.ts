@@ -1,12 +1,13 @@
 // auth.ts
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import type { User } from "next-auth";
 import { login, getUserDetails } from "./app/lib/api";
-import GoogleProvider from "next-auth/providers/google";
 import { socialLogin } from "./app/lib/actions/socialLoginActions";
 export const { auth, handlers } = NextAuth({
   providers: [
+    // Login mediante credenciales
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -24,12 +25,14 @@ export const { auth, handlers } = NextAuth({
             return null;
           }
 
+          // Llama a la función login para autenticar al usuario
           const userData = await login({
             email: credentials.email,
             password: credentials.password,
           });
 
           if (userData && userData.token) {
+            // Obtiene detalles adicionales del usuario
             const userDetails = await getUserDetails(userData.token);
 
             const user: User = {
@@ -74,53 +77,54 @@ export const { auth, handlers } = NextAuth({
         }
       },
     }),
+
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }),
   ],
+
   pages: {
-    signIn: "/login",
+    signIn: "/login", // Página personalizada de inicio de sesión
   },
+
   callbacks: {
     async jwt({ token, user, account }) {
-      if (user) {
-        token.user = user;
-        token.accessToken = user.token;
-      }
-      if (account && account.provider === "google") {
+      if (account && account.provider === "google" && account.access_token) {
         try {
-          const response = await socialLogin("google", account.access_token!);
-
-          if (response.success) {
-            if (Array.isArray(response.data)) {
-              console.error("Unexpected array response from social login");
-              // Handle unexpected array response
-              // You might want to throw an error or handle this case differently
-            } else if (
-              typeof response.data === "object" &&
-              response.data !== null
-            ) {
-              // Assuming response.data contains user information and token
-              token.user = response.data.user;
-              token.accessToken = response.data.token;
-            } else {
-              console.error("Unexpected response format from social login");
-            }
-          } else {
-            console.error("Social login failed:", response);
+          const socialLoginResponse = await socialLogin(
+            "google",
+            account.access_token // This is the access_provider_token
+          );
+          if (socialLoginResponse.success) {
+            token.backendToken = socialLoginResponse.data.token;
+            token.user = socialLoginResponse.data.user;
           }
         } catch (error) {
           console.error("Error during social login:", error);
         }
+      } else if (user) {
+        // For non-social login
+        token.user = user;
+        token.backendToken = (user as any).token;
       }
+
       return token;
     },
+
+    // Callback para la sesión
     async session({ session, token }) {
-      session.user = token.user;
+      session.user = token.user || {};
       session.accessToken = token.accessToken;
-      // Asegúrate de que el rol esté incluido en la sesión
-      session.user.user_role = token.user.user_role;
+      session.user.user_role = (token.user as any)?.user_role;
+
       return session;
     },
   },

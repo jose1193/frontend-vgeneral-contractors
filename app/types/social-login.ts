@@ -8,8 +8,8 @@ export interface SocialLoginData {
     uuid: string;
     profile_photo_path: string;
     name: string;
-    last_name: string;
-    username: string;
+    last_name: string | null;
+    username: string | null;
     email: string;
     email_verified_at: string | null;
     phone: string | null;
