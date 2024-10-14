@@ -7,13 +7,13 @@ export default auth((req) => {
 
   console.log("Middleware - Is logged in:", isLoggedIn);
   console.log("Middleware - User role:", userRole);
-  //console.log("Middleware - User:", req.auth?.user);
+  console.log("Middleware - User:", req.auth?.user);
   const pathname = req.nextUrl.pathname;
 
   if (isLoggedIn) {
     if (!userRole) {
       console.error("User is logged in but has no role assigned");
-      return NextResponse.redirect(new URL("/error", req.url));
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
 
     if (pathname === "/" || pathname === "/") {

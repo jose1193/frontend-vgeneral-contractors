@@ -101,10 +101,10 @@ export const { auth, handlers } = NextAuth({
         try {
           const socialLoginResponse = await socialLogin(
             "google",
-            account.access_token // This is the access_provider_token
+            account.access_token
           );
           if (socialLoginResponse.success) {
-            token.backendToken = socialLoginResponse.data.token;
+            token.accessToken = socialLoginResponse.data.token;
             token.user = socialLoginResponse.data.user;
           }
         } catch (error) {
@@ -113,7 +113,7 @@ export const { auth, handlers } = NextAuth({
       } else if (user) {
         // For non-social login
         token.user = user;
-        token.backendToken = (user as any).token;
+        token.accessToken = (user as any).token;
       }
 
       return token;
