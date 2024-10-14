@@ -7,7 +7,7 @@ export default auth((req) => {
 
   console.log("Middleware - Is logged in:", isLoggedIn);
   console.log("Middleware - User role:", userRole);
-  console.log("Middleware - User:", req.auth?.user);
+  //console.log("Middleware - User:", req.auth?.user);
   const pathname = req.nextUrl.pathname;
 
   if (isLoggedIn) {
