@@ -1,14 +1,18 @@
+import { CustomerData } from "./customer";
 export interface PropertyData {
   id?: number;
   uuid?: string;
   property_address: string;
-  property_state: string;
-  property_city: string;
-  property_postal_code: string;
-  property_country: string;
-  property_latitude?: number | null;
-  property_longitude?: number | null;
-  customer_id: number[];
-  created_at?: string | null;
-  updated_at?: string | null;
+  property_address_2?: string | null | undefined;
+  property_state?: string | null | undefined;
+  property_city?: string | null | undefined;
+  property_postal_code?: string | null | undefined;
+  property_country?: string | null | undefined;
+  property_latitude?: number | null | undefined;
+  property_longitude?: number | null | undefined;
+  customer_id?: number;
+  customers?: CustomerData[];
+  customer_array_id: number[];
+  created_at?: string | null | undefined; // Permitir undefined
+  updated_at?: string | null | undefined; // Permitir undefined
 }

@@ -62,7 +62,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ open, onClose }) => {
       property_city: "",
       property_postal_code: "",
       property_country: "",
-      customer_id: [],
+      customer_array_id: [],
     },
     mode: "onChange",
   });

@@ -119,9 +119,7 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
                 Property and Customer
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={11}>
-                  <SelectProperty control={control} />
-                </Grid>
+                <Grid item xs={11}></Grid>
                 <Grid item xs={1}>
                   <IconButton
                     color="primary"
@@ -435,7 +433,7 @@ const ClaimsForm: React.FC<ClaimsDataFormProps> = ({
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           onClose={handleSnackbarClose}

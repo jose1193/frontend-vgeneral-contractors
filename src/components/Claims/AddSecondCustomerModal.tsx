@@ -1,6 +1,9 @@
+"use client";
+
 import React, { useState } from "react";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import {
   Button,
   Dialog,
@@ -13,12 +16,14 @@ import {
   Alert,
   CircularProgress,
   Box,
+  Typography,
 } from "@mui/material";
 import PermContactCalendarIcon from "@mui/icons-material/PermContactCalendar";
 import { useCustomers } from "../../hooks/useCustomers";
 import { useSession } from "next-auth/react";
 import { customerSchema } from "../../components/Validations/customersValidation";
 import { CustomerData } from "../../../app/types/customer";
+import { PropertyData } from "../../../app/types/property";
 import { useCustomerContext } from "../../../app/contexts/CustomerContext";
 import PhoneInputField from "../../../app/components/PhoneInputField";
 import useCapitalizeWords from "../../hooks/useCapitalizeWords";
@@ -27,9 +32,14 @@ import EmailCustomerInputField from "../Customers/EmailCustomerInputField";
 interface CustomerFormProps {
   open: boolean;
   onClose: () => void;
+  selectedProperty: PropertyData | null;
 }
 
-const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
+const AddSecondCustomerModal: React.FC<CustomerFormProps> = ({
+  open,
+  onClose,
+  selectedProperty,
+}) => {
   const capitalizeWords = useCapitalizeWords();
   const { addCustomer, refreshCustomers } = useCustomerContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,12 +68,16 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
 
     try {
       const { id, ...customerDataWithoutId } = data;
-      const newCustomer = await createCustomer(data);
+      const newCustomerData = {
+        ...customerDataWithoutId,
+        property_id: selectedProperty?.id,
+      };
+      const newCustomer = await createCustomer(newCustomerData);
       addCustomer(newCustomer);
       await refreshCustomers();
       setSnackbar({
         open: true,
-        message: "Customer created successfully",
+        message: "Customer assigned to property successfully",
         severity: "success",
       });
       onClose();
@@ -100,7 +114,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
       <Dialog open={open} onClose={onClose}>
         <DialogTitle
           sx={{
-            backgroundColor: "#212121",
+            backgroundColor: "#15803d",
             mb: 5,
             textAlign: "center",
             color: "#fff",
@@ -108,9 +122,26 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
           }}
         >
           <Box display="flex" alignItems="center" justifyContent="center">
-            <PermContactCalendarIcon sx={{ mr: 1 }} /> New Customer
+            <PermContactCalendarIcon sx={{ mr: 1 }} /> New Customer Signature
           </Box>
         </DialogTitle>
+        {selectedProperty && (
+          <Box sx={{ px: 3, py: 2, backgroundColor: "#f0f0f0", mb: 2, mt: -5 }}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Selected Property:
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: "#662401", fontWeight: "bold" }}
+            >
+              {selectedProperty.property_address},{" "}
+              {selectedProperty.property_city},{" "}
+              {selectedProperty.property_state}{" "}
+              {selectedProperty.property_postal_code},{" "}
+              {selectedProperty.property_country}
+            </Typography>
+          </Box>
+        )}
         <FormProvider {...methods}>
           <form onSubmit={handleFormSubmit}>
             <DialogContent>
@@ -203,7 +234,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
               <Button
                 type="submit"
                 variant="contained"
-                color="primary"
+                color="success"
                 disabled={isSubmitting}
                 startIcon={
                   isSubmitting ? (
@@ -221,7 +252,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           onClose={handleSnackbarClose}
@@ -235,4 +266,4 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
   );
 };
 
-export default CustomerForm;
+export default AddSecondCustomerModal;

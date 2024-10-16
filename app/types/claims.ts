@@ -15,7 +15,8 @@ export interface TechnicalAssignment {
 export interface ClaimsData {
   id?: number;
   uuid?: string;
-  property_id: number;
+  customer_id?: number;
+  property_id?: number;
   type_damage_id: number;
   type_damage?: string;
   damage_description: string | null;

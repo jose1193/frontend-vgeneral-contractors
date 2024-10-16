@@ -92,7 +92,7 @@ export const { auth, handlers } = NextAuth({
   ],
 
   pages: {
-    signIn: "/login", // Página personalizada de inicio de sesión
+    signIn: "/login",
   },
 
   callbacks: {

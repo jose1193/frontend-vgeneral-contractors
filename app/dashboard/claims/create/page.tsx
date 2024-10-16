@@ -5,6 +5,7 @@
 import React, { Suspense } from "react";
 import { useClaims } from "../../../../src/hooks/useClaims";
 import ClaimsForm from "../../../../src/components/Claims/ClaimsForm";
+import ClaimsWizard from "../../../../src/components/Claims/ClaimsWizard";
 import { Typography, Box, Paper, Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { ClaimsData } from "../../../../app/types/claims";
@@ -78,7 +79,7 @@ const CreateClaimPage = () => {
             border: "1px solid rgba(255, 255, 255, 0.2)",
           }}
         >
-          <ClaimsForm onSubmit={handleSubmit} />
+          <ClaimsWizard onSubmit={handleSubmit} />
         </Paper>
       </Box>
     </Suspense>
@@ -88,5 +89,5 @@ export default withRoleProtection(CreateClaimPage, [
   "Super Admin",
   "Admin",
   "Manager",
-  "Lead",
+  "Salesperson",
 ]);

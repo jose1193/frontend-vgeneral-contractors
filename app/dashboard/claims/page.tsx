@@ -66,5 +66,5 @@ export default withRoleProtection(ClaimsPage, [
   "Super Admin",
   "Admin",
   "Manager",
-  "Lead",
+  "Salesperson",
 ]);

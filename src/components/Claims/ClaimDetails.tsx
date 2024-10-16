@@ -204,10 +204,7 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
               {claim.description_of_loss}
             </span>
           </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Policy Number:{" "}
-            <span style={{ fontWeight: "bold" }}>{claim.policy_number}</span>
-          </Typography>
+
           <Typography variant="subtitle2" sx={{ color: "black" }}>
             Type Damage:
             <span style={{ fontWeight: "bold" }}> {claim.type_damage}</span>
@@ -280,6 +277,10 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
             <span style={{ fontWeight: "bold", marginLeft: 5 }}>
               {claim.insurance_company_assignment || "N/A"}
             </span>
+          </Typography>
+          <Typography variant="subtitle2" sx={{ color: "black" }}>
+            Policy Number:{" "}
+            <span style={{ fontWeight: "bold" }}>{claim.policy_number}</span>
           </Typography>
           <Typography variant="subtitle2" sx={{ color: "black" }}>
             Insurance Adjuster: <span style={{ fontWeight: "bold" }}></span>

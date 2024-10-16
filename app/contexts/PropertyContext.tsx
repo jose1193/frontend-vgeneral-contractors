@@ -12,7 +12,9 @@ import { PropertyData } from "../../app/types/property";
 
 type PropertyContextType = {
   properties: PropertyData[];
+  setProperties: React.Dispatch<React.SetStateAction<PropertyData[]>>;
   addProperty: (property: PropertyData) => void;
+  updateProperty: (updatedProperty: PropertyData) => void;
   refreshProperties: () => Promise<void>;
   loading: boolean;
   error: string | null;
@@ -67,15 +69,25 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({
     setProperties((prev) => [...prev, property]);
   }, []);
 
+  const updateProperty = useCallback((updatedProperty: PropertyData) => {
+    setProperties((prev) =>
+      prev.map((prop) =>
+        prop.id === updatedProperty.id ? updatedProperty : prop
+      )
+    );
+  }, []);
+
   const contextValue = React.useMemo(
     () => ({
       properties,
+      setProperties,
       addProperty,
+      updateProperty,
       refreshProperties,
       loading,
       error,
     }),
-    [properties, addProperty, refreshProperties, loading, error]
+    [properties, addProperty, updateProperty, refreshProperties, loading, error]
   );
 
   return (
