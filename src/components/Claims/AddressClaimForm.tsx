@@ -98,12 +98,14 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
+      const customerIds =
+        data.associated_customer_ids.length > 0
+          ? data.associated_customer_ids
+          : [selectedCustomerId];
+
       const propertyData: Omit<PropertyData, "id"> = {
         ...data.property,
-        customer_array_id:
-          associatedCustomerIds.length > 0
-            ? associatedCustomerIds
-            : [selectedCustomerId],
+        customer_id: customerIds,
       };
 
       console.log("Property data being sent:", propertyData);
@@ -117,7 +119,7 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
         message: "Property created successfully",
         severity: "success",
       });
-      reset(); // Reset the form
+      reset();
       onSubmitSuccess();
     } catch (error) {
       console.error("Failed to create property:", error);
