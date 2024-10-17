@@ -8,6 +8,10 @@ import {
   Button,
   Typography,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import dynamic from "next/dynamic";
 import { useProperties } from "../../hooks/useProperties";
@@ -18,6 +22,7 @@ import { usePropertyContext } from "../../../app/contexts/PropertyContext";
 import GiteIcon from "@mui/icons-material/Gite";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 
 const AddressAutocompleteProperty = dynamic(
   () => import("./AddressAutocompleteProperty"),
@@ -47,6 +52,9 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
 }) => {
   const [mapCoordinates, setMapCoordinates] = useState({ lat: 0, lng: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [excludeDialogOpen, setExcludeDialogOpen] = useState(false);
+  const [customerToExclude, setCustomerToExclude] =
+    useState<CustomerData | null>(null);
 
   const { data: session } = useSession();
   const token = session?.accessToken as string;
@@ -154,6 +162,21 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
       customer.id !== undefined && associatedCustomerIds.includes(customer.id)
   );
 
+  const handleExcludeCustomer = (customer: CustomerData) => {
+    setCustomerToExclude(customer);
+    setExcludeDialogOpen(true);
+  };
+
+  const handleExcludeConfirm = () => {
+    if (customerToExclude) {
+      const updatedIds = associatedCustomerIds.filter(
+        (id) => id !== customerToExclude.id
+      );
+      setValue("associated_customer_ids", updatedIds);
+    }
+    setExcludeDialogOpen(false);
+  };
+
   return (
     <Box
       sx={{
@@ -210,19 +233,33 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
             Associated Customers:
           </Typography>
           {associatedCustomers.map((customer) => (
-            <Typography
+            <Box
               key={customer.id}
-              variant="body2"
               sx={{
-                color: "#662401",
-                fontWeight: "bold",
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "space-between",
               }}
             >
-              <PersonIcon sx={{ mr: 1, fontSize: "small" }} />
-              {customer.name} {customer.last_name}
-            </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#662401",
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <PersonIcon sx={{ mr: 1, fontSize: "small" }} />
+                {customer.name} {customer.last_name}
+              </Typography>
+              <IconButton
+                onClick={() => handleExcludeCustomer(customer)}
+                size="small"
+              >
+                <RemoveCircleOutlineIcon />
+              </IconButton>
+            </Box>
           ))}
         </Box>
       )}
@@ -274,6 +311,61 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
           </Grid>
         </Grid>
       </Box>
+      <Dialog
+        open={excludeDialogOpen}
+        onClose={() => setExcludeDialogOpen(false)}
+      >
+        <DialogTitle
+          sx={{
+            backgroundColor: "#ef4444",
+            mb: 5,
+            textAlign: "center",
+            color: "#fff",
+            fontWeight: "bold",
+          }}
+        >
+          Confirm Exclusion
+        </DialogTitle>
+        <DialogContent>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{
+              textAlign: "left",
+              mb: 2,
+              fontWeight: "bold",
+            }}
+          >
+            Are you sure you want to exclude this customer from the new
+            property?
+          </Typography>
+          {customerToExclude && (
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{
+                textAlign: "left",
+                mb: 2,
+              }}
+            >
+              Customer Name:
+              <span style={{ fontWeight: "bold", marginLeft: 10 }}>
+                {customerToExclude.name} {customerToExclude.last_name}
+              </span>
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setExcludeDialogOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleExcludeConfirm}
+            color="error"
+          >
+            Exclude
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

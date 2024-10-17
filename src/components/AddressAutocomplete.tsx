@@ -31,7 +31,6 @@ export default function AddressAutocomplete({
 }: AddressAutocompleteProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const { setValue } = useFormContext();
 
   const populateAddressFields = useCallback(
@@ -79,47 +78,23 @@ export default function AddressAutocomplete({
   );
 
   const handleAddressSelect = useCallback(
-    (place: google.maps.places.PlaceResult) => {
-      if (
-        place.formatted_address &&
-        place.address_components &&
-        place.geometry?.location
-      ) {
-        const addressDetails: AddressDetails = {
-          formatted_address: place.formatted_address,
-          address_components: place.address_components,
-          latitude: place.geometry.location.lat(),
-          longitude: place.geometry.location.lng(),
-        };
-        onAddressSelect(addressDetails);
-        populateAddressFields(addressDetails);
-      }
+    (addressDetails: AddressDetails) => {
+      onAddressSelect(addressDetails);
+      populateAddressFields(addressDetails);
     },
     [onAddressSelect, populateAddressFields]
   );
 
-  const { isLoaded, error } = useGoogleMapsApi({
+  const { initAutocomplete, isLoaded, error } = useGoogleMapsApi({
     apiKey,
     onAddressSelect: handleAddressSelect,
   });
 
   useEffect(() => {
-    if (isLoaded && inputRef.current && !autocompleteRef.current) {
-      autocompleteRef.current = new google.maps.places.Autocomplete(
-        inputRef.current,
-        {
-          fields: ["address_components", "formatted_address", "geometry"],
-        }
-      );
-
-      autocompleteRef.current.addListener("place_changed", () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (place) {
-          handleAddressSelect(place);
-        }
-      });
+    if (isLoaded && inputRef.current) {
+      initAutocomplete(inputRef.current);
     }
-  }, [isLoaded, handleAddressSelect]);
+  }, [isLoaded, initAutocomplete]);
 
   if (error) {
     return <Typography color="error">{error}</Typography>;

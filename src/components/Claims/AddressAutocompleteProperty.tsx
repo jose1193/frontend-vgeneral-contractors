@@ -73,7 +73,7 @@ export default function AddressAutocompleteProperty({
 
   const { initAutocomplete, isLoaded, error } = useGoogleMapsApi({
     apiKey,
-    onPlaceSelected: populatePropertyFields,
+    onAddressSelect: populatePropertyFields,
   });
 
   useEffect(() => {

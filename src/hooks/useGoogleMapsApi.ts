@@ -1,14 +1,21 @@
 // useGoogleMapsApi.ts
 import { useState, useEffect, useCallback } from "react";
 
+interface AddressDetails {
+  formatted_address: string;
+  address_components: google.maps.GeocoderAddressComponent[];
+  latitude: number;
+  longitude: number;
+}
+
 interface UseGoogleMapsApiProps {
   apiKey: string;
-  onPlaceSelected?: (place: google.maps.places.PlaceResult) => void;
+  onAddressSelect?: (addressDetails: AddressDetails) => void;
 }
 
 export function useGoogleMapsApi({
   apiKey,
-  onPlaceSelected,
+  onAddressSelect,
 }: UseGoogleMapsApiProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,14 +65,20 @@ export function useGoogleMapsApi({
 
       autocomplete.addListener("place_changed", () => {
         const place = autocomplete.getPlace();
-        if (onPlaceSelected) {
-          onPlaceSelected(place);
+        if (onAddressSelect && place.geometry && place.geometry.location) {
+          const addressDetails: AddressDetails = {
+            formatted_address: place.formatted_address || "",
+            address_components: place.address_components || [],
+            latitude: place.geometry.location.lat(),
+            longitude: place.geometry.location.lng(),
+          };
+          onAddressSelect(addressDetails);
         }
       });
 
       return autocomplete;
     },
-    [onPlaceSelected]
+    [onAddressSelect]
   );
 
   return { initAutocomplete, isLoaded, error };
