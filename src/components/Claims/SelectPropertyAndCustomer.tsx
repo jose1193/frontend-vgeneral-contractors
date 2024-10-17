@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Grid, IconButton, Button, Box } from "@mui/material";
+import { Grid, IconButton, Box, Snackbar, Alert } from "@mui/material";
 import { Control, useFormContext } from "react-hook-form";
 import { ClaimsData } from "../../../app/types/claims";
 import { useCustomerContext } from "../../../app/contexts/CustomerContext";
@@ -14,6 +14,7 @@ import AddSecondCustomerModal from "../../../src/components/Claims/AddSecondCust
 import AddressClaimForm from "./AddressClaimForm";
 import ButtonGreen from "../../../app/components/ButtonGreen";
 import CustomButton from "../../../app/components/CustomButton";
+
 interface PropertyAndCustomerSelectionProps {
   control: Control<ClaimsData>;
   initialData?: ClaimsData;
@@ -32,6 +33,12 @@ export default function SelectPropertyAndCustomer({
   const [associatedCustomerIds, setAssociatedCustomerIds] = useState<number[]>(
     []
   );
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+  });
+
   const { customers } = useCustomerContext();
   const {
     formState: { errors },
@@ -80,6 +87,22 @@ export default function SelectPropertyAndCustomer({
     console.log("Address claim submitted successfully");
     setShowAddressClaimForm(false);
     setCustomerHasProperties(true);
+    setSnackbar({
+      open: true,
+      message: "Property created successfully",
+      severity: "success",
+    });
+    // You might want to refresh the property list here
+  };
+
+  const handleSnackbarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
   };
 
   const toggleAddressClaimForm = () => {
@@ -176,6 +199,20 @@ export default function SelectPropertyAndCustomer({
         selectedProperty={selectedProperty}
         onClose={() => setOpenSecondCustomerModal(false)}
       />
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Grid>
   );
 }

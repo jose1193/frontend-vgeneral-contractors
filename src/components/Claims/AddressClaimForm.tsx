@@ -6,8 +6,6 @@ import {
   Box,
   CircularProgress,
   Button,
-  Snackbar,
-  Alert,
   Typography,
   IconButton,
 } from "@mui/material";
@@ -48,11 +46,6 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
 }) => {
   const [mapCoordinates, setMapCoordinates] = useState({ lat: 0, lng: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success" as "success" | "error",
-  });
 
   const { data: session } = useSession();
   const token = session?.accessToken as string;
@@ -64,7 +57,6 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
     setValue,
     handleSubmit,
     watch,
-    reset,
     formState: { errors },
   } = useFormContext();
 
@@ -76,7 +68,7 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
   }, [associatedCustomerIds, setValue]);
 
   const handleAddressSelect = (addressDetails: any) => {
-    console.log("Received address details:", addressDetails); // Para depuración
+    console.log("Received address details:", addressDetails);
 
     if (addressDetails.property_latitude && addressDetails.property_longitude) {
       setMapCoordinates({
@@ -104,7 +96,6 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
         addressDetails.property_postal_code || ""
       );
 
-      // Extraer la dirección corta (asumiendo que es la primera parte hasta la primera coma)
       const shortAddress = addressDetails.property_address.split(",")[0].trim();
       setValue("property.property_address", shortAddress);
     } else {
@@ -131,33 +122,12 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
       console.log("Response from server:", newProperty);
       addProperty(newProperty);
       setValue("property_id", newProperty.id);
-      setSnackbar({
-        open: true,
-        message: "Property created successfully",
-        severity: "success",
-      });
-      reset();
       onSubmitSuccess();
     } catch (error) {
       console.error("Failed to create property:", error);
-      setSnackbar({
-        open: true,
-        message: "Failed to create property",
-        severity: "error",
-      });
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleSnackbarClose = (
-    event?: React.SyntheticEvent | Event,
-    reason?: string
-  ) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -258,20 +228,6 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
           </Grid>
         </Grid>
       </Box>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };
