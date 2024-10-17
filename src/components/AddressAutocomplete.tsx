@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useCallback } from "react";
 import { TextField, Box, Typography, CircularProgress } from "@mui/material";
 import { useGoogleMapsApi } from "../hooks/useGoogleMapsApi";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, Controller } from "react-hook-form";
 
 interface AddressComponent {
   long_name: string;
@@ -31,7 +31,7 @@ export default function AddressAutocomplete({
 }: AddressAutocompleteProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
   const inputRef = useRef<HTMLInputElement>(null);
-  const { setValue } = useFormContext();
+  const { control, setValue } = useFormContext();
 
   const populateAddressFields = useCallback(
     (addressDetails: AddressDetails) => {
@@ -65,7 +65,7 @@ export default function AddressAutocomplete({
         }
       });
 
-      setValue("address", address, { shouldValidate: true });
+      setValue(name, address, { shouldValidate: true });
       setValue("address_2", address2, { shouldValidate: true });
       setValue("zip_code", zipCode, { shouldValidate: true });
       setValue("city", city, { shouldValidate: true });
@@ -74,7 +74,7 @@ export default function AddressAutocomplete({
       setValue("latitude", addressDetails.latitude, { shouldValidate: true });
       setValue("longitude", addressDetails.longitude, { shouldValidate: true });
     },
-    [setValue]
+    [setValue, name]
   );
 
   const handleAddressSelect = useCallback(
@@ -102,20 +102,27 @@ export default function AddressAutocomplete({
 
   return (
     <Box sx={{ width: "100%", maxWidth: "sm", marginTop: 2, marginBottom: 2 }}>
-      <TextField
-        inputRef={inputRef}
+      <Controller
         name={name}
-        variant="outlined"
-        fullWidth
-        id={name}
-        placeholder={`Enter your ${label.toLowerCase()}`}
-        disabled={!isLoaded}
+        control={control}
         defaultValue={defaultValue}
-        InputProps={{
-          endAdornment: !isLoaded && (
-            <CircularProgress color="inherit" size={20} />
-          ),
-        }}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            inputRef={inputRef}
+            variant="outlined"
+            fullWidth
+            id={name}
+            label={label}
+            placeholder={`Enter your ${label.toLowerCase()}`}
+            disabled={!isLoaded}
+            InputProps={{
+              endAdornment: !isLoaded && (
+                <CircularProgress color="inherit" size={20} />
+              ),
+            }}
+          />
+        )}
       />
     </Box>
   );

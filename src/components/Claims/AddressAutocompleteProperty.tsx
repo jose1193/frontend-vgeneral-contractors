@@ -27,45 +27,61 @@ export default function AddressAutocompleteProperty({
   const inputRef = useRef<HTMLInputElement>(null);
   const { control, setValue } = useFormContext();
 
-  const populatePropertyFields = useCallback(
-    (place: google.maps.places.PlaceResult) => {
+  const handleAddressSelect = useCallback(
+    (addressDetails: {
+      formatted_address: string;
+      address_components: google.maps.GeocoderAddressComponent[];
+      latitude: number;
+      longitude: number;
+    }) => {
       let propertyData: Partial<PropertyData> = {
         property_address: "",
-        property_complete_address: place.formatted_address || "",
+        property_complete_address: addressDetails.formatted_address,
         property_city: "",
         property_state: "",
         property_postal_code: "",
         property_country: "",
-        property_latitude: place.geometry?.location?.lat() || 0,
-        property_longitude: place.geometry?.location?.lng() || 0,
+        property_latitude: addressDetails.latitude,
+        property_longitude: addressDetails.longitude,
       };
 
-      place.address_components?.forEach((component: AddressComponent) => {
-        const { types, long_name, short_name } = component;
+      addressDetails.address_components.forEach(
+        (component: AddressComponent) => {
+          const { types, long_name, short_name } = component;
 
-        if (types.includes("street_number") || types.includes("route")) {
-          propertyData.property_address += propertyData.property_address
-            ? " " + long_name
-            : long_name;
-        } else if (
-          types.includes("locality") ||
-          types.includes("postal_town")
-        ) {
-          propertyData.property_city = long_name;
-        } else if (types.includes("administrative_area_level_1")) {
-          propertyData.property_state = short_name;
-        } else if (types.includes("postal_code")) {
-          propertyData.property_postal_code = long_name;
-        } else if (types.includes("country")) {
-          propertyData.property_country = long_name;
+          if (types.includes("street_number")) {
+            propertyData.property_address = long_name + " ";
+          } else if (types.includes("route")) {
+            propertyData.property_address += long_name;
+          } else if (
+            types.includes("locality") ||
+            types.includes("postal_town")
+          ) {
+            propertyData.property_city = long_name;
+          } else if (types.includes("administrative_area_level_1")) {
+            propertyData.property_state = short_name;
+          } else if (types.includes("postal_code")) {
+            propertyData.property_postal_code = long_name;
+          } else if (types.includes("country")) {
+            propertyData.property_country = long_name;
+          }
         }
-      });
+      );
+
+      // Ensure property_address is set
+      if (!propertyData.property_address) {
+        propertyData.property_address =
+          propertyData.property_complete_address?.split(",")[0] || "";
+      }
 
       // Set form values
       Object.entries(propertyData).forEach(([key, value]) => {
-        setValue(`${name}.${key}`, value, { shouldValidate: true });
+        if (value !== undefined) {
+          setValue(`${name}.${key}`, value, { shouldValidate: true });
+        }
       });
 
+      console.log("Property data being set:", propertyData);
       onAddressSelect(propertyData);
     },
     [setValue, onAddressSelect, name]
@@ -73,7 +89,7 @@ export default function AddressAutocompleteProperty({
 
   const { initAutocomplete, isLoaded, error } = useGoogleMapsApi({
     apiKey,
-    onAddressSelect: populatePropertyFields,
+    onAddressSelect: handleAddressSelect,
   });
 
   useEffect(() => {

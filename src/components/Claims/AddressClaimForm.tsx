@@ -93,7 +93,7 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
       );
       setValue(
         "property.property_complete_address",
-        addressDetails.property_address
+        addressDetails.property_complete_address
       );
       setValue("property.property_city", addressDetails.property_city || "");
       setValue("property.property_state", addressDetails.property_state || "");
@@ -106,7 +106,10 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
         addressDetails.property_postal_code || ""
       );
 
-      const shortAddress = addressDetails.property_address.split(",")[0].trim();
+      // Ensure property_address is set
+      const shortAddress =
+        addressDetails.property_address ||
+        addressDetails.property_complete_address.split(",")[0].trim();
       setValue("property.property_address", shortAddress);
     } else {
       console.error("Invalid address details received:", addressDetails);
@@ -127,6 +130,12 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
       };
 
       console.log("Property data being sent:", propertyData);
+
+      // Ensure property_address is included
+      if (!propertyData.property_address) {
+        console.error("property_address is missing!");
+        return;
+      }
 
       const newProperty = await createProperty(propertyData);
       console.log("Response from server:", newProperty);
@@ -176,7 +185,6 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
     }
     setExcludeDialogOpen(false);
   };
-
   return (
     <Box
       sx={{

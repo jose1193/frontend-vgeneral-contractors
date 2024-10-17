@@ -142,7 +142,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
       });
       methods.setValue("latitude", addressDetails.latitude);
       methods.setValue("longitude", addressDetails.longitude);
-      methods.setValue("address", addressDetails.address);
+      // The address field will be set by the AddressAutocomplete component
       if (addressDetails.city) methods.setValue("city", addressDetails.city);
       if (addressDetails.state) methods.setValue("state", addressDetails.state);
       if (addressDetails.country)
