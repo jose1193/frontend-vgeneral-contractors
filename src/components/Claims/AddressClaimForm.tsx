@@ -144,9 +144,11 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
         customerIds.includes(customer.id)
       );
 
-      addNewPropertyWithCustomers(newProperty, associatedCustomers);
+      // Call the handleNewProperty function from SelectProperty
+      if (typeof window !== "undefined" && (window as any).handleNewProperty) {
+        (window as any).handleNewProperty(newProperty, associatedCustomers);
+      }
 
-      setValue("property_id", newProperty.id);
       onSubmitSuccess();
     } catch (error) {
       console.error("Failed to create property:", error);
@@ -185,6 +187,7 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
     }
     setExcludeDialogOpen(false);
   };
+
   return (
     <Box
       sx={{

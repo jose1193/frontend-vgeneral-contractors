@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Controller, Control, useFormContext } from "react-hook-form";
 import {
   FormControl,
@@ -29,11 +29,18 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
   onChange,
   selectedCustomerId,
 }) => {
-  const { properties, loading, error, updateProperty } = usePropertyContext();
-  const { watch } = useFormContext();
+  const {
+    properties,
+    loading,
+    error,
+    updateProperty,
+    addNewPropertyWithCustomers,
+  } = usePropertyContext();
+  const { watch, setValue } = useFormContext();
   const { data: session } = useSession();
   const [refreshing, setRefreshing] = useState(false);
   const selectedPropertyId = watch("property_id");
+
   const capitalize = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
@@ -87,6 +94,28 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
     refreshPropertyData();
   }, [selectedPropertyId, session?.accessToken, properties, updateProperty]);
 
+  const handleNewProperty = useCallback(
+    (newProperty: PropertyData, associatedCustomers: any[]) => {
+      addNewPropertyWithCustomers(newProperty, associatedCustomers);
+      setValue("property_id", newProperty.id);
+      if (onChange) {
+        const associatedCustomerIds = associatedCustomers
+          .map((customer) => customer.id)
+          .filter((id): id is number => id !== undefined);
+        onChange(newProperty, associatedCustomerIds);
+      }
+    },
+    [addNewPropertyWithCustomers, setValue, onChange]
+  );
+
+  // Expose handleNewProperty to the global scope
+  useEffect(() => {
+    (window as any).handleNewProperty = handleNewProperty;
+    return () => {
+      delete (window as any).handleNewProperty;
+    };
+  }, [handleNewProperty]);
+
   return (
     <Controller
       name="property_id"
@@ -118,7 +147,7 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
                   ...params.InputProps,
                   endAdornment: (
                     <>
-                      {loading ? (
+                      {loading || refreshing ? (
                         <CircularProgress color="inherit" size={20} />
                       ) : null}
                       {params.InputProps.endAdornment}
@@ -127,7 +156,7 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
                 }}
               />
             )}
-            loading={loading}
+            loading={loading || refreshing}
             onChange={(_, newValue: PropertyData | null) => {
               fieldOnChange(newValue ? newValue.id : null);
               if (onChange) {
