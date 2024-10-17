@@ -48,13 +48,16 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
   customers,
   onSubmitSuccess,
   onClose,
-  associatedCustomerIds,
+  associatedCustomerIds: initialAssociatedCustomerIds,
 }) => {
   const [mapCoordinates, setMapCoordinates] = useState({ lat: 0, lng: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [excludeDialogOpen, setExcludeDialogOpen] = useState(false);
   const [customerToExclude, setCustomerToExclude] =
     useState<CustomerData | null>(null);
+  const [associatedCustomerIds, setAssociatedCustomerIds] = useState(
+    initialAssociatedCustomerIds
+  );
 
   const { data: session } = useSession();
   const token = session?.accessToken as string;
@@ -172,7 +175,10 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
     (customer) =>
       customer.id !== undefined && associatedCustomerIds.includes(customer.id)
   );
-
+  useEffect(() => {
+    console.log("Associated customer IDs:", associatedCustomerIds);
+    setValue("associated_customer_ids", associatedCustomerIds);
+  }, [associatedCustomerIds, setValue]);
   const handleExcludeCustomer = (customer: CustomerData) => {
     setCustomerToExclude(customer);
     setExcludeDialogOpen(true);
@@ -183,6 +189,7 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
       const updatedIds = associatedCustomerIds.filter(
         (id) => id !== customerToExclude.id
       );
+      setAssociatedCustomerIds(updatedIds);
       setValue("associated_customer_ids", updatedIds);
     }
     setExcludeDialogOpen(false);
@@ -239,39 +246,53 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
         </IconButton>
       </Box>
       {associatedCustomers.length > 0 && (
-        <Box sx={{ px: 3, py: 2, backgroundColor: "#f0f0f0", mb: 2 }}>
-          <Typography variant="subtitle1" fontWeight="bold">
+        <Box sx={{ px: 3, py: 2, backgroundColor: "#f0f0f0", mb: 2, mt: -2 }}>
+          <Typography
+            variant="subtitle1"
+            fontWeight="bold"
+            textAlign="center"
+            sx={{ my: 1 }}
+          >
             Associated Customers:
           </Typography>
-          {associatedCustomers.map((customer) => (
-            <Box
-              key={customer.id}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Typography
-                variant="body2"
+          <Box
+            sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}
+          >
+            {associatedCustomers.map((customer) => (
+              <Box
+                key={customer.id}
                 sx={{
-                  color: "#662401",
-                  fontWeight: "bold",
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "space-between",
+                  m: 1,
+                  p: 1,
+                  backgroundColor: "#fff",
+                  borderRadius: 1,
                 }}
               >
-                <PersonIcon sx={{ mr: 1, fontSize: "small" }} />
-                {customer.name} {customer.last_name}
-              </Typography>
-              <IconButton
-                onClick={() => handleExcludeCustomer(customer)}
-                size="small"
-              >
-                <RemoveCircleOutlineIcon />
-              </IconButton>
-            </Box>
-          ))}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "#662401",
+                    fontWeight: "bold",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <PersonIcon sx={{ mr: 1, fontSize: "small" }} />
+                  {customer.name} {customer.last_name}
+                </Typography>
+                <IconButton
+                  onClick={() => handleExcludeCustomer(customer)}
+                  size="small"
+                  sx={{ ml: 1 }}
+                >
+                  <RemoveCircleOutlineIcon color="error" />
+                </IconButton>
+              </Box>
+            ))}
+          </Box>
         </Box>
       )}
       <Box sx={{ px: 3, py: 2 }}>
@@ -290,7 +311,7 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
               render={({ field, fieldState: { error } }) => (
                 <TextField
                   {...field}
-                  label="Property Address 2 (Optional)"
+                  label="Home Address (Property Number) - (Optional)"
                   fullWidth
                   error={!!error}
                   helperText={error?.message}

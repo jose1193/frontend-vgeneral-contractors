@@ -157,7 +157,10 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
                   <PhoneInputField name="cell_phone" label="Cell Phone" />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <PhoneInputField name="home_phone" label="Home Phone" />
+                  <PhoneInputField
+                    name="home_phone"
+                    label="Home Phone - (Optional)"
+                  />
                 </Grid>
                 <Grid item xs={12}>
                   <Controller
@@ -185,7 +188,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
                       <TextField
                         {...field}
                         fullWidth
-                        label="Occupation"
+                        label="Occupation - (Optional)"
                         onChange={(e) =>
                           field.onChange(capitalizeWords(e.target.value))
                         }
@@ -221,7 +224,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           onClose={handleSnackbarClose}

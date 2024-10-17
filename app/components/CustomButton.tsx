@@ -4,23 +4,29 @@ import { Button, SxProps, Theme } from "@mui/material";
 interface CustomButtonProps {
   onClick: () => void;
   startIcon?: React.ReactNode;
+  endIcon?: React.ReactNode;
   children: React.ReactNode;
   backgroundColor?: string;
   hoverBackgroundColor?: string;
   mb?: number;
+  color?: string;
+  hoverColor?: string;
 }
 
 const CustomButton: React.FC<CustomButtonProps> = ({
   onClick,
   startIcon,
+  endIcon,
   children,
   backgroundColor = "#c2410c",
   hoverBackgroundColor = "#9a3412",
   mb = 5,
+  color = "#fff",
+  hoverColor = "#fff",
 }) => {
   const buttonSx: SxProps<Theme> = {
     backgroundColor: backgroundColor,
-    color: "#fff",
+    color: color,
     mb: mb,
     fontSize: {
       xs: "10px",
@@ -37,7 +43,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     },
     "&:hover": {
       backgroundColor: hoverBackgroundColor,
-      color: "#fff",
+      color: hoverColor,
     },
   };
 
@@ -47,6 +53,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
       sx={buttonSx}
       onClick={onClick}
       startIcon={startIcon}
+      endIcon={endIcon}
     >
       {children}
     </Button>

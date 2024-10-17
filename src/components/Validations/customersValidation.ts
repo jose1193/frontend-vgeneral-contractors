@@ -28,9 +28,13 @@ export const customerSchema = yup.object().shape({
   home_phone: yup
     .string()
     .nullable()
-    .matches(
-      /^\d{11}$/,
-      "Cell Phone number must be in US format +1 (XXX)-XXX-XXXX"
+    .test(
+      "is-empty-or-valid",
+      "Home Phone number must be in US format +1 (XXX)-XXX-XXXX",
+      function (value) {
+        if (!value) return true;
+        return /^\d{11}$/.test(value);
+      }
     ),
 
   email: yup.string().email("Invalid email").required("Email is required"),

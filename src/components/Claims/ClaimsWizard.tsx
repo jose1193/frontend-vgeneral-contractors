@@ -26,6 +26,7 @@ import AffidavitAllianceWizard from "./AffidavitAllianceWizard";
 import ClaimsSummary from "./ClaimsSummary";
 import TypographyTitle from "../../../app/components/TypographyTitle";
 import TypographyStepLabel from "../../../app/components/TypographyStepLabel";
+import CustomButton from "../../../app/components/CustomButton";
 interface ClaimsWizardProps {
   initialData?: ClaimsData;
   onSubmit: (data: ClaimsData) => Promise<string | undefined>;
@@ -147,7 +148,7 @@ const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
             })}
             <Box
               sx={{
-                mt: 10,
+                mt: 12,
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -155,25 +156,30 @@ const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
             >
               <Box>
                 {step > 0 && (
-                  <Button
+                  <CustomButton
                     onClick={prevStep}
-                    variant="outlined"
                     startIcon={<ArrowBackIcon />}
+                    backgroundColor="#dc2626"
+                    hoverBackgroundColor="#b91c1c"
+                    color="#fff"
+                    hoverColor="#fff"
                   >
                     Previous
-                  </Button>
+                  </CustomButton>
                 )}
               </Box>
               <Box>
                 {!isLastStep && !showAddressClaimForm && (
-                  <ButtonNext
+                  <CustomButton
                     onClick={nextStep}
-                    variant="contained"
-                    color="primary"
+                    backgroundColor="#1E90FF"
+                    hoverBackgroundColor="#1871CD"
+                    color="#fff"
+                    hoverColor="#fff"
                     endIcon={<ArrowForwardIcon />}
                   >
                     Next
-                  </ButtonNext>
+                  </CustomButton>
                 )}
                 {isLastStep && (
                   <Button

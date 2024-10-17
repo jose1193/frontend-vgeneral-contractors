@@ -48,15 +48,6 @@ const CreateClaimPage = () => {
           p: { xs: 3, sm: 3, md: 2, lg: 4 },
         }}
       >
-        <Button
-          variant="outlined"
-          onClick={() => window.history.back()}
-          startIcon={<ArrowBackIcon />}
-          style={{ marginBottom: "20px" }}
-        >
-          Back
-        </Button>
-
         <TypographyHeading>Create Claim</TypographyHeading>
         <Paper
           elevation={3}

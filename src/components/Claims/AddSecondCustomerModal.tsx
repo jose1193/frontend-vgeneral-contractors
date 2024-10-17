@@ -188,7 +188,10 @@ const AddSecondCustomerModal: React.FC<CustomerFormProps> = ({
                   <PhoneInputField name="cell_phone" label="Cell Phone" />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <PhoneInputField name="home_phone" label="Home Phone" />
+                  <PhoneInputField
+                    name="home_phone"
+                    label="Home Phone - (Optional)"
+                  />
                 </Grid>
                 <Grid item xs={12}>
                   <Controller
@@ -216,7 +219,7 @@ const AddSecondCustomerModal: React.FC<CustomerFormProps> = ({
                       <TextField
                         {...field}
                         fullWidth
-                        label="Occupation"
+                        label="Occupation - (Optional)"
                         onChange={(e) =>
                           field.onChange(capitalizeWords(e.target.value))
                         }

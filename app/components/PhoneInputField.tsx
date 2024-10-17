@@ -48,7 +48,7 @@ const CustomPhoneInput: React.FC<{
         }}
         containerStyle={{
           width: "100%",
-          marginTop: "16px", // Add some space for the label
+          marginTop: "16px",
         }}
         dropdownStyle={{
           backgroundColor: theme.palette.background.paper,
@@ -72,7 +72,8 @@ const CustomPhoneInput: React.FC<{
           width: "100%",
           marginBottom: "10px",
         }}
-        preferredCountries={["us", "gb", "ca"]}
+        disableDropdown={true}
+        onlyCountries={["us"]}
       />
     </FormControl>
   );
