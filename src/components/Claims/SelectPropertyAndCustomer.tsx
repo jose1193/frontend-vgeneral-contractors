@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Grid, IconButton, Button } from "@mui/material";
+import { Grid, IconButton, Button, Box } from "@mui/material";
 import { Control, useFormContext } from "react-hook-form";
 import { ClaimsData } from "../../../app/types/claims";
 import { useCustomerContext } from "../../../app/contexts/CustomerContext";
@@ -12,7 +12,8 @@ import { PropertyData } from "../../../app/types/property";
 import { CustomerData } from "../../../app/types/customer";
 import AddSecondCustomerModal from "../../../src/components/Claims/AddSecondCustomerModal";
 import AddressClaimForm from "./AddressClaimForm";
-
+import ButtonGreen from "../../../app/components/ButtonGreen";
+import CustomButton from "../../../app/components/CustomButton";
 interface PropertyAndCustomerSelectionProps {
   control: Control<ClaimsData>;
   initialData?: ClaimsData;
@@ -125,48 +126,36 @@ export default function SelectPropertyAndCustomer({
               selectedCustomerId={selectedCustomerId}
             />
           </Grid>
-          {showAddNewPropertyButton && (
-            <Grid item xs={12} display="flex" justifyContent="flex-end">
-              {!showAddressClaimForm && (
-                <Button
-                  variant="contained"
-                  sx={{
-                    backgroundColor: "#c2410c",
-                    color: "#fff",
-                    "&:hover": {
-                      backgroundColor: "#9a3412",
-                      color: "#fff",
-                    },
-                  }}
+          <Grid item xs={12}>
+            <Box
+              display="flex"
+              flexDirection={{ xs: "column", sm: "column", md: "row" }}
+              justifyContent="space-between"
+              alignItems={{ xs: "stretch", sm: "stretch", md: "center" }}
+              mt={5}
+              gap={2}
+            >
+              {isPropertySelected && (
+                <ButtonGreen
+                  onClick={() => setOpenSecondCustomerModal(true)}
+                  startIcon={<PersonAddIcon />}
+                  mb={0}
+                >
+                  Add Another Customer Signature
+                </ButtonGreen>
+              )}
+              {showAddNewPropertyButton && (
+                <CustomButton
                   onClick={toggleAddressClaimForm}
                   startIcon={<AddHomeWorkIcon />}
+                  mb={0}
                 >
                   Add New Property
-                </Button>
+                </CustomButton>
               )}
-            </Grid>
-          )}
+            </Box>
+          </Grid>
         </>
-      )}
-      {isCustomerSelected && isPropertySelected && (
-        <Grid item xs={12} sm={6} md={5}>
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "#16a34a",
-              color: "#fff",
-              "&:hover": {
-                backgroundColor: "#15803d",
-                color: "#fff",
-              },
-            }}
-            fullWidth
-            onClick={() => setOpenSecondCustomerModal(true)}
-            startIcon={<PersonAddIcon />}
-          >
-            Add Another Customer Signature
-          </Button>
-        </Grid>
       )}
       {showAddressClaimForm && (
         <Grid item xs={12}>

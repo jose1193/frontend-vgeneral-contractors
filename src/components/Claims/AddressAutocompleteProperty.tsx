@@ -32,6 +32,7 @@ export default function AddressAutocompleteProperty({
     (place: google.maps.places.PlaceResult) => {
       let propertyData: Partial<PropertyData> = {
         property_address: "",
+        property_complete_address: place.formatted_address || "",
         property_city: "",
         property_state: "",
         property_postal_code: "",
@@ -101,7 +102,7 @@ export default function AddressAutocompleteProperty({
   return (
     <Box sx={{ width: "100%", maxWidth: "sm", marginTop: 2, marginBottom: 2 }}>
       <Controller
-        name={`${name}.property_address`}
+        name={`${name}.property_complete_address`}
         control={control}
         defaultValue={defaultValue}
         render={({ field }) => (
@@ -110,7 +111,7 @@ export default function AddressAutocompleteProperty({
             inputRef={inputRef}
             variant="outlined"
             fullWidth
-            id={`${name}.property_address`}
+            id={`${name}.property_complete_address`}
             label={label}
             placeholder={`Enter the ${label.toLowerCase()}`}
             disabled={!isLoaded}

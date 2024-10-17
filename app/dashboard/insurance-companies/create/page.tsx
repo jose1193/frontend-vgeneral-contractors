@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { InsuranceCompanyData } from "../../../../app/types/insurance-company";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
-
+import TypographyHeading from "../../../components/TypographyHeading";
 const CreateInsuranceCompanyPage = () => {
   const { data: session } = useSession();
   const router = useRouter();
@@ -43,23 +43,8 @@ const CreateInsuranceCompanyPage = () => {
         >
           Back
         </Button>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            mb: 5,
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-            fontWeight: "bold",
-          }}
-        >
-          Create Insurance Company
-        </Typography>
+
+        <TypographyHeading> Create Insurance Company</TypographyHeading>
         <Paper
           elevation={3}
           style={{

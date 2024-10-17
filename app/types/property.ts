@@ -2,6 +2,7 @@ import { CustomerData } from "./customer";
 export interface PropertyData {
   id?: number;
   uuid?: string;
+  property_complete_address?: string;
   property_address: string;
   property_address_2?: string | null | undefined;
   property_state?: string | null | undefined;

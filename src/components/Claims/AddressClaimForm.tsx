@@ -76,22 +76,39 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
   }, [associatedCustomerIds, setValue]);
 
   const handleAddressSelect = (addressDetails: any) => {
-    if (addressDetails.latitude && addressDetails.longitude) {
+    console.log("Received address details:", addressDetails); // Para depuración
+
+    if (addressDetails.property_latitude && addressDetails.property_longitude) {
       setMapCoordinates({
-        lat: addressDetails.latitude,
-        lng: addressDetails.longitude,
+        lat: addressDetails.property_latitude,
+        lng: addressDetails.property_longitude,
       });
-      setValue("property.property_latitude", addressDetails.latitude);
-      setValue("property.property_longitude", addressDetails.longitude);
-      setValue("property.property_address", addressDetails.address);
-      if (addressDetails.city)
-        setValue("property.property_city", addressDetails.city);
-      if (addressDetails.state)
-        setValue("property.property_state", addressDetails.state);
-      if (addressDetails.country)
-        setValue("property.property_country", addressDetails.country);
-      if (addressDetails.zip_code)
-        setValue("property.property_postal_code", addressDetails.zip_code);
+
+      setValue("property.property_latitude", addressDetails.property_latitude);
+      setValue(
+        "property.property_longitude",
+        addressDetails.property_longitude
+      );
+      setValue(
+        "property.property_complete_address",
+        addressDetails.property_address
+      );
+      setValue("property.property_city", addressDetails.property_city || "");
+      setValue("property.property_state", addressDetails.property_state || "");
+      setValue(
+        "property.property_country",
+        addressDetails.property_country || ""
+      );
+      setValue(
+        "property.property_postal_code",
+        addressDetails.property_postal_code || ""
+      );
+
+      // Extraer la dirección corta (asumiendo que es la primera parte hasta la primera coma)
+      const shortAddress = addressDetails.property_address.split(",")[0].trim();
+      setValue("property.property_address", shortAddress);
+    } else {
+      console.error("Invalid address details received:", addressDetails);
     }
   };
 
@@ -198,7 +215,7 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
           <Grid item xs={12}>
             <AddressAutocompleteProperty
               onAddressSelect={handleAddressSelect}
-              name="property"
+              name="property.property_complete_address"
               label="Property Address"
             />
           </Grid>

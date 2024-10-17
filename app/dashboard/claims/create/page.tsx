@@ -12,6 +12,7 @@ import { ClaimsData } from "../../../../app/types/claims";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import TypographyHeading from "../../../components/TypographyHeading";
 const CreateClaimPage = () => {
   const { data: session } = useSession();
   const router = useRouter();
@@ -55,23 +56,8 @@ const CreateClaimPage = () => {
         >
           Back
         </Button>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            mb: 5,
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-            fontWeight: "bold",
-          }}
-        >
-          Create Claim
-        </Typography>
+
+        <TypographyHeading>Create Claim</TypographyHeading>
         <Paper
           elevation={3}
           style={{

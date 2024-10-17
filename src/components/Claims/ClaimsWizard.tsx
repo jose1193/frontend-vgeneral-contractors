@@ -24,7 +24,8 @@ import ClaimDetailsWizard from "./ClaimDetailsWizard";
 import InsuranceAndWorkDetailsWizard from "./InsuranceAndWorkDetailsWizard";
 import AffidavitAllianceWizard from "./AffidavitAllianceWizard";
 import ClaimsSummary from "./ClaimsSummary";
-
+import TypographyTitle from "../../../app/components/TypographyTitle";
+import TypographyStepLabel from "../../../app/components/TypographyStepLabel";
 interface ClaimsWizardProps {
   initialData?: ClaimsData;
   onSubmit: (data: ClaimsData) => Promise<string | undefined>;
@@ -124,18 +125,16 @@ const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
             <Stepper activeStep={step} alternativeLabel sx={{ ml: -3 }}>
               {steps.map((stepItem, index) => (
                 <Step key={stepItem.title}>
-                  <StepLabel>{stepItem.title}</StepLabel>
+                  <StepLabel>
+                    <TypographyStepLabel>{stepItem.title}</TypographyStepLabel>
+                  </StepLabel>
                 </Step>
               ))}
             </Stepper>
             <Box sx={{ mt: 4, mb: 2 }}>
-              <Typography
-                variant="h4"
-                sx={{ color: "#662401", fontWeight: "bold", flexGrow: 1 }}
-                gutterBottom
-              >
+              <TypographyTitle variant="h4">
                 {steps[step].title}
-              </Typography>
+              </TypographyTitle>
             </Box>
             {React.createElement(steps[step].component, {
               control,
