@@ -9,12 +9,17 @@ import React, {
 import { checkPropertiesAvailable } from "../lib/actions/propertiesActions";
 import { useSession } from "next-auth/react";
 import { PropertyData } from "../../app/types/property";
+import { CustomerData } from "../../app/types/customer";
 
 type PropertyContextType = {
   properties: PropertyData[];
   setProperties: React.Dispatch<React.SetStateAction<PropertyData[]>>;
   addProperty: (property: PropertyData) => void;
   updateProperty: (updatedProperty: PropertyData) => void;
+  addNewPropertyWithCustomers: (
+    property: Omit<PropertyData, "customers">,
+    customers: CustomerData[]
+  ) => void;
   refreshProperties: () => Promise<void>;
   loading: boolean;
   error: string | null;
@@ -77,17 +82,39 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   }, []);
 
+  const addNewPropertyWithCustomers = useCallback(
+    (property: Omit<PropertyData, "customers">, customers: CustomerData[]) => {
+      setProperties((prev) => {
+        const newProperty: PropertyData = {
+          ...property,
+          customers: customers,
+        };
+        return [...prev, newProperty];
+      });
+    },
+    []
+  );
+
   const contextValue = React.useMemo(
     () => ({
       properties,
       setProperties,
       addProperty,
       updateProperty,
+      addNewPropertyWithCustomers,
       refreshProperties,
       loading,
       error,
     }),
-    [properties, addProperty, updateProperty, refreshProperties, loading, error]
+    [
+      properties,
+      addProperty,
+      updateProperty,
+      addNewPropertyWithCustomers,
+      refreshProperties,
+      loading,
+      error,
+    ]
   );
 
   return (

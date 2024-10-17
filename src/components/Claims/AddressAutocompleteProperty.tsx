@@ -25,7 +25,6 @@ export default function AddressAutocompleteProperty({
 }: AddressAutocompletePropertyProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const { control, setValue } = useFormContext();
 
   const populatePropertyFields = useCallback(
@@ -72,28 +71,16 @@ export default function AddressAutocompleteProperty({
     [setValue, onAddressSelect, name]
   );
 
-  const { isLoaded, error } = useGoogleMapsApi({
+  const { initAutocomplete, isLoaded, error } = useGoogleMapsApi({
     apiKey,
-    onAddressSelect: populatePropertyFields,
+    onPlaceSelected: populatePropertyFields,
   });
 
   useEffect(() => {
-    if (isLoaded && inputRef.current && !autocompleteRef.current) {
-      autocompleteRef.current = new google.maps.places.Autocomplete(
-        inputRef.current,
-        {
-          fields: ["address_components", "formatted_address", "geometry"],
-        }
-      );
-
-      autocompleteRef.current.addListener("place_changed", () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (place) {
-          populatePropertyFields(place);
-        }
-      });
+    if (isLoaded && inputRef.current) {
+      initAutocomplete(inputRef.current);
     }
-  }, [isLoaded, populatePropertyFields]);
+  }, [isLoaded, initAutocomplete]);
 
   if (error) {
     return <Typography color="error">{error}</Typography>;

@@ -130,7 +130,7 @@ export default function SelectPropertyAndCustomer({
         />
       </Grid>
       <Grid item xs={1}>
-        {(!isCustomerSelected || !isPropertySelected) && (
+        {!isCustomerSelected && (
           <IconButton
             color="primary"
             onClick={() => setOpenCustomerModal(true)}
