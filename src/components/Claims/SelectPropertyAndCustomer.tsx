@@ -186,7 +186,7 @@ export default function SelectPropertyAndCustomer({
             customers={customers}
             onSubmitSuccess={handleAddressClaimSubmitSuccess}
             onClose={() => setShowAddressClaimForm(false)}
-            associatedCustomerIds={associatedCustomerIds}
+            associatedCustomerIds={[]}
           />
         </Grid>
       )}

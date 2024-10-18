@@ -55,8 +55,8 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
   const [excludeDialogOpen, setExcludeDialogOpen] = useState(false);
   const [customerToExclude, setCustomerToExclude] =
     useState<CustomerData | null>(null);
-  const [associatedCustomerIds, setAssociatedCustomerIds] = useState(
-    initialAssociatedCustomerIds
+  const [associatedCustomerIds, setAssociatedCustomerIds] = useState<number[]>(
+    []
   );
 
   const { data: session } = useSession();
@@ -76,9 +76,13 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
   const selectedCustomerId = watch("customer_id");
 
   useEffect(() => {
-    console.log("Associated customer IDs:", associatedCustomerIds);
-    setValue("associated_customer_ids", associatedCustomerIds);
-  }, [associatedCustomerIds, setValue]);
+    // Initialize with all customer IDs
+    const allCustomerIds = customers
+      .map((customer) => customer.id)
+      .filter((id) => id !== undefined);
+    setAssociatedCustomerIds(allCustomerIds);
+    setValue("associated_customer_ids", allCustomerIds);
+  }, [customers, setValue]);
 
   const handleAddressSelect = (addressDetails: any) => {
     console.log("Received address details:", addressDetails);
@@ -122,10 +126,7 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
-      const customerIds =
-        data.associated_customer_ids.length > 0
-          ? data.associated_customer_ids
-          : [selectedCustomerId];
+      const customerIds = associatedCustomerIds;
 
       const propertyData: Omit<PropertyData, "id" | "customers"> = {
         ...data.property,
@@ -134,7 +135,6 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
 
       console.log("Property data being sent:", propertyData);
 
-      // Ensure property_address is included
       if (!propertyData.property_address) {
         console.error("property_address is missing!");
         return;
@@ -143,11 +143,12 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
       const newProperty = await createProperty(propertyData);
       console.log("Response from server:", newProperty);
 
-      const associatedCustomers = customers.filter((customer) =>
-        customerIds.includes(customer.id)
+      const associatedCustomers = customers.filter(
+        (customer) =>
+          customer.id !== undefined &&
+          associatedCustomerIds.includes(customer.id)
       );
 
-      // Call the handleNewProperty function from SelectProperty
       if (typeof window !== "undefined" && (window as any).handleNewProperty) {
         (window as any).handleNewProperty(newProperty, associatedCustomers);
       }
@@ -171,14 +172,6 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
     onClose();
   };
 
-  const associatedCustomers = customers.filter(
-    (customer) =>
-      customer.id !== undefined && associatedCustomerIds.includes(customer.id)
-  );
-  useEffect(() => {
-    console.log("Associated customer IDs:", associatedCustomerIds);
-    setValue("associated_customer_ids", associatedCustomerIds);
-  }, [associatedCustomerIds, setValue]);
   const handleExcludeCustomer = (customer: CustomerData) => {
     setCustomerToExclude(customer);
     setExcludeDialogOpen(true);
@@ -194,6 +187,11 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
     }
     setExcludeDialogOpen(false);
   };
+
+  const associatedCustomers = customers.filter(
+    (customer) =>
+      customer.id !== undefined && associatedCustomerIds.includes(customer.id)
+  );
 
   return (
     <Box
