@@ -16,4 +16,5 @@ export interface PropertyData {
   customer_array_id: number[];
   created_at?: string | null | undefined; // Permitir undefined
   updated_at?: string | null | undefined; // Permitir undefined
+  associated_customer_ids?: number[];
 }
