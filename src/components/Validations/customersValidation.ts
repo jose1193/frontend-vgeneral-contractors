@@ -20,9 +20,9 @@ export const customerSchema = yup.object().shape({
     .required("Last name is required"),
   cell_phone: yup
     .string()
-    .required()
+    .required("Cell Phone is required")
     .matches(
-      /^\d{11}$/,
+      /^\+1\d{10}$/,
       "Cell Phone number must be in US format +1 (XXX)-XXX-XXXX"
     ),
   home_phone: yup
@@ -32,8 +32,8 @@ export const customerSchema = yup.object().shape({
       "is-empty-or-valid",
       "Home Phone number must be in US format +1 (XXX)-XXX-XXXX",
       function (value) {
-        if (!value) return true;
-        return /^\d{11}$/.test(value);
+        if (!value || value === "") return true;
+        return /^\+1\d{10}$/.test(value);
       }
     ),
 

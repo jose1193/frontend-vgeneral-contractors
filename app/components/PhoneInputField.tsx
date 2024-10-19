@@ -1,21 +1,52 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/material.css";
 import { Typography, FormControl, InputLabel } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import * as yup from "yup";
 
 interface PhoneInputFieldProps {
   name: string;
   label: string;
+  required?: boolean;
 }
 
 const CustomPhoneInput: React.FC<{
   value: string;
   onChange: (value: string) => void;
   label: string;
-}> = ({ value, onChange, label }) => {
+  required?: boolean;
+  error?: string;
+  onBlur: () => void;
+}> = ({ value, onChange, label, required, error, onBlur }) => {
   const theme = useTheme();
+  const [touched, setTouched] = useState(false);
+
+  useEffect(() => {
+    if (required && !value) {
+      onChange("+1");
+    }
+  }, [value, onChange, required]);
+
+  const handleChange = (inputValue: string) => {
+    if (!required && inputValue === "") {
+      onChange("");
+      return;
+    }
+
+    if (!inputValue.startsWith("+1")) {
+      onChange("+1" + inputValue.replace(/^\+?1?/, ""));
+    } else {
+      onChange(inputValue);
+    }
+    setTouched(true);
+  };
+
+  const handleBlur = () => {
+    setTouched(true);
+    onBlur();
+  };
 
   return (
     <FormControl fullWidth>
@@ -25,10 +56,11 @@ const CustomPhoneInput: React.FC<{
       <PhoneInput
         country={"us"}
         value={value}
-        onChange={onChange}
+        onChange={handleChange}
+        onBlur={handleBlur}
         inputProps={{
           name: label,
-          required: true,
+          required: required,
           id: `phone-input-${label}`,
         }}
         inputStyle={{
@@ -75,22 +107,34 @@ const CustomPhoneInput: React.FC<{
         disableDropdown={true}
         onlyCountries={["us"]}
       />
+      {touched && error && <Typography color="error">{error}</Typography>}
     </FormControl>
   );
 };
 
-const PhoneInputField: React.FC<PhoneInputFieldProps> = ({ name, label }) => {
+const PhoneInputField: React.FC<PhoneInputFieldProps> = ({
+  name,
+  label,
+  required = false,
+}) => {
   const { control } = useFormContext();
 
   return (
     <Controller
       name={name}
       control={control}
-      render={({ field: { onChange, value }, fieldState: { error } }) => (
-        <>
-          <CustomPhoneInput value={value} onChange={onChange} label={label} />
-          {error && <Typography color="error">{error.message}</Typography>}
-        </>
+      render={({
+        field: { onChange, onBlur, value },
+        fieldState: { error },
+      }) => (
+        <CustomPhoneInput
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          label={label}
+          required={required}
+          error={error?.message}
+        />
       )}
     />
   );

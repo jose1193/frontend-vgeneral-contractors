@@ -154,7 +154,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ open, onClose }) => {
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <PhoneInputField name="cell_phone" label="Cell Phone" />
+                  <PhoneInputField
+                    name="cell_phone"
+                    label="Cell Phone"
+                    required={true}
+                  />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <PhoneInputField
