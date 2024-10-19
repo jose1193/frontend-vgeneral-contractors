@@ -159,6 +159,19 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
     }
   };
 
+  const handleAddressClear = () => {
+    setValue("property.property_address", "");
+    setValue("property.property_complete_address", "");
+    setValue("property.property_address_2", "");
+    setValue("property.property_city", "");
+    setValue("property.property_state", "");
+    setValue("property.property_country", "");
+    setValue("property.property_postal_code", "");
+    setValue("property.property_latitude", 0); // Changed from null to 0
+    setValue("property.property_longitude", 0); // Changed from null to 0
+    setMapCoordinates({ lat: 0, lng: 0 });
+  };
+
   const onSubmit = async (data: any) => {
     if (data.associated_customer_ids.length === 0) {
       // Show an error message
@@ -337,6 +350,7 @@ const AddressClaimForm: React.FC<AddressClaimFormProps> = ({
             <Grid item xs={12}>
               <AddressAutocompleteProperty
                 onAddressSelect={handleAddressSelect}
+                onAddressClear={handleAddressClear}
                 name="property.property_complete_address"
                 label="Property Address"
               />

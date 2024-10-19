@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useCallback } from "react";
-import { TextField, Box, Typography, CircularProgress } from "@mui/material";
+import {
+  TextField,
+  Box,
+  Typography,
+  CircularProgress,
+  IconButton,
+} from "@mui/material";
+import ClearIcon from "@mui/icons-material/Clear";
 import { useGoogleMapsApi } from "../../hooks/useGoogleMapsApi";
 import { useFormContext, Controller } from "react-hook-form";
 import { PropertyData } from "../../../app/types/property";
@@ -12,6 +19,7 @@ interface AddressComponent {
 
 interface AddressAutocompletePropertyProps {
   onAddressSelect: (propertyData: Partial<PropertyData>) => void;
+  onAddressClear: () => void;
   name: string;
   label: string;
   defaultValue?: string;
@@ -19,13 +27,16 @@ interface AddressAutocompletePropertyProps {
 
 export default function AddressAutocompleteProperty({
   onAddressSelect,
+  onAddressClear,
   name,
   label,
   defaultValue = "",
 }: AddressAutocompletePropertyProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
   const inputRef = useRef<HTMLInputElement>(null);
-  const { control, setValue } = useFormContext();
+  const { control, setValue, watch } = useFormContext();
+
+  const addressValue = watch(`${name}.property_complete_address`);
 
   const handleAddressSelect = useCallback(
     (addressDetails: {
@@ -87,6 +98,19 @@ export default function AddressAutocompleteProperty({
     [setValue, onAddressSelect, name]
   );
 
+  const handleClearAddress = () => {
+    setValue(`${name}.property_complete_address`, "");
+    onAddressClear();
+  };
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setValue(`${name}.property_complete_address`, value);
+    if (value === "") {
+      onAddressClear();
+    }
+  };
+
   const { initAutocomplete, isLoaded, error } = useGoogleMapsApi({
     apiKey,
     onAddressSelect: handleAddressSelect,
@@ -118,9 +142,21 @@ export default function AddressAutocompleteProperty({
             label={label}
             placeholder={`Enter the ${label.toLowerCase()}`}
             disabled={!isLoaded}
+            onChange={handleChange}
             InputProps={{
-              endAdornment: !isLoaded && (
-                <CircularProgress color="inherit" size={20} />
+              endAdornment: (
+                <>
+                  {!isLoaded && <CircularProgress color="inherit" size={20} />}
+                  {addressValue && (
+                    <IconButton
+                      aria-label="clear address"
+                      onClick={handleClearAddress}
+                      edge="end"
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  )}
+                </>
               ),
             }}
           />

@@ -172,7 +172,6 @@ const CompanySignatureForm: React.FC<CompanySignatureFormProps> = ({
               <CompanySignatureAutocomplete
                 onAddressSelect={(addressDetails) => {
                   console.log(addressDetails.formatted_address);
-                  // Aquí puedes hacer lo que necesites con la dirección completa
                 }}
                 name="address"
                 label="Company Address"

@@ -27,16 +27,6 @@ import {
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 
-interface Role {
-  id: number;
-  name: string;
-}
-
-interface UsersFormProps {
-  initialData?: UserData;
-  onSubmit: (data: UserData) => Promise<void>;
-}
-
 const AddressAutocomplete = dynamic(
   () => import("../../../src/components/AddressAutocomplete"),
   {
@@ -49,6 +39,16 @@ const GoogleMapComponent = dynamic(() => import("../GoogleMap"), {
   loading: () => <CircularProgress />,
   ssr: false,
 });
+
+interface Role {
+  id: number;
+  name: string;
+}
+
+interface UsersFormProps {
+  initialData?: UserData;
+  onSubmit: (data: UserData) => Promise<void>;
+}
 
 const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -110,7 +110,6 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
   }, [initialData, methods]);
 
   const handleSubmit = async (data: UserData) => {
-    //console.log("Form submitted with data:", data);
     setIsSubmitting(true);
     try {
       await onSubmit(data);
@@ -140,15 +139,6 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
         lat: addressDetails.latitude,
         lng: addressDetails.longitude,
       });
-      methods.setValue("latitude", addressDetails.latitude);
-      methods.setValue("longitude", addressDetails.longitude);
-      // The address field will be set by the AddressAutocomplete component
-      if (addressDetails.city) methods.setValue("city", addressDetails.city);
-      if (addressDetails.state) methods.setValue("state", addressDetails.state);
-      if (addressDetails.country)
-        methods.setValue("country", addressDetails.country);
-      if (addressDetails.zip_code)
-        methods.setValue("zip_code", addressDetails.zip_code);
     }
   };
 
@@ -161,7 +151,17 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
     }
     setSnackbar({ ...snackbar, open: false });
   };
-
+  const handleAddressClear = () => {
+    methods.setValue("address", "");
+    methods.setValue("address_2", "");
+    methods.setValue("city", "");
+    methods.setValue("state", "");
+    methods.setValue("country", "");
+    methods.setValue("zip_code", "");
+    methods.setValue("latitude", null);
+    methods.setValue("longitude", null);
+    setMapCoordinates({ lat: 0, lng: 0 });
+  };
   return (
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(handleSubmit)}>
@@ -216,52 +216,114 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
           <Grid item xs={12} sm={6}>
             <AddressAutocomplete
               onAddressSelect={handleAddressSelect}
+              onAddressClear={handleAddressClear}
               name="address"
               label="Address"
               defaultValue={initialData?.address || ""}
             />
           </Grid>
-          {initialData && (
-            <Grid item xs={12}>
-              {mapCoordinates.lat !== 0 && mapCoordinates.lng !== 0 && (
-                <Box
-                  height={400}
-                  width="100%"
-                  position="relative"
-                  sx={{ mb: 5 }}
-                >
-                  <GoogleMapComponent
-                    latitude={mapCoordinates.lat}
-                    longitude={mapCoordinates.lng}
-                  />
-                </Box>
-              )}
-            </Grid>
-          )}
           <Grid item xs={12} sm={6}>
             <Controller
               name="address_2"
               control={methods.control}
-              render={({ field, fieldState: { error } }) => (
+              defaultValue=""
+              render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Address 2 (Optional)"
                   fullWidth
-                  error={!!error}
-                  helperText={error?.message}
-                  autoComplete="off"
+                  label="Home Address - (Optional)"
                 />
               )}
             />
           </Grid>
-
-          <input type="hidden" {...methods.register("city")} />
-          <input type="hidden" {...methods.register("state")} />
-          <input type="hidden" {...methods.register("country")} />
-          <input type="hidden" {...methods.register("zip_code")} />
-          <input type="hidden" {...methods.register("latitude")} />
-          <input type="hidden" {...methods.register("longitude")} />
-
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="city"
+              control={methods.control}
+              defaultValue=""
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="City"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{
+                    "& .MuiInputBase-input.Mui-readOnly": {
+                      backgroundColor: "#f0f0f0",
+                    },
+                  }}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="state"
+              control={methods.control}
+              defaultValue=""
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="State"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{
+                    "& .MuiInputBase-input.Mui-readOnly": {
+                      backgroundColor: "#f0f0f0",
+                    },
+                  }}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="country"
+              control={methods.control}
+              defaultValue=""
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Country"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{
+                    "& .MuiInputBase-input.Mui-readOnly": {
+                      backgroundColor: "#f0f0f0",
+                    },
+                  }}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Controller
+              name="zip_code"
+              control={methods.control}
+              defaultValue=""
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Postal Code"
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{
+                    "& .MuiInputBase-input.Mui-readOnly": {
+                      backgroundColor: "#f0f0f0",
+                    },
+                  }}
+                />
+              )}
+            />
+          </Grid>
           <Grid item xs={12} sm={6}>
             <Controller
               name="user_role"
@@ -298,6 +360,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               />
             </Grid>
           )}
+          {/* Google Map component can be added here if needed */}
           <Grid item xs={12}>
             <Box display="flex" justifyContent="center">
               <Button
