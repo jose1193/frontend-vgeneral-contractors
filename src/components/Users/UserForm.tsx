@@ -139,6 +139,8 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
         lat: addressDetails.latitude,
         lng: addressDetails.longitude,
       });
+      methods.setValue("latitude", addressDetails.latitude);
+      methods.setValue("longitude", addressDetails.longitude);
     }
   };
 
@@ -360,7 +362,16 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               />
             </Grid>
           )}
-          {/* Google Map component can be added here if needed */}
+          <Grid item xs={12}>
+            {mapCoordinates.lat !== 0 && mapCoordinates.lng !== 0 && (
+              <Box height={400} width="100%" position="relative" sx={{ mt: 2 }}>
+                <GoogleMapComponent
+                  latitude={mapCoordinates.lat}
+                  longitude={mapCoordinates.lng}
+                />
+              </Box>
+            )}
+          </Grid>
           <Grid item xs={12}>
             <Box display="flex" justifyContent="center">
               <Button

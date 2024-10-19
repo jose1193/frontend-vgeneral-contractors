@@ -73,7 +73,6 @@ export default function AddressAutocomplete({
         }
       });
 
-      // Set form values
       Object.entries(addressDetails).forEach(([key, value]) => {
         setValue(key, value);
       });
