@@ -63,7 +63,7 @@ const InsuranceAndWorkDetailsWizard: React.FC<InsuranceAndWorkDetailsProps> = ({
         />
       </Grid>
 
-      <Grid item xs={12}>
+      <Grid item xs={12} sx={{ mt: 5 }}>
         <Typography variant="h6" gutterBottom>
           Work Details
         </Typography>
@@ -71,9 +71,11 @@ const InsuranceAndWorkDetailsWizard: React.FC<InsuranceAndWorkDetailsProps> = ({
       <Grid item xs={12} sm={6}>
         <SelectServiceRequest control={control} />
       </Grid>
-      <Grid item xs={12} sm={6}>
-        <SelectWorkDate control={control} />
-      </Grid>
+      {initialData && (
+        <Grid item xs={12} sm={6}>
+          <SelectWorkDate control={control} />
+        </Grid>
+      )}
       <Grid item xs={12} sm={6}>
         <Controller
           name="number_of_floors"
@@ -98,24 +100,28 @@ const InsuranceAndWorkDetailsWizard: React.FC<InsuranceAndWorkDetailsProps> = ({
           )}
         />
       </Grid>
-      <Grid item xs={12} sm={6}>
-        <SelectTechnicalServices control={control} />
-      </Grid>
-      <Grid item xs={12}>
-        <Controller
-          name="scope_of_work"
-          control={control}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              label="Scope of Work"
-              fullWidth
-              multiline
-              rows={3}
+      {initialData && (
+        <>
+          <Grid item xs={12} sm={6}>
+            <SelectTechnicalServices control={control} />
+          </Grid>
+          <Grid item xs={12}>
+            <Controller
+              name="scope_of_work"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Scope of Work"
+                  fullWidth
+                  multiline
+                  rows={3}
+                />
+              )}
             />
-          )}
-        />
-      </Grid>
+          </Grid>
+        </>
+      )}
     </Grid>
   );
 };
