@@ -141,9 +141,13 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
       });
       methods.setValue("latitude", addressDetails.latitude);
       methods.setValue("longitude", addressDetails.longitude);
+      methods.setValue("address", addressDetails.address);
+      methods.setValue("city", addressDetails.city);
+      methods.setValue("state", addressDetails.state);
+      methods.setValue("country", addressDetails.country);
+      methods.setValue("zip_code", addressDetails.zip_code);
     }
   };
-
   const handleSnackbarClose = (
     event?: React.SyntheticEvent | Event,
     reason?: string
@@ -362,6 +366,8 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               />
             </Grid>
           )}
+          <input type="hidden" {...methods.register("latitude")} />
+          <input type="hidden" {...methods.register("longitude")} />
           <Grid item xs={12}>
             {mapCoordinates.lat !== 0 && mapCoordinates.lng !== 0 && (
               <Box height={400} width="100%" position="relative" sx={{ mt: 2 }}>
