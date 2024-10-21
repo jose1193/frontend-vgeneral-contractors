@@ -16,6 +16,7 @@ type PropertyContextType = {
   setProperties: React.Dispatch<React.SetStateAction<PropertyData[]>>;
   addProperty: (property: PropertyData) => void;
   updateProperty: (updatedProperty: PropertyData) => void;
+  addCustomerToProperty: (propertyId: number, customer: CustomerData) => void;
   addNewPropertyWithCustomers: (
     property: Omit<PropertyData, "customers">,
     customers: CustomerData[]
@@ -82,6 +83,22 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   }, []);
 
+  const addCustomerToProperty = useCallback(
+    (propertyId: number, customer: CustomerData) => {
+      setProperties((prevProperties) =>
+        prevProperties.map((property) =>
+          property.id === propertyId
+            ? {
+                ...property,
+                customers: [...(property.customers || []), customer],
+              }
+            : property
+        )
+      );
+    },
+    []
+  );
+
   const addNewPropertyWithCustomers = useCallback(
     (property: Omit<PropertyData, "customers">, customers: CustomerData[]) => {
       setProperties((prev) => {
@@ -101,6 +118,7 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({
       setProperties,
       addProperty,
       updateProperty,
+      addCustomerToProperty,
       addNewPropertyWithCustomers,
       refreshProperties,
       loading,
@@ -110,6 +128,7 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({
       properties,
       addProperty,
       updateProperty,
+      addCustomerToProperty,
       addNewPropertyWithCustomers,
       refreshProperties,
       loading,

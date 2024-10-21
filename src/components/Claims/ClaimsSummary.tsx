@@ -2,7 +2,7 @@ import React from "react";
 import { Typography, Box, Grid, Paper } from "@mui/material";
 import { Control, UseFormWatch, UseFormSetValue } from "react-hook-form";
 import { ClaimsData, TechnicalAssignment } from "../../../app/types/claims";
-
+import { ServiceRequestData } from "../../../app/types/service-request";
 interface ClaimsSummaryProps {
   control: Control<ClaimsData>;
   watch: UseFormWatch<ClaimsData>;
@@ -15,6 +15,10 @@ interface ClaimsSummaryProps {
 
 const ClaimsSummary: React.FC<ClaimsSummaryProps> = ({ watch }) => {
   const data = watch();
+  const allianceCompany = watch("alliance_companies");
+  const publicAdjuster = watch("public_adjuster_assignment");
+  const customers = watch("customers");
+  const property = watch("property");
 
   const renderSection = (title: string, content: React.ReactNode) => (
     <Box mb={5}>
@@ -42,6 +46,15 @@ const ClaimsSummary: React.FC<ClaimsSummaryProps> = ({ watch }) => {
       ));
     }
     return "N/A";
+  };
+
+  const renderRequestedServices = (
+    services: ServiceRequestData[] | undefined
+  ): string => {
+    if (Array.isArray(services) && services.length > 0) {
+      return services.map((service) => service.requested_service).join(", ");
+    }
+    return "No requested services available";
   };
   return (
     <Box>
@@ -158,9 +171,7 @@ const ClaimsSummary: React.FC<ClaimsSummaryProps> = ({ watch }) => {
           <Grid item xs={6}>
             <Typography>
               <strong>Service Requests:</strong>{" "}
-              {data.requested_services
-                ?.map((sr) => sr.requested_service)
-                .join(", ") || "N/A"}
+              {renderRequestedServices(data.requested_services)}
             </Typography>
           </Grid>
           <Grid item xs={6}>
@@ -187,25 +198,9 @@ const ClaimsSummary: React.FC<ClaimsSummaryProps> = ({ watch }) => {
           </Grid>
         </Grid>
       )}
+
       {renderSection(
-        "Alliance Company & Public Adjuster",
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Typography>
-              <strong>Alliance Company:</strong>{" "}
-              {data.alliance_companies?.alliance_company_name || "N/A"}
-            </Typography>
-          </Grid>
-          <Grid item xs={12}>
-            <Typography>
-              <strong>Public Adjuster:</strong>{" "}
-              {data.public_adjuster_assignment?.name || "N/A"}
-            </Typography>
-          </Grid>
-        </Grid>
-      )}
-      {renderSection(
-        "Affidavit & Alliance Company Details",
+        "Affidavit Details",
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
             <Typography>
@@ -247,6 +242,17 @@ const ClaimsSummary: React.FC<ClaimsSummaryProps> = ({ watch }) => {
             <Typography>
               <strong>Has Never Had Prior Loss:</strong>{" "}
               {data.affidavit?.has_never_had_prior_loss ? "Yes" : "No"}
+            </Typography>
+          </Grid>
+        </Grid>
+      )}
+      {renderSection(
+        "Alliance Company",
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Typography>
+              <strong>Alliance Company:</strong>{" "}
+              {data.alliance_companies?.alliance_company_name || "N/A"}
             </Typography>
           </Grid>
         </Grid>

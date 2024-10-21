@@ -92,7 +92,6 @@ export default function SelectPropertyAndCustomer({
       message: "Property created successfully",
       severity: "success",
     });
-    // You might want to refresh the property list here
   };
 
   const handleSnackbarClose = (

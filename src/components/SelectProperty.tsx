@@ -42,6 +42,9 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
   const [selectedProperty, setSelectedProperty] = useState<PropertyData | null>(
     null
   );
+  const [filteredProperties, setFilteredProperties] = useState<PropertyData[]>(
+    []
+  );
   const selectedPropertyId = watch("property_id");
 
   const loading = contextLoading || localLoading;
@@ -49,15 +52,6 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
   const capitalize = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
-
-  const filteredProperties = selectedCustomerId
-    ? properties.filter(
-        (property) =>
-          property.customers?.some(
-            (customer) => customer.id === selectedCustomerId
-          ) || property.customer_id === selectedCustomerId
-      )
-    : [];
 
   const formatPropertyLabel = (option: PropertyData): string => {
     const propertyAddress =
@@ -124,6 +118,27 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
       delete (window as any).handleNewProperty;
     };
   }, [handleNewProperty]);
+
+  useEffect(() => {
+    if (selectedCustomerId) {
+      const filtered = properties.filter(
+        (property) =>
+          property.customers?.some(
+            (customer) => customer.id === selectedCustomerId
+          ) || property.customer_id === selectedCustomerId
+      );
+      setFilteredProperties(filtered);
+    } else {
+      setFilteredProperties(properties);
+    }
+  }, [properties, selectedCustomerId]);
+
+  useEffect(() => {
+    if (selectedPropertyId) {
+      const property = properties.find((p) => p.id === selectedPropertyId);
+      setSelectedProperty(property || null);
+    }
+  }, [properties, selectedPropertyId]);
 
   return (
     <Controller

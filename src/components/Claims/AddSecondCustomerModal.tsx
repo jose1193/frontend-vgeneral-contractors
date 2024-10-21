@@ -25,6 +25,7 @@ import { customerSchema } from "../../components/Validations/customersValidation
 import { CustomerData } from "../../../app/types/customer";
 import { PropertyData } from "../../../app/types/property";
 import { useCustomerContext } from "../../../app/contexts/CustomerContext";
+import { usePropertyContext } from "../../../app/contexts/PropertyContext";
 import PhoneInputField from "../../../app/components/PhoneInputField";
 import useCapitalizeWords from "../../hooks/useCapitalizeWords";
 import EmailCustomerInputField from "../Customers/EmailCustomerInputField";
@@ -42,6 +43,7 @@ const AddSecondCustomerModal: React.FC<CustomerFormProps> = ({
 }) => {
   const capitalizeWords = useCapitalizeWords();
   const { addCustomer, refreshCustomers } = useCustomerContext();
+  const { addCustomerToProperty } = usePropertyContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -74,6 +76,9 @@ const AddSecondCustomerModal: React.FC<CustomerFormProps> = ({
       };
       const newCustomer = await createCustomer(newCustomerData);
       addCustomer(newCustomer);
+      if (selectedProperty?.id) {
+        addCustomerToProperty(selectedProperty.id, newCustomer);
+      }
       await refreshCustomers();
       setSnackbar({
         open: true,
