@@ -1,21 +1,17 @@
 import React from "react";
-import {
-  Box,
-  Typography,
-  Grid,
-  Paper,
-  Button,
-  Skeleton,
-  Chip,
-} from "@mui/material";
+import { Box, Typography, Grid, Paper, Chip, Divider } from "@mui/material";
 import { ClaimsData } from "../../../app/types/claims";
+import { CustomerData } from "../../../app/types/customer";
 import { PropertyData } from "../../../app/types/property";
+import usePhoneFormatter from "../../hooks/usePhoneFormatter ";
 
 interface ClaimDetailsProps {
   claim: ClaimsData | null;
 }
 
 const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
+  const formatPhoneNumber = usePhoneFormatter();
+
   if (!claim) {
     return (
       <Paper elevation={3} sx={{ p: 5, mb: 7 }}>
@@ -25,13 +21,13 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
       </Paper>
     );
   }
-  // Helper cause of loss
+
+  // Helper functions
   const causeOfLossString =
     Array.isArray(claim.cause_of_loss_id) && claim.cause_of_loss_id.length > 0
       ? claim.cause_of_loss_id.map((cause) => cause.cause_loss_name).join(", ")
       : "No cause of loss available";
 
-  // Helper function to render property address
   const renderPropertyAddress = (property: PropertyData | string) => {
     if (typeof property === "string") {
       return property;
@@ -41,7 +37,6 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
     return "Address not available";
   };
 
-  // Helper function to format amount
   const formatAmount = (amount: number | string | null | undefined): string => {
     if (amount === null || amount === undefined) return "N/A";
     if (typeof amount === "number") {
@@ -54,7 +49,6 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
     return String(amount);
   };
 
-  // Helper function to render affidavit information
   const renderAffidavitInfo = (
     label: string,
     value: string | number | boolean | null | undefined
@@ -77,6 +71,39 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
           .map((service) => service.requested_service)
           .join(", ")
       : "No requested services available";
+
+  const renderCustomerInfo = (customer: CustomerData, index: number) => (
+    <Box key={index} mb={2}>
+      <Typography
+        variant="subtitle1"
+        sx={{ color: "#662401", fontWeight: "bold" }}
+      >
+        Signatory {index + 1}
+      </Typography>
+      <Typography variant="body2" sx={{ color: "black" }}>
+        Name:{" "}
+        <span
+          style={{ fontWeight: "bold" }}
+        >{`${customer.name} ${customer.last_name}`}</span>
+      </Typography>
+      <Typography variant="body2" sx={{ color: "black" }}>
+        Phone:{" "}
+        <span style={{ fontWeight: "bold" }}>
+          {formatPhoneNumber(customer.home_phone)}
+        </span>
+      </Typography>
+      <Typography variant="body2" sx={{ color: "black" }}>
+        Mobile:{" "}
+        <span style={{ fontWeight: "bold" }}>
+          {formatPhoneNumber(customer.cell_phone)}
+        </span>
+      </Typography>
+      <Typography variant="body2" sx={{ color: "black" }}>
+        Email: <span style={{ fontWeight: "bold" }}>{customer.email}</span>
+      </Typography>
+      {index < (claim.customers?.length || 0) - 1 && <Divider sx={{ my: 1 }} />}
+    </Box>
+  );
 
   return (
     <Paper elevation={3} sx={{ p: 5, mb: 7 }}>
@@ -124,54 +151,20 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
 
       {/* Main content section */}
       <Grid container spacing={3}>
-        {/* Column 1: Property and Customer */}
+        {/* Column 1: Property and Customers */}
         <Grid item xs={12} md={4}>
           <Typography variant="h6" gutterBottom sx={{ color: "#662401" }}>
-            Property and Customer
+            Property and Signatories
           </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Name:{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {Array.isArray(claim?.customers)
-                ? claim.customers
-                    .map((customer) => `${customer.name} ${customer.last_name}`)
-                    .join(", ")
-                : claim?.customers || ""}
-            </span>
-          </Typography>
-
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Phone:{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {Array.isArray(claim?.customers)
-                ? claim.customers
-                    .map((customer) => `${customer.home_phone} `)
-                    .join(", ")
-                : claim?.customers || ""}
-            </span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Mobile:{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {Array.isArray(claim?.customers)
-                ? claim.customers
-                    .map((customer) => `${customer.cell_phone} `)
-                    .join(", ")
-                : claim?.customers || ""}
-            </span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            <Typography variant="subtitle2" sx={{ color: "black" }}>
-              Email:
-              <span style={{ fontWeight: "bold", marginLeft: 5 }}>
-                {Array.isArray(claim?.customers)
-                  ? claim.customers
-                      .map((customer) => `${customer.email} `)
-                      .join(", ")
-                  : claim?.customers || ""}
-              </span>
+          {Array.isArray(claim.customers) && claim.customers.length > 0 ? (
+            claim.customers.map((customer, index) =>
+              renderCustomerInfo(customer, index)
+            )
+          ) : (
+            <Typography variant="body2" sx={{ color: "black" }}>
+              No signatory information available.
             </Typography>
-          </Typography>
+          )}
           <Typography variant="subtitle2" sx={{ mt: 2, color: "black" }}>
             Property Address:{" "}
             <span style={{ fontWeight: "bold" }}>
@@ -204,9 +197,8 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
               {claim.description_of_loss}
             </span>
           </Typography>
-
           <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Type Damage:
+            Type of Damage:
             <span style={{ fontWeight: "bold" }}> {claim.type_damage}</span>
           </Typography>
           <Typography variant="subtitle2" sx={{ color: "black" }}>
@@ -221,7 +213,7 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
             <span style={{ fontWeight: "bold" }}>{claim.number_of_floors}</span>
           </Typography>
           <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Ref By:{" "}
+            Referred By:{" "}
             <span style={{ fontWeight: "bold" }}>
               {" "}
               <span style={{ fontWeight: "bold" }}> {claim.user_ref_by}</span>
@@ -246,9 +238,7 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
             <span style={{ fontWeight: "bold", marginLeft: 5 }}>
               {Array.isArray(claim?.technical_assignments)
                 ? claim.technical_assignments
-                    .map(
-                      (assignment) => assignment.technical_user_name // Ensure this is a string
-                    )
+                    .map((assignment) => assignment.technical_user_name)
                     .join(", ")
                 : "No technicians assigned"}
             </span>

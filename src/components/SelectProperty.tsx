@@ -31,15 +31,20 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
 }) => {
   const {
     properties,
-    loading,
+    loading: contextLoading,
     error,
     updateProperty,
     addNewPropertyWithCustomers,
   } = usePropertyContext();
   const { watch, setValue } = useFormContext();
   const { data: session } = useSession();
-  const [refreshing, setRefreshing] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<PropertyData | null>(
+    null
+  );
   const selectedPropertyId = watch("property_id");
+
+  const loading = contextLoading || localLoading;
 
   const capitalize = (str: string) => {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -68,36 +73,41 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
     return `${propertyAddress}, ${propertyCity}, ${propertyState} ${propertyPostalCode}, ${propertyCountry}`;
   };
 
-  useEffect(() => {
-    const refreshPropertyData = async () => {
-      if (selectedPropertyId && session?.accessToken) {
-        setRefreshing(true);
+  const refreshPropertyData = useCallback(
+    async (propertyId: number) => {
+      if (session?.accessToken) {
+        setLocalLoading(true);
         try {
-          const selectedProperty = properties.find(
-            (p) => p.id === selectedPropertyId
-          );
+          const selectedProperty = properties.find((p) => p.id === propertyId);
           if (selectedProperty?.uuid) {
             const updatedProperty = await getData(
               session.accessToken,
               selectedProperty.uuid
             );
             updateProperty(updatedProperty);
+            setSelectedProperty(updatedProperty);
           }
         } catch (error) {
           console.error("Error refreshing property data:", error);
         } finally {
-          setRefreshing(false);
+          setLocalLoading(false);
         }
       }
-    };
+    },
+    [session?.accessToken, properties, updateProperty]
+  );
 
-    refreshPropertyData();
-  }, [selectedPropertyId, session?.accessToken, properties, updateProperty]);
+  useEffect(() => {
+    if (selectedPropertyId && !selectedProperty) {
+      refreshPropertyData(selectedPropertyId);
+    }
+  }, [selectedPropertyId, refreshPropertyData, selectedProperty]);
 
   const handleNewProperty = useCallback(
     (newProperty: PropertyData, associatedCustomers: any[]) => {
       addNewPropertyWithCustomers(newProperty, associatedCustomers);
       setValue("property_id", newProperty.id);
+      setSelectedProperty(newProperty);
       if (onChange) {
         const associatedCustomerIds = associatedCustomers
           .map((customer) => customer.id)
@@ -108,7 +118,6 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
     [addNewPropertyWithCustomers, setValue, onChange]
   );
 
-  // Expose handleNewProperty to the global scope
   useEffect(() => {
     (window as any).handleNewProperty = handleNewProperty;
     return () => {
@@ -123,73 +132,75 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
       render={({
         field: { onChange: fieldOnChange, value, ...rest },
         fieldState: { error: fieldError },
-      }) => (
-        <FormControl fullWidth>
-          <Autocomplete<PropertyData, false, false, false>
-            {...rest}
-            options={filteredProperties}
-            getOptionLabel={(option: PropertyData | string): string => {
-              if (typeof option === "string") {
-                return option.toUpperCase();
-              }
-              return formatPropertyLabel(option);
-            }}
-            renderOption={(props, option: PropertyData) => (
-              <li {...props}>{formatPropertyLabel(option)}</li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Property"
-                error={!!fieldError}
-                helperText={fieldError?.message}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loading || refreshing ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
-            loading={loading || refreshing}
-            onChange={(_, newValue: PropertyData | null) => {
-              fieldOnChange(newValue ? newValue.id : null);
-              if (onChange) {
-                const associatedCustomerIds =
-                  newValue?.customers
-                    ?.map((customer) => customer.id)
-                    .filter((id): id is number => id !== undefined) || [];
-                onChange(newValue, associatedCustomerIds);
-              }
-            }}
-            value={
-              filteredProperties.find((property) => property.id === value) ||
-              null
-            }
-            isOptionEqualToValue={(
-              option: PropertyData,
-              value: PropertyData | string
-            ) => option.id === (typeof value === "string" ? value : value.id)}
-          />
-          {error && <FormHelperText error>{error}</FormHelperText>}
+      }) => {
+        const handlePropertyChange = (newValue: PropertyData | null) => {
+          setSelectedProperty(newValue);
+          fieldOnChange(newValue ? newValue.id : null);
+          if (onChange) {
+            const associatedCustomerIds =
+              newValue?.customers
+                ?.map((customer) => customer.id)
+                .filter((id): id is number => id !== undefined) || [];
+            onChange(newValue, associatedCustomerIds);
+          }
+          if (newValue && newValue.id) {
+            refreshPropertyData(newValue.id);
+          }
+        };
 
-          {value && (
-            <Box mt={2}>
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: "bold" }}
-                gutterBottom
-              >
-                Customers associated with this property:
-              </Typography>
-              {filteredProperties
-                .find((property) => property.id === value)
-                ?.customers?.map((customer, index) => (
+        return (
+          <FormControl fullWidth>
+            <Autocomplete<PropertyData, false, false, false>
+              {...rest}
+              options={filteredProperties}
+              getOptionLabel={(option: PropertyData | string): string => {
+                if (typeof option === "string") {
+                  return option.toUpperCase();
+                }
+                return formatPropertyLabel(option);
+              }}
+              renderOption={(props, option: PropertyData) => (
+                <li {...props}>{formatPropertyLabel(option)}</li>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Property"
+                  error={!!fieldError}
+                  helperText={fieldError?.message}
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {loading ? (
+                          <CircularProgress color="inherit" size={20} />
+                        ) : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+              loading={loading}
+              onChange={(_, newValue) => handlePropertyChange(newValue)}
+              value={selectedProperty}
+              isOptionEqualToValue={(option, value) =>
+                option.id ===
+                (typeof value === "string" ? parseInt(value) : value.id)
+              }
+            />
+            {error && <FormHelperText error>{error}</FormHelperText>}
+
+            {selectedProperty && (
+              <Box mt={2}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: "bold" }}
+                  gutterBottom
+                >
+                  Customers associated with this property:
+                </Typography>
+                {selectedProperty.customers?.map((customer, index) => (
                   <Typography key={customer.id} variant="body2">
                     <span>{index + 1}. </span>
                     <span style={{ color: "#662401", fontWeight: "bold" }}>
@@ -215,14 +226,15 @@ const SelectProperty: React.FC<SelectPropertyProps> = ({
                     )}
                   </Typography>
                 )) || (
-                <Typography variant="body2">
-                  No customers associated with this property.
-                </Typography>
-              )}
-            </Box>
-          )}
-        </FormControl>
-      )}
+                  <Typography variant="body2">
+                    No customers associated with this property.
+                  </Typography>
+                )}
+              </Box>
+            )}
+          </FormControl>
+        );
+      }}
     />
   );
 };

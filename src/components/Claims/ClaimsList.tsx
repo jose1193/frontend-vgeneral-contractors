@@ -125,20 +125,6 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
       align: "center",
     },
     {
-      field: "policy_number",
-      headerName: "Policy Number",
-      width: 170,
-      headerAlign: "center",
-      align: "center",
-    },
-    {
-      field: "type_damage",
-      headerName: "Type Damage",
-      width: 150,
-      headerAlign: "center",
-      align: "center",
-    },
-    {
       field: "property",
       headerName: "Property",
       width: 200,
@@ -153,12 +139,20 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
       align: "center",
     },
     {
-      field: "date_of_loss",
-      headerName: "Date of Loss",
+      field: "policy_number",
+      headerName: "Policy Number",
+      width: 170,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "type_damage",
+      headerName: "Type Damage",
       width: 150,
       headerAlign: "center",
       align: "center",
     },
+
     {
       field: "claim_status",
       headerName: "Claim Status",
@@ -206,6 +200,7 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
       width: 250,
       headerAlign: "center",
       align: "center",
+
       renderCell: (params) => {
         if (
           userRole === "Technical Services" ||
@@ -230,7 +225,14 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
         }
 
         return (
-          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <Link href={`/dashboard/claims/${params.row.uuid}`} passHref>
               <Button
                 size="small"
