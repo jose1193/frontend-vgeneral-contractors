@@ -2,7 +2,7 @@ export interface PublicCompanyData {
   id?: number;
   uuid?: string;
   public_company_name: string;
-  address: string;
+  address: string | null;
   phone?: string;
   email?: string;
   website?: string;

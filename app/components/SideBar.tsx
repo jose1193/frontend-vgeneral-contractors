@@ -78,6 +78,7 @@ import SecurityIcon from "@mui/icons-material/Security";
 import BusinessIcon from "@mui/icons-material/Business";
 import DomainIcon from "@mui/icons-material/Domain";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import HandshakeIcon from "@mui/icons-material/Handshake";
 const drawerWidth = 240;
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -275,8 +276,13 @@ export default function MiniDrawer() {
         },
         {
           name: "Public Company",
-          href: "/dashboard/public-company",
+          href: "/dashboard/public-companies",
           icon: <BusinessIcon />,
+        },
+        {
+          name: "Alliance Company",
+          href: "/dashboard/alliance-companies",
+          icon: <HandshakeIcon />,
         },
       ],
     },
@@ -334,7 +340,7 @@ export default function MiniDrawer() {
           icon: <WarningIcon />,
         },
         {
-          name: "Company",
+          name: "VG Company",
           href: "/dashboard/company-signature",
           icon: <DriveFileRenameOutlineIcon />,
         },

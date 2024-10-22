@@ -2,7 +2,6 @@
 
 import React, { useState, lazy, Suspense } from "react";
 import { useForm, Resolver, Controller, FormProvider } from "react-hook-form";
-
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
   TextField,
@@ -13,17 +12,16 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { InsuranceCompanyData } from "../../../app/types/insurance-company";
-import { insuranceCompanyValidation } from "../Validations/insuranceCompanyValidation";
+import { PublicCompanyData } from "../../../app/types/public-company";
+import { publicCompanyValidation } from "../Validations/publicCompanyValidation";
 import useFormSnackbar from "../../hooks/useFormSnackbar";
-import dynamic from "next/dynamic";
-import SelectProhibitedAlliances from "../SelectProhibitedAlliances";
 import useCompanyNameFormatter from "../../hooks/useCompanyNameFormatter";
+import dynamic from "next/dynamic";
+
 const PhoneInputField = lazy(
   () => import("../../../app/components/PhoneInputField")
 );
 
-// Dynamic import for AddressAutocomplete
 const CompanySignatureAutocomplete = dynamic(
   () => import("../../components/CompanySignatureAutocomplete"),
   {
@@ -32,23 +30,24 @@ const CompanySignatureAutocomplete = dynamic(
   }
 );
 
-interface InsuranceCompanyFormProps {
-  initialData?: Partial<InsuranceCompanyData>;
-  onSubmit: (data: InsuranceCompanyData) => Promise<void>;
+interface PublicCompanyFormProps {
+  initialData?: Partial<PublicCompanyData>;
+  onSubmit: (data: PublicCompanyData) => Promise<void>;
 }
 
-const InsuranceCompanyForm: React.FC<InsuranceCompanyFormProps> = ({
+const PublicCompanyForm: React.FC<PublicCompanyFormProps> = ({
   initialData,
   onSubmit,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
   const formatCompanyName = useCompanyNameFormatter();
-  const methods = useForm<InsuranceCompanyData>({
+
+  const methods = useForm<PublicCompanyData>({
     defaultValues: initialData || {},
     resolver: yupResolver(
-      insuranceCompanyValidation
-    ) as Resolver<InsuranceCompanyData>,
+      publicCompanyValidation
+    ) as Resolver<PublicCompanyData>,
     mode: "onChange",
   });
 
@@ -64,13 +63,13 @@ const InsuranceCompanyForm: React.FC<InsuranceCompanyFormProps> = ({
     setValue("address", addressDetails.formatted_address);
   };
 
-  const onSubmitHandler = async (data: InsuranceCompanyData) => {
+  const onSubmitHandler = async (data: PublicCompanyData) => {
     setIsSubmitting(true);
     try {
       await onSubmit(data);
       setSnackbar({
         open: true,
-        message: "Insurance company data submitted successfully!",
+        message: "Public company data submitted successfully!",
         severity: "success",
       });
     } catch (error) {
@@ -92,7 +91,7 @@ const InsuranceCompanyForm: React.FC<InsuranceCompanyFormProps> = ({
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Controller
-                name="insurance_company_name"
+                name="public_company_name"
                 control={control}
                 render={({ field }) => (
                   <TextField
@@ -101,11 +100,11 @@ const InsuranceCompanyForm: React.FC<InsuranceCompanyFormProps> = ({
                       const formattedValue = formatCompanyName(e.target.value);
                       field.onChange(formattedValue);
                     }}
-                    label="Insurance Company Name"
+                    label="Public Company Name"
                     variant="outlined"
                     fullWidth
-                    error={!!errors.insurance_company_name}
-                    helperText={errors.insurance_company_name?.message}
+                    error={!!errors.public_company_name}
+                    helperText={errors.public_company_name?.message}
                     autoComplete="off"
                   />
                 )}
@@ -115,7 +114,7 @@ const InsuranceCompanyForm: React.FC<InsuranceCompanyFormProps> = ({
               <CompanySignatureAutocomplete
                 onAddressSelect={handleAddressSelect}
                 name="address"
-                label="Insurance Company Address"
+                label="Company Address"
                 defaultValue={initialData?.address || ""}
               />
             </Grid>
@@ -156,12 +155,6 @@ const InsuranceCompanyForm: React.FC<InsuranceCompanyFormProps> = ({
                 )}
               />
             </Grid>
-            <Grid item xs={12} sm={6} sx={{ mt: 5 }}>
-              <SelectProhibitedAlliances
-                control={control}
-                initialAlliances={initialData?.alliance_companies || []}
-              />
-            </Grid>
           </Grid>
 
           <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
@@ -179,8 +172,8 @@ const InsuranceCompanyForm: React.FC<InsuranceCompanyFormProps> = ({
               {isSubmitting
                 ? "Submitting..."
                 : initialData
-                ? "Update Insurance Company"
-                : "Create Insurance Company"}
+                ? "Update Public Company"
+                : "Create Public Company"}
             </Button>
           </Box>
         </Box>
@@ -205,4 +198,4 @@ const InsuranceCompanyForm: React.FC<InsuranceCompanyFormProps> = ({
   );
 };
 
-export default InsuranceCompanyForm;
+export default PublicCompanyForm;
