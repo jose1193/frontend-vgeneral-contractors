@@ -2,7 +2,7 @@ export interface AllianceCompanyData {
   id?: number;
   uuid?: string;
   alliance_company_name: string;
-  address: string;
+  address: string | null;
   phone?: string;
   email?: string;
   website?: string;
