@@ -1,6 +1,5 @@
-// src/app/claims/[uuid]/page.tsx
 "use client";
-import React, { useEffect, useState, Suspense } from "react";
+import React, { Suspense } from "react";
 import {
   Box,
   Button,
@@ -23,43 +22,34 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import ShareIcon from "@mui/icons-material/Share";
 import ClaimDetails from "../../../../src/components/Claims/ClaimDetails";
 import { useParams } from "next/navigation";
-import { getData } from "../../../lib/actions/claimsActions";
-import { ClaimsData } from "../../../types/claims";
 import { useSession } from "next-auth/react";
 import InvoiceTable from "../../../../src/components/Claims/InvoiceTable";
 import ClaimHeader from "../../../../src/components/Claims/ClaimHeader";
 import ClaimTabs from "../../../../src/components/Claims/ClaimTabs";
+import { useClaimProfile } from "../../../../src/hooks/useClaimProfile";
+
 const ClaimProfile: React.FC = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [claim, setClaim] = useState<ClaimsData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { uuid } = useParams();
-
   const { data: session } = useSession();
+  const token = session?.accessToken as string;
 
-  useEffect(() => {
-    const fetchClaim = async () => {
-      try {
-        const token = session?.accessToken as string;
-        if (token && uuid) {
-          const data = await getData(token, uuid as string);
-          console.log("Fetched claim response:", data);
-          setClaim(data);
-        }
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch claim");
-        setLoading(false);
-      }
-    };
+  const {
+    claim,
+    loading,
+    error,
+    createClaimAgreement,
+    updateClaimAgreement,
+    deleteClaimAgreement,
+    claimAgreements,
+  } = useClaimProfile(uuid as string, token);
 
-    fetchClaim();
-  }, [uuid, session?.accessToken]);
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography color="error">Error: {error}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Suspense>
@@ -73,11 +63,15 @@ const ClaimProfile: React.FC = () => {
         }}
       >
         <ClaimHeader claim={claim} />
-
         <ClaimDetails claim={claim} />
+        <ClaimTabs
+          claim={claim}
+          claimAgreements={claimAgreements}
+          onCreateAgreement={createClaimAgreement}
+          onUpdateAgreement={updateClaimAgreement}
+          onDeleteAgreement={deleteClaimAgreement}
+        />
         <InvoiceTable claim={claim} />
-
-        <ClaimTabs />
       </Box>
     </Suspense>
   );

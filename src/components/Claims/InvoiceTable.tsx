@@ -30,7 +30,7 @@ const InvoiceTable: React.FC<ClaimDetailsProps> = ({ claim }) => {
         backdropFilter: "blur(10px)",
         padding: 3,
         borderRadius: 2,
-        mb: 5,
+        my: 8,
       }}
     >
       <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>

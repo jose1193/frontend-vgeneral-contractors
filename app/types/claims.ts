@@ -6,6 +6,7 @@ import { ServiceRequestData } from "./service-request";
 import { ClaimStatusData } from "./claim-status";
 import { CauseOfLossData } from "./cause-of-loss";
 import { UserData } from "./user";
+import { ClaimAgreementData } from "./claim-agreement";
 
 export interface TechnicalAssignment {
   id: number;
@@ -57,6 +58,7 @@ export interface ClaimsData {
 
   customers: CustomerData[] | null;
   property: PropertyData;
+  claim_agreements: ClaimAgreementData[];
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;
