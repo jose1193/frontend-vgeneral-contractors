@@ -184,14 +184,16 @@ export default function Component({
     name: template.template_name,
     description: template.template_description,
     type: template.template_type,
-    lastModified: new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    }).format(new Date(template.updated_at)),
+    lastModified: template.updated_at
+      ? new Intl.DateTimeFormat("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }).format(new Date(template.updated_at))
+      : "Date not available",
     template_path: template.template_path,
   }));
 

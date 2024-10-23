@@ -335,12 +335,21 @@ const DocumentTemplatePage = () => {
         />
         <DetailRow
           label="Created At"
-          value={new Date(documentTemplate.created_at).toLocaleDateString()}
+          value={
+            documentTemplate.created_at
+              ? new Date(documentTemplate.created_at).toLocaleDateString()
+              : "N/A"
+          }
         />
         <DetailRow
           label="Updated At"
-          value={new Date(documentTemplate.updated_at).toLocaleDateString()}
+          value={
+            documentTemplate.updated_at
+              ? new Date(documentTemplate.updated_at).toLocaleDateString()
+              : "N/A"
+          }
         />
+
         <DetailRow label="UUID" value={documentTemplate.uuid} />
       </Paper>
 

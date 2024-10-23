@@ -25,7 +25,7 @@ export const documentTemplateValidation = yup.object().shape({
 
   template_path: yup
     .mixed()
-    .required("Template file is required")
+    .nullable("Template file is required")
     .test("isFile", "A valid file is required", (value) => {
       return value instanceof File;
     })
@@ -39,9 +39,6 @@ export const documentTemplateValidation = yup.object().shape({
           )
         : false;
     }),
-
-  created_at: yup.string().required("Created date is required"),
-  updated_at: yup.string().required("Updated date is required"),
 }) as yup.ObjectSchema<DocumentTemplateFormData>;
 
 // Type check to ensure validation schema matches form data type

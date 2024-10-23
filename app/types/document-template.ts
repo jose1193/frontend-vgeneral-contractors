@@ -22,10 +22,10 @@ export interface DocumentTemplateData {
   template_name: string;
   template_description: string | null;
   template_type: TemplateType;
-  template_path: File;
+  template_path: File | null;
   uploaded_by?: number;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Form-specific interface

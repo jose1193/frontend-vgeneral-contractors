@@ -49,8 +49,6 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
       template_description: null,
       template_type: TEMPLATE_TYPES[0],
       template_path: initialData?.template_path,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
       ...initialData,
     },
     resolver: yupResolver(documentTemplateValidation),
