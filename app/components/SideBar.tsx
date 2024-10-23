@@ -79,6 +79,7 @@ import BusinessIcon from "@mui/icons-material/Business";
 import DomainIcon from "@mui/icons-material/Domain";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import HandshakeIcon from "@mui/icons-material/Handshake";
+
 const drawerWidth = 240;
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -319,6 +320,11 @@ export default function MiniDrawer() {
       icon: <SettingsIcon />,
       allowedRoles: ["Super Admin"],
       subItems: [
+        {
+          name: "Document Templates",
+          href: "/dashboard/document-templates",
+          icon: <DocumentScannerIcon />,
+        },
         {
           name: "Users",
           href: "/dashboard/users",
