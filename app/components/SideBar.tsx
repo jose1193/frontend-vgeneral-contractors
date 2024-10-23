@@ -79,6 +79,8 @@ import BusinessIcon from "@mui/icons-material/Business";
 import DomainIcon from "@mui/icons-material/Domain";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import HandshakeIcon from "@mui/icons-material/Handshake";
+import ContentPasteIcon from "@mui/icons-material/ContentPaste";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 
 const drawerWidth = 240;
 
@@ -314,17 +316,28 @@ export default function MiniDrawer() {
         },
       ],
     },
-
+    {
+      name: "Documents",
+      icon: <DocumentScannerIcon />,
+      allowedRoles: ["Super Admin"],
+      subItems: [
+        {
+          name: "VG Company",
+          href: "/dashboard/document-templates",
+          icon: <ContentPasteIcon />,
+        },
+        {
+          name: "Alliance Company",
+          href: "/dashboard/document-templates",
+          icon: <ReceiptLongIcon />,
+        },
+      ],
+    },
     {
       name: "Config",
       icon: <SettingsIcon />,
       allowedRoles: ["Super Admin"],
       subItems: [
-        {
-          name: "Document Templates",
-          href: "/dashboard/document-templates",
-          icon: <DocumentScannerIcon />,
-        },
         {
           name: "Users",
           href: "/dashboard/users",
