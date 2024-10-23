@@ -319,7 +319,7 @@ export default function MiniDrawer() {
     {
       name: "Documents",
       icon: <DocumentScannerIcon />,
-      allowedRoles: ["Super Admin"],
+      allowedRoles: ["Super Admin", "Admin", "Manager", "Salesperson"],
       subItems: [
         {
           name: "VG Company",

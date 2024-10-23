@@ -27,24 +27,15 @@ import useFormSnackbar from "../../hooks/useFormSnackbar";
 
 interface DocumentTemplateListProps {
   documentTemplates: DocumentTemplateData[];
-  onDelete: (uuid: string) => void;
+  onDelete: (uuid: string) => Promise<void>;
   userRole: string | undefined;
 }
 
-interface DocumentTemplateRow {
-  id: string;
-  name: string;
-  description: string;
-  type: string;
-  lastModified: string;
-  template_path: string;
-}
-
-const DocumentTemplateList: React.FC<DocumentTemplateListProps> = ({
+export default function Component({
   documentTemplates,
   onDelete,
   userRole,
-}) => {
+}: DocumentTemplateListProps) {
   const theme = useTheme();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] =
@@ -52,9 +43,12 @@ const DocumentTemplateList: React.FC<DocumentTemplateListProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
 
-  const handleDeleteClick = (template: DocumentTemplateData) => {
-    setTemplateToDelete(template);
-    setDeleteDialogOpen(true);
+  const handleDeleteClick = (row: any) => {
+    const template = documentTemplates.find((t) => t.uuid === row.id);
+    if (template) {
+      setTemplateToDelete(template);
+      setDeleteDialogOpen(true);
+    }
   };
 
   const handleDownload = (template_path: string) => {
@@ -112,9 +106,6 @@ const DocumentTemplateList: React.FC<DocumentTemplateListProps> = ({
       flex: 1,
       headerAlign: "center",
       align: "center",
-      valueFormatter: (params: { value: string | null }) => {
-        return params.value ? new Date(params.value).toLocaleDateString() : "";
-      },
     },
     {
       field: "actions",
@@ -148,31 +139,27 @@ const DocumentTemplateList: React.FC<DocumentTemplateListProps> = ({
               <VisibilityIcon fontSize="small" />
             </Button>
           </Link>
-          <Link
-            href={`/dashboard/document-templates/${params.row.id}/edit`}
-            passHref
-          >
-            <Button
-              size="small"
-              variant="contained"
-              color="warning"
-              sx={{
-                minWidth: "unset",
-                padding: "8px 12px",
-              }}
+          {userRole !== "Salesperson" && (
+            <Link
+              href={`/dashboard/document-templates/${params.row.id}/edit`}
+              passHref
             >
-              <EditIcon fontSize="small" />
-            </Button>
-          </Link>
+              <Button
+                size="small"
+                variant="contained"
+                color="warning"
+                sx={{ minWidth: "unset", padding: "8px 12px" }}
+              >
+                <EditIcon fontSize="small" />
+              </Button>
+            </Link>
+          )}
           <Button
             size="small"
             variant="contained"
             color="success"
             onClick={() => handleDownload(params.row.template_path)}
-            sx={{
-              minWidth: "unset",
-              padding: "8px 12px",
-            }}
+            sx={{ minWidth: "unset", padding: "8px 12px" }}
           >
             <DownloadIcon fontSize="small" />
           </Button>
@@ -182,10 +169,7 @@ const DocumentTemplateList: React.FC<DocumentTemplateListProps> = ({
               variant="contained"
               color="error"
               onClick={() => handleDeleteClick(params.row)}
-              sx={{
-                minWidth: "unset",
-                padding: "8px 12px",
-              }}
+              sx={{ minWidth: "unset", padding: "8px 12px" }}
             >
               <DeleteIcon fontSize="small" />
             </Button>
@@ -200,7 +184,14 @@ const DocumentTemplateList: React.FC<DocumentTemplateListProps> = ({
     name: template.template_name,
     description: template.template_description,
     type: template.template_type,
-    lastModified: template.updated_at || template.created_at,
+    lastModified: new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).format(new Date(template.updated_at)),
     template_path: template.template_path,
   }));
 
@@ -337,6 +328,4 @@ const DocumentTemplateList: React.FC<DocumentTemplateListProps> = ({
       </Snackbar>
     </Box>
   );
-};
-
-export default DocumentTemplateList;
+}

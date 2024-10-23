@@ -42,9 +42,12 @@ const InsuranceCompanyList: React.FC<InsuranceCompanyListProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
 
-  const handleDeleteClick = (company: InsuranceCompanyData) => {
-    setCompanyToDelete(company);
-    setDeleteDialogOpen(true);
+  const handleDeleteClick = (row: any) => {
+    const company = insuranceCompanies.find((c) => c.uuid === row.uuid);
+    if (company) {
+      setCompanyToDelete(company);
+      setDeleteDialogOpen(true);
+    }
   };
 
   const handleDeleteConfirm = async () => {

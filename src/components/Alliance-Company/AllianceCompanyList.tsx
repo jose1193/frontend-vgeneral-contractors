@@ -43,9 +43,12 @@ const AllianceCompanyList: React.FC<AllianceCompanyListProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
 
-  const handleDeleteClick = (company: AllianceCompanyData) => {
-    setCompanyToDelete(company);
-    setDeleteDialogOpen(true);
+  const handleDeleteClick = (row: any) => {
+    const company = allianceCompanies.find((c) => c.uuid === row.uuid);
+    if (company) {
+      setCompanyToDelete(company);
+      setDeleteDialogOpen(true);
+    }
   };
 
   const handleDeleteConfirm = async () => {

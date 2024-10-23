@@ -39,9 +39,11 @@ const DocumentTemplatesPage = () => {
           Document Templates
         </Typography>
 
-        <Link href="/dashboard/document-templates/create" passHref>
-          <ButtonCreate sx={{ ml: 4 }}>Create Document Template</ButtonCreate>
-        </Link>
+        {userRole !== "Salesperson" && (
+          <Link href="/dashboard/document-templates/create" passHref>
+            <ButtonCreate sx={{ ml: 4 }}>Create Document Template</ButtonCreate>
+          </Link>
+        )}
 
         <DocumentTemplateList
           documentTemplates={documentTemplates}

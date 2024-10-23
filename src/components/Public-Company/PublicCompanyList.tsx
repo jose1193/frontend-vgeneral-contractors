@@ -43,9 +43,12 @@ const PublicCompanyList: React.FC<PublicCompanyListProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
 
-  const handleDeleteClick = (company: PublicCompanyData) => {
-    setCompanyToDelete(company);
-    setDeleteDialogOpen(true);
+  const handleDeleteClick = (row: any) => {
+    const company = publicCompanies.find((c) => c.uuid === row.uuid);
+    if (company) {
+      setCompanyToDelete(company);
+      setDeleteDialogOpen(true);
+    }
   };
 
   const handleDeleteConfirm = async () => {
