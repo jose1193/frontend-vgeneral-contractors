@@ -24,7 +24,7 @@ import Alert from "@mui/material/Alert";
 import Link from "next/link";
 import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
-
+import { PERMISSIONS } from "../../../src/config/permissions";
 interface PermissionListProps {
   permissions: PermissionData[];
   onDelete: (id: number) => void;
@@ -221,4 +221,9 @@ const PermissionList: React.FC<PermissionListProps> = ({
     </Box>
   );
 };
-export default withRoleProtection(PermissionList, ["Super Admin"]);
+
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(PermissionList, protectionConfig);
