@@ -1,20 +1,47 @@
-// hooks/useRoleCheck.ts
 import { useSession } from "next-auth/react";
-import { ROLE_PERMISSIONS } from "../config/roles";
+import { ROLES, RoleName } from "../config/roles";
+import { PermissionType } from "../config/permissions";
+import { canAccessRoute } from "../utils/auth";
 
-export function useRoleCheck() {
-  const { data: session } = useSession();
-  const userRole = session?.user?.user_role as
-    | keyof typeof ROLE_PERMISSIONS
-    | undefined;
+interface RoleCheckHook {
+  hasPermission: (permission: PermissionType) => boolean;
+  canAccessPath: (path: string) => boolean;
+  hasRole: (role: RoleName) => boolean;
+  userRole?: RoleName;
+  isLoading: boolean;
+}
 
-  const checkAccess = (requiredRoles: string[]): boolean => {
+export function useRoleCheck(): RoleCheckHook {
+  const { data: session, status } = useSession();
+  const userRole = session?.user?.user_role as RoleName | undefined;
+  const isLoading = status === "loading";
+
+  const hasPermission = (permission: PermissionType): boolean => {
     if (!userRole) return false;
-    const allowedRoutes = ROLE_PERMISSIONS[userRole];
-    return requiredRoles.some(
-      (role) => allowedRoutes.includes("*") || allowedRoutes.includes(role)
-    );
+
+    // Super Admin tiene todos los permisos
+    if (userRole === "Super Admin") return true;
+
+    const roleConfig = ROLES[userRole];
+    if (!roleConfig) return false;
+
+    return roleConfig.permissions.includes(permission);
   };
 
-  return { checkAccess };
+  const canAccessPath = (path: string): boolean => {
+    if (!userRole) return false;
+    return canAccessRoute(userRole, path);
+  };
+
+  const hasRole = (role: RoleName): boolean => {
+    return userRole === role;
+  };
+
+  return {
+    hasPermission,
+    canAccessPath,
+    hasRole,
+    userRole,
+    isLoading,
+  };
 }

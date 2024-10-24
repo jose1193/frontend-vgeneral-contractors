@@ -1,22 +1,22 @@
-// src/app/claims/page.tsx
-
 "use client";
 
 import React, { Suspense } from "react";
 import { useClaims } from "../../../src/hooks/useClaims";
-//import { TypeDamagesForm } from "../../../src/components/Type-Damages/TypeDamagesForm";
 import ClaimsList from "../../../src/components/Claims/ClaimsList";
-import { Button, Box, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
 import UserInfo from "@/components/UserInfo";
 import ButtonCreate from "../../components/ButtonCreate";
+import { PERMISSIONS } from "../../../src/config/permissions";
+
 const ClaimsPage = () => {
   const { data: session, update } = useSession();
 
   const token = session?.accessToken as string;
   const userRole = session?.user?.user_role;
+
   const { claims, loading, error, deleteClaim, restoreClaim } =
     useClaims(token);
 
@@ -50,7 +50,7 @@ const ClaimsPage = () => {
         </Typography>
 
         <Link href="/dashboard/claims/create" passHref>
-          <ButtonCreate sx={{ ml: 4 }}> Create Claim </ButtonCreate>
+          <ButtonCreate sx={{ ml: 4 }}>Create Claim</ButtonCreate>
         </Link>
         <ClaimsList
           claims={claims}
@@ -62,9 +62,12 @@ const ClaimsPage = () => {
     </Suspense>
   );
 };
-export default withRoleProtection(ClaimsPage, [
-  "Super Admin",
-  "Admin",
-  "Manager",
-  "Salesperson",
-]);
+
+// Configuración de protección para la página de Claims
+const protectionConfig = {
+  roles: ["Super Admin", "Admin", "Manager", "Salesperson"],
+  permissions: [PERMISSIONS.MANAGE_CLAIMS],
+  paths: ["/dashboard/claims"],
+};
+
+export default withRoleProtection(ClaimsPage, protectionConfig);

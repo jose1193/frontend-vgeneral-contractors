@@ -60,7 +60,7 @@ import BorderColorIcon from "@mui/icons-material/BorderColor";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ROLE_PERMISSIONS } from "../../src/config/roles";
+
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import RoleGuard from "@/components/RoleGuard";
 import Image from "next/image";
@@ -81,7 +81,8 @@ import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-
+import { hasPermission } from "@/utils/auth";
+import { PERMISSIONS } from "@/config/permissions";
 const drawerWidth = 240;
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -158,6 +159,7 @@ export default function MiniDrawer() {
     name: string;
     href: string;
     icon?: React.ReactNode;
+    permission?: keyof typeof PERMISSIONS;
   }
 
   interface PageItem {
@@ -165,7 +167,8 @@ export default function MiniDrawer() {
     href?: string;
     icon: React.ReactNode;
     subItems?: SubItem[];
-    allowedRoles: string[];
+
+    permission?: keyof typeof PERMISSIONS;
   }
 
   const pages: PageItem[] = [
@@ -173,36 +176,24 @@ export default function MiniDrawer() {
       name: "Home",
       href: "/dashboard",
       icon: <HouseIcon />,
-      allowedRoles: [
-        "Super Admin",
-        "Admin",
-        "Manager",
-        "Technical Services",
-        "Salesperson",
-      ],
+      permission: PERMISSIONS.VIEW_DASHBOARD,
     },
     {
       name: "Profile",
       href: "/dashboard/profile",
       icon: <AccountCircle />,
-      allowedRoles: [
-        "Super Admin",
-        "Admin",
-        "Manager",
-        "Technical Services",
-        "Salesperson",
-      ],
+      permission: PERMISSIONS.VIEW_DASHBOARD,
     },
     {
       name: "Customers",
       href: "/dashboard/customers",
       icon: <ContactsIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager", "Salesperson"],
+      permission: PERMISSIONS.MANAGE_CUSTOMERS,
     },
     {
       name: "Claims",
       icon: <PostAddIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager", "Salesperson"],
+      permission: PERMISSIONS.MANAGE_CLAIMS,
       subItems: [
         {
           name: "New Claim",
@@ -220,58 +211,46 @@ export default function MiniDrawer() {
       name: "Sign. SalesPerson",
       href: "/dashboard/salesperson-signature",
       icon: <BorderColorIcon />,
-      allowedRoles: ["Super Admin", "Salesperson"],
+      permission: PERMISSIONS.MANAGE_SIGNATURES,
     },
 
     {
       name: "Prospect",
       href: "/",
       icon: <GpsFixedIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
 
     {
       name: "Deals",
       href: "/",
       icon: <MonetizationOnIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
     {
       name: "Projects",
       href: "/",
       icon: <ContentPasteSearchIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
 
     {
       name: "Stages",
       href: "/dashboard/stage",
       icon: <ViewKanbanIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
     {
       name: "Calendars",
       href: "/",
       icon: <CalendarMonthIcon />,
-      allowedRoles: [
-        "Super Admin",
-        "Admin",
-        "Manager",
-        "Technical Services",
-        "Salesperson",
-      ],
     },
 
     {
       name: "Emails",
       href: "/",
       icon: <InboxIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager"],
     },
     {
       name: "Companies",
       icon: <DomainIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager"],
+      permission: PERMISSIONS.MANAGE_COMPANIES,
       subItems: [
         {
           name: "Insurance",
@@ -293,7 +272,7 @@ export default function MiniDrawer() {
     {
       name: "Integrations",
       icon: <ApiIcon />,
-      allowedRoles: ["Super Admin", "Admin"],
+
       subItems: [
         {
           name: "Docusign API",
@@ -320,7 +299,7 @@ export default function MiniDrawer() {
     {
       name: "Documents",
       icon: <DocumentScannerIcon />,
-      allowedRoles: ["Super Admin", "Admin", "Manager", "Salesperson"],
+      permission: PERMISSIONS.MANAGE_DOCUMENTS,
       subItems: [
         {
           name: "VG Company",
@@ -337,7 +316,7 @@ export default function MiniDrawer() {
     {
       name: "Config",
       icon: <SettingsIcon />,
-      allowedRoles: ["Super Admin"],
+      permission: PERMISSIONS.MANAGE_CONFIG,
       subItems: [
         {
           name: "Users",
@@ -370,29 +349,41 @@ export default function MiniDrawer() {
   const router = useRouter();
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const userRole = session?.user?.user_role as
-    | keyof typeof ROLE_PERMISSIONS
-    | undefined;
-  // Filtrar las páginas basadas en el rol del usuario
-  const filteredPages = pages.filter((page) => {
-    if (!userRole) return false;
-    if (userRole === "Super Admin") return true; // Super Admin ve todo
+  const userRole = session?.user?.user_role as string | undefined;
 
-    const allowedRoutes = ROLE_PERMISSIONS[userRole];
-    if (!allowedRoutes) return false;
+  const filterMenuItems = (items: PageItem[]): PageItem[] => {
+    if (!userRole) return [];
 
-    // Comprueba si la página o alguna de sus subpáginas está permitida
-    return (
-      page.allowedRoles.includes(userRole) ||
-      allowedRoutes.some(
-        (route) =>
-          route === "*" ||
-          page.href?.startsWith(route) ||
-          (page.subItems &&
-            page.subItems.some((subItem) => subItem.href.startsWith(route)))
-      )
-    );
-  });
+    return items.filter((item) => {
+      // Super Admin sees everything
+      if (userRole === "Super Admin") return true;
+
+      // Check main item permission
+      const hasMainPermission = item.permission
+        ? hasPermission(userRole, item.permission)
+        : false;
+
+      // If there are subitems, check their permissions
+      if (item.subItems) {
+        const filteredSubItems = item.subItems.filter((subItem) =>
+          subItem.permission
+            ? hasPermission(userRole, subItem.permission)
+            : hasMainPermission
+        );
+
+        // Only include this item if it has accessible subitems
+        if (filteredSubItems.length > 0) {
+          item.subItems = filteredSubItems;
+          return true;
+        }
+      }
+
+      // For items without subitems, return based on main permission
+      return hasMainPermission;
+    });
+  };
+
+  const filteredPages = filterMenuItems(pages);
   const handleLogout = async () => {
     try {
       const token = session?.accessToken;

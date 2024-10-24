@@ -1,79 +1,31 @@
-//middleware.ts
+// middleware.ts
 import { NextResponse } from "next/server";
 import { auth } from "./auth";
+import { canAccessRoute, getDefaultRoute } from "./src/utils/auth";
+
 export default auth((req) => {
   const isLoggedIn = !!req.auth?.user;
   const userRole = req.auth?.user?.user_role;
-
-  console.log("Middleware - Is logged in:", isLoggedIn);
-  console.log("Middleware - User role:", userRole);
-  ///console.log("Middleware - User:", req.auth?.user);
   const pathname = req.nextUrl.pathname;
 
   if (isLoggedIn) {
     if (!userRole) {
-      console.error("User is logged in but has no role assigned");
       return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
 
-    if (pathname === "/" || pathname === "/") {
-      const dashboardRoute = getDashboardRouteForRole(userRole);
-      return NextResponse.redirect(new URL(dashboardRoute, req.url));
+    if (pathname === "/") {
+      return NextResponse.redirect(new URL(getDefaultRoute(userRole), req.url));
     }
 
-    // Verificar acceso basado en el rol
-    if (!hasAccessToRoute(userRole, pathname)) {
-      const defaultDashboard = getDashboardRouteForRole(userRole);
-      return NextResponse.redirect(new URL(defaultDashboard, req.url));
+    if (!canAccessRoute(userRole, pathname)) {
+      return NextResponse.redirect(new URL(getDefaultRoute(userRole), req.url));
     }
-  } else {
-    if (pathname.startsWith("/dashboard")) {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
+  } else if (pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   return NextResponse.next();
 });
-
-function getDashboardRouteForRole(role: string | undefined): string {
-  switch (role) {
-    case "Super Admin":
-      return "/dashboard/super-admin";
-    case "Admin":
-      return "/dashboard/admin";
-    case "Manager":
-      return "/dashboard/manager";
-    case "Sales Person":
-      return "/dashboard/salesperson";
-    case "Technical Services":
-      return "/dashboard/technical-services";
-    default:
-      return "/dashboard";
-  }
-}
-
-function hasAccessToRoute(role: string | undefined, pathname: string): boolean {
-  if (pathname.startsWith("/dashboard/super-admin")) {
-    return role === "Super Admin";
-  }
-  if (pathname.startsWith("/dashboard/admin")) {
-    return role === "Super Admin" || role === "Admin";
-  }
-  if (pathname.startsWith("/dashboard/manager")) {
-    return role === "Super Admin" || role === "Admin" || role === "Manager";
-  }
-  if (pathname.startsWith("/dashboard/salesperson")) {
-    return role === "Super Admin" || role === "Admin" || role === "Salesperson";
-  }
-  if (pathname.startsWith("/dashboard/technical-services")) {
-    return (
-      role === "Super Admin" ||
-      role === "Admin" ||
-      role === "Technical Services"
-    );
-  }
-  return true;
-}
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],

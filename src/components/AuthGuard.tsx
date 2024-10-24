@@ -4,12 +4,8 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { CircularProgress, Box } from "@mui/material";
-import {
-  PUBLIC_ROUTES,
-  ROLE_ROUTES,
-  DEFAULT_AUTH_ROUTE,
-  ROLE_PERMISSIONS,
-} from "../config/roles";
+import { AUTH_CONFIG } from "../config/auth";
+import { isPublicRoute, canAccessRoute } from "../utils/auth";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -18,37 +14,53 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (status === "loading") return;
-
-    const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
-    const userRole = session?.user?.user_role as
-      | keyof typeof ROLE_ROUTES
-      | undefined;
+    let isMounted = true;
 
     const handleNavigation = async () => {
-      if (status === "authenticated") {
-        if (userRole) {
-          const roleRoute = ROLE_ROUTES[userRole] || DEFAULT_AUTH_ROUTE;
-          const allowedRoutes = ROLE_PERMISSIONS[userRole];
+      // Ignorar si está cargando
+      if (status === "loading") return;
 
-          if (isPublicRoute) {
-            await router.push(roleRoute);
-          } else if (!isAuthorized(pathname, allowedRoutes)) {
-            await router.push(roleRoute);
+      try {
+        const userRole = session?.user?.user_role;
+        const isPublic = isPublicRoute(pathname);
+
+        // Usuario autenticado
+        if (status === "authenticated") {
+          if (!userRole) {
+            // Usuario autenticado pero sin rol
+            console.error("Usuario autenticado sin rol");
+            await router.push(AUTH_CONFIG.errorRoute);
+          } else if (isPublic) {
+            // Usuario autenticado en ruta pública
+            await router.push(AUTH_CONFIG.defaultAuthRoute);
+          } else if (!canAccessRoute(userRole, pathname)) {
+            // Usuario sin acceso a la ruta
+            await router.push(AUTH_CONFIG.defaultAuthRoute);
           }
-        } else {
-          console.error("User is authenticated but has no role");
-          await router.push("/error");
         }
-      } else if (status === "unauthenticated" && !isPublicRoute) {
-        await router.push("/");
+        // Usuario no autenticado
+        else if (status === "unauthenticated" && !isPublic) {
+          // Redirigir a login si intenta acceder a ruta protegida
+          await router.push(AUTH_CONFIG.loginRoute);
+        }
+      } catch (error) {
+        console.error("Error en la navegación:", error);
+        await router.push(AUTH_CONFIG.errorRoute);
       }
-      setIsLoading(false);
+
+      if (isMounted) {
+        setIsLoading(false);
+      }
     };
 
     handleNavigation();
+
+    return () => {
+      isMounted = false;
+    };
   }, [status, pathname, router, session]);
 
+  // Mostrar loading mientras se verifica la autenticación
   if (isLoading || status === "loading") {
     return (
       <Box
@@ -62,10 +74,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Renderizar children si todo está correcto
   return <>{children}</>;
-}
-
-function isAuthorized(pathname: string, allowedRoutes: string[]): boolean {
-  if (allowedRoutes.includes("*")) return true;
-  return allowedRoutes.some((route) => pathname.startsWith(route));
 }
