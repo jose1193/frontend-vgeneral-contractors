@@ -10,7 +10,7 @@ import { PublicCompanyData } from "../../../../app/types/public-company";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import TypographyHeading from "../../../components/TypographyHeading";
-
+import { PERMISSIONS } from "../../../../src/config/permissions";
 const CreatePublicCompanyPage = () => {
   const { data: session } = useSession();
   const router = useRouter();
@@ -61,7 +61,8 @@ const CreatePublicCompanyPage = () => {
   );
 };
 
-export default withRoleProtection(CreatePublicCompanyPage, [
-  "Super Admin",
-  "Admin",
-]);
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_COMPANIES],
+};
+
+export default withRoleProtection(CreatePublicCompanyPage, protectionConfig);

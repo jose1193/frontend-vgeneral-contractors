@@ -20,6 +20,9 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import GeneralFormSkeleton from "@/components/skeletons/GeneralFormSkeleton";
 import { useSession } from "next-auth/react";
 import { TEMPLATE_TYPES } from "../../../../../app/types/document-template";
+import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
+import TypographyHeading from "../../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../../src/config/permissions";
 function EditDocumentTemplatePage() {
   const { uuid } = useParams();
   const router = useRouter();
@@ -135,5 +138,8 @@ function EditDocumentTemplatePage() {
     </Box>
   );
 }
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_DOCUMENTS],
+};
 
-export default EditDocumentTemplatePage;
+export default withRoleProtection(EditDocumentTemplatePage, protectionConfig);

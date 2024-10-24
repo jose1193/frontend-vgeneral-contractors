@@ -6,6 +6,9 @@ import { getData } from "../../../../lib/actions/allianceCompanyActions";
 import { useAllianceCompanies } from "../../../../../src/hooks/useAllianceCompanies";
 import AllianceCompanyForm from "@/components/Alliance-Company/AllianceCompanyForm";
 import { AllianceCompanyData } from "../../../../types/alliance-company";
+import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
+import TypographyHeading from "../../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../../src/config/permissions";
 import {
   Typography,
   Box,
@@ -114,5 +117,8 @@ function EditAllianceCompanyPage() {
     </Box>
   );
 }
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_COMPANIES],
+};
 
-export default EditAllianceCompanyPage;
+export default withRoleProtection(EditAllianceCompanyPage, protectionConfig);

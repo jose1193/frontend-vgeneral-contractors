@@ -9,7 +9,9 @@ import { useRouter } from "next/navigation";
 import { AllianceCompanyData } from "../../../../app/types/alliance-company";
 import { useSession } from "next-auth/react";
 import TypographyHeading from "../../../components/TypographyHeading";
+import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 
+import { PERMISSIONS } from "../../../../src/config/permissions";
 const CreateAllianceCompanyPage = () => {
   const { data: session } = useSession();
   const router = useRouter();
@@ -59,5 +61,8 @@ const CreateAllianceCompanyPage = () => {
     </Suspense>
   );
 };
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_COMPANIES],
+};
 
-export default CreateAllianceCompanyPage;
+export default withRoleProtection(CreateAllianceCompanyPage, protectionConfig);

@@ -16,7 +16,9 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import DetailsSkeleton from "../../../../src/components/skeletons/DetailsSkeleton";
-
+import { withRoleProtection } from "../../../../src/components/withRoleProtection";
+import TypographyHeading from "../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 interface DetailRowProps {
   label: string;
   value: string | number | null | undefined;
@@ -146,5 +148,8 @@ const PublicCompanyPage = () => {
     </Box>
   );
 };
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_COMPANIES],
+};
 
-export default PublicCompanyPage;
+export default withRoleProtection(PublicCompanyPage, protectionConfig);

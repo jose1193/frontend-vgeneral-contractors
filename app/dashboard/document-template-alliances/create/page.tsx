@@ -8,7 +8,9 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useRouter } from "next/navigation";
 import { DocumentTemplateAllianceFormData } from "../../../../app/types/document-template-alliance";
 import { useSession } from "next-auth/react";
+import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import TypographyHeading from "../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 
 const DocumentTemplateAlliancePage = () => {
   const { data: session } = useSession();
@@ -64,5 +66,11 @@ const DocumentTemplateAlliancePage = () => {
     </Suspense>
   );
 };
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_DOCUMENTS],
+};
 
-export default DocumentTemplateAlliancePage;
+export default withRoleProtection(
+  DocumentTemplateAlliancePage,
+  protectionConfig
+);

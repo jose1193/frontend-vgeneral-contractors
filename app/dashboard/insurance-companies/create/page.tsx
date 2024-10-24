@@ -10,6 +10,7 @@ import { InsuranceCompanyData } from "../../../../app/types/insurance-company";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import TypographyHeading from "../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 const CreateInsuranceCompanyPage = () => {
   const { data: session } = useSession();
   const router = useRouter();
@@ -59,7 +60,8 @@ const CreateInsuranceCompanyPage = () => {
   );
 };
 
-export default withRoleProtection(CreateInsuranceCompanyPage, [
-  "Super Admin",
-  "Admin",
-]);
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_COMPANIES],
+};
+
+export default withRoleProtection(CreateInsuranceCompanyPage, protectionConfig);

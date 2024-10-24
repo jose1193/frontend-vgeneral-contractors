@@ -4,7 +4,9 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { DocumentTemplateAllianceData } from "../../../../app/types/document-template-alliance";
 import { getData } from "../../../lib/actions/documentTemplateAllianceActions";
-import { AllianceCompanyData } from "../../../../app/types/alliance-company";
+import { withRoleProtection } from "../../../../src/components/withRoleProtection";
+import TypographyHeading from "../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 import {
   Typography,
   Paper,
@@ -39,9 +41,24 @@ interface DetailRowProps {
   value: string | number | null | undefined;
 }
 
-export default function Component() {
-  const { uuid } = useParams();
+// Custom error component to match the pattern
+const ErrorComponent = ({ message }: { message: string }) => (
+  <Box sx={{ p: 3 }}>
+    <Alert severity="error" sx={{ mb: 2 }}>
+      {message}
+    </Alert>
+    <Button
+      variant="contained"
+      onClick={() => window.history.back()}
+      startIcon={<ArrowBackIcon />}
+    >
+      Go Back
+    </Button>
+  </Box>
+);
 
+const DocumentTemplateAlliancePage = () => {
+  const { uuid } = useParams();
   const [documentTemplate, setDocumentTemplate] =
     useState<DocumentTemplateAllianceData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,22 +67,6 @@ export default function Component() {
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
   const [isLoading, setIsLoading] = useState(false);
   const [shareAnchorEl, setShareAnchorEl] = useState<null | HTMLElement>(null);
-
-  useEffect(() => {
-    const fetchDocumentTemplate = async () => {
-      try {
-        const token = session?.accessToken as string;
-        const data = await getData(token, uuid as string);
-        setDocumentTemplate(data);
-        setLoading(false);
-      } catch (err) {
-        setError("No document template found");
-        setLoading(false);
-      }
-    };
-
-    fetchDocumentTemplate();
-  }, [uuid, session?.accessToken]);
 
   const DetailRow: React.FC<DetailRowProps> = ({ label, value }) => (
     <Box display="flex" alignItems="center" my={1}>
@@ -77,6 +78,30 @@ export default function Component() {
       </Typography>
     </Box>
   );
+
+  useEffect(() => {
+    const fetchDocumentTemplate = async () => {
+      try {
+        const token = session?.accessToken as string;
+        if (!token || !uuid) {
+          setError("Invalid request parameters");
+          return;
+        }
+        const data = await getData(token, uuid as string);
+        if (!data) {
+          setError("Document template not found");
+          return;
+        }
+        setDocumentTemplate(data);
+      } catch (err) {
+        setError("Failed to fetch document template");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDocumentTemplate();
+  }, [uuid, session?.accessToken]);
 
   const handleDownload = async () => {
     if (documentTemplate?.uuid && session?.accessToken) {
@@ -203,21 +228,7 @@ export default function Component() {
   }
 
   if (error || !documentTemplate) {
-    return (
-      <Box sx={{ mt: 2, ml: -6, mb: 10, p: { xs: 3, sm: 3, md: 2, lg: 4 } }}>
-        <Button
-          variant="outlined"
-          onClick={() => window.history.back()}
-          startIcon={<ArrowBackIcon />}
-          style={{ marginBottom: "20px" }}
-        >
-          Back
-        </Button>
-        <Typography variant="h6" color="error">
-          {error || "No document template found"}
-        </Typography>
-      </Box>
-    );
+    return <ErrorComponent message={error || "No document template found"} />;
   }
 
   return (
@@ -238,14 +249,9 @@ export default function Component() {
       >
         Back
       </Button>
-      <Typography
-        variant="h4"
-        component="h1"
-        gutterBottom
-        sx={{ mb: 5, fontWeight: "bold" }}
-      >
-        Document Template Details
-      </Typography>
+
+      <TypographyHeading>Document Template Details</TypographyHeading>
+
       <Paper
         elevation={3}
         style={{
@@ -337,13 +343,8 @@ export default function Component() {
         />
         <DetailRow
           label="Alliance Company"
-          value={
-            documentTemplate.alliance_company_name
-              ? documentTemplate.alliance_company_name
-              : "N/A"
-          }
+          value={documentTemplate.alliance_company_name ?? "N/A"}
         />
-
         <DetailRow label="UUID" value={documentTemplate.uuid} />
       </Paper>
 
@@ -388,4 +389,15 @@ export default function Component() {
       </Snackbar>
     </Box>
   );
-}
+};
+
+// Protection configuration
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_DOCUMENTS],
+};
+
+// Single export default with protection
+export default withRoleProtection(
+  DocumentTemplateAlliancePage,
+  protectionConfig
+);

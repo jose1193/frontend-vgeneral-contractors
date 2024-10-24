@@ -7,7 +7,9 @@ import { Box, Typography } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import ButtonCreate from "../../components/ButtonCreate";
-
+import { withRoleProtection } from "../../../src/components/withRoleProtection";
+import TypographyHeading from "../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../src/config/permissions";
 const InsuranceCompaniesPage = () => {
   const { data: session } = useSession();
   const token = session?.accessToken as string;
@@ -52,4 +54,8 @@ const InsuranceCompaniesPage = () => {
   );
 };
 
-export default InsuranceCompaniesPage;
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_COMPANIES],
+};
+
+export default withRoleProtection(InsuranceCompaniesPage, protectionConfig);

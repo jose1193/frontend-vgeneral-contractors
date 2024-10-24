@@ -33,7 +33,9 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import { useSession } from "next-auth/react";
 import DetailsSkeleton from "../../../../src/components/skeletons/DetailsSkeleton";
 import useFormSnackbar from "../../../../src/hooks/useFormSnackbar";
-
+import { withRoleProtection } from "../../../../src/components/withRoleProtection";
+import TypographyHeading from "../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 interface DetailRowProps {
   label: string;
   value: string | number | null | undefined;
@@ -398,4 +400,8 @@ const DocumentTemplatePage = () => {
   );
 };
 
-export default DocumentTemplatePage;
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_DOCUMENTS],
+};
+
+export default withRoleProtection(DocumentTemplatePage, protectionConfig);

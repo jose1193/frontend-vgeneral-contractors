@@ -11,12 +11,30 @@ import {
   Box,
   Paper,
   Button,
+  Alert,
   CircularProgress,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import GeneralFormSkeleton from "@/components/skeletons/GeneralFormSkeleton";
 import { withRoleProtection } from "@/components/withRoleProtection";
 import { useSession } from "next-auth/react";
+import { PERMISSIONS } from "../../../../../src/config/permissions";
+
+// Custom error component matching the claims pattern
+const ErrorComponent = ({ message }: { message: string }) => (
+  <Box sx={{ p: 3 }}>
+    <Alert severity="error" sx={{ mb: 2 }}>
+      {message}
+    </Alert>
+    <Button
+      variant="contained"
+      onClick={() => window.history.back()}
+      startIcon={<ArrowBackIcon />}
+    >
+      Go Back
+    </Button>
+  </Box>
+);
 
 function EditInsuranceCompanyPage() {
   const { uuid } = useParams();
@@ -34,21 +52,35 @@ function EditInsuranceCompanyPage() {
     const fetchInsuranceCompany = async () => {
       try {
         const data = await getData(token, uuid as string);
+        if (!data) {
+          setError("Insurance company not found");
+          return;
+        }
         setInsuranceCompany(data);
       } catch (err) {
-        setError("No insurance company found");
+        setError("Failed to fetch insurance company");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchInsuranceCompany();
+    if (token && uuid) {
+      fetchInsuranceCompany();
+    }
   }, [uuid, token]);
 
   const handleSubmit = async (data: InsuranceCompanyData) => {
-    await updateInsuranceCompany(uuid as string, data);
-    router.push("/dashboard/insurance-companies");
+    try {
+      await updateInsuranceCompany(uuid as string, data);
+      router.push("/dashboard/insurance-companies");
+    } catch (error) {
+      console.error("Error updating insurance company:", error);
+    }
   };
+
+  if (error) {
+    return <ErrorComponent message={error} />;
+  }
 
   if (loading) {
     return <GeneralFormSkeleton />;
@@ -90,11 +122,7 @@ function EditInsuranceCompanyPage() {
       >
         Edit Insurance Company
       </Typography>
-      {error ? (
-        <Typography variant="h6" color="error">
-          {error}
-        </Typography>
-      ) : insuranceCompany ? (
+      {insuranceCompany ? (
         <Paper
           elevation={3}
           style={{
@@ -116,7 +144,9 @@ function EditInsuranceCompanyPage() {
   );
 }
 
-export default withRoleProtection(EditInsuranceCompanyPage, [
-  "Super Admin",
-  "Admin",
-]);
+// Protection configuration using the PERMISSIONS enum
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_COMPANIES],
+};
+
+export default withRoleProtection(EditInsuranceCompanyPage, protectionConfig);

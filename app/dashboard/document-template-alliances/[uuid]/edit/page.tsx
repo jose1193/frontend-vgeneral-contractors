@@ -15,7 +15,9 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import GeneralFormSkeleton from "@/components/skeletons/GeneralFormSkeleton"; // Asegúrate de que este componente existe
 import { TEMPLATE_TYPES_ALLIANCE } from "../../../../../app/types/document-template-alliance";
-
+import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
+import TypographyHeading from "../../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../../src/config/permissions";
 const DocumentTemplateAlliancePage = () => {
   const { uuid } = useParams(); // Obtiene el UUID de la URL
   const router = useRouter();
@@ -136,5 +138,11 @@ const DocumentTemplateAlliancePage = () => {
     </Box>
   );
 };
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_DOCUMENTS],
+};
 
-export default DocumentTemplateAlliancePage;
+export default withRoleProtection(
+  DocumentTemplateAlliancePage,
+  protectionConfig
+);

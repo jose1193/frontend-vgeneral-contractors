@@ -11,17 +11,34 @@ import {
   IconButton,
   Box,
   Button,
+  Alert,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
-import Image from "next/image";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 import DetailsSkeleton from "../../../../src/components/skeletons/DetailsSkeleton";
 
 interface DetailRowProps {
   label: string;
   value: string | number | null | undefined;
 }
+
+// Custom error component to match the pattern
+const ErrorComponent = ({ message }: { message: string }) => (
+  <Box sx={{ p: 3 }}>
+    <Alert severity="error" sx={{ mb: 2 }}>
+      {message}
+    </Alert>
+    <Button
+      variant="contained"
+      onClick={() => window.history.back()}
+      startIcon={<ArrowBackIcon />}
+    >
+      Go Back
+    </Button>
+  </Box>
+);
 
 const InsuranceCompanyPage = () => {
   const { uuid } = useParams();
@@ -35,11 +52,19 @@ const InsuranceCompanyPage = () => {
     const fetchInsuranceCompany = async () => {
       try {
         const token = session?.accessToken as string;
+        if (!token || !uuid) {
+          setError("Invalid request parameters");
+          return;
+        }
         const data = await getData(token, uuid as string);
+        if (!data) {
+          setError("Insurance company not found");
+          return;
+        }
         setInsuranceCompany(data);
-        setLoading(false);
       } catch (err) {
-        setError("No insurance company found");
+        setError("Failed to fetch insurance company");
+      } finally {
         setLoading(false);
       }
     };
@@ -63,21 +88,7 @@ const InsuranceCompanyPage = () => {
   }
 
   if (error || !insuranceCompany) {
-    return (
-      <Box sx={{ mt: 2, ml: -6, mb: 10, p: { xs: 3, sm: 3, md: 2, lg: 4 } }}>
-        <Button
-          variant="outlined"
-          onClick={() => window.history.back()}
-          startIcon={<ArrowBackIcon />}
-          style={{ marginBottom: "20px" }}
-        >
-          Back
-        </Button>
-        <Typography variant="h6" color="error">
-          {error || "No insurance company found"}
-        </Typography>
-      </Box>
-    );
+    return <ErrorComponent message={error || "No insurance company found"} />;
   }
 
   return (
@@ -147,4 +158,9 @@ const InsuranceCompanyPage = () => {
   );
 };
 
-export default withRoleProtection(InsuranceCompanyPage, ["Super Admin"]);
+// Protection configuration using the PERMISSIONS constant
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_COMPANIES],
+};
+
+export default withRoleProtection(InsuranceCompanyPage, protectionConfig);

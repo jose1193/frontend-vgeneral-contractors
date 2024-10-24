@@ -8,7 +8,9 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useRouter } from "next/navigation";
 import { DocumentTemplateFormData } from "../../../../app/types/document-template";
 import { useSession } from "next-auth/react";
+import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import TypographyHeading from "../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 
 const CreateDocumentTemplatePage = () => {
   const { data: session } = useSession();
@@ -62,5 +64,8 @@ const CreateDocumentTemplatePage = () => {
     </Suspense>
   );
 };
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_DOCUMENTS],
+};
 
-export default CreateDocumentTemplatePage;
+export default withRoleProtection(CreateDocumentTemplatePage, protectionConfig);
