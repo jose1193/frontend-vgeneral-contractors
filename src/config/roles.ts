@@ -11,7 +11,7 @@ export const ROLES: Record<string, RoleConfig> = {
   "Super Admin": {
     name: "Super Admin",
     permissions: Object.keys(PERMISSIONS) as PermissionType[],
-    defaultRoute: "/dashboard/admin",
+    defaultRoute: "/dashboard/super-admin",
   },
   Admin: {
     name: "Admin",
