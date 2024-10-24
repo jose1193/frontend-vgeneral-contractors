@@ -222,6 +222,7 @@ export default function MiniDrawer() {
       icon: <BorderColorIcon />,
       allowedRoles: ["Super Admin", "Salesperson"],
     },
+
     {
       name: "Prospect",
       href: "/",
