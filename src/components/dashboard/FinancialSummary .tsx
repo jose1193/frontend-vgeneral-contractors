@@ -11,7 +11,7 @@ import {
 } from "recharts";
 
 import { withRoleProtection } from "../withRoleProtection";
-
+import { PERMISSIONS } from "../../../src/config/permissions";
 const data = [
   { name: "Invoice", value: 4000 },
   { name: "Collection", value: 3000 },
@@ -77,8 +77,9 @@ const FinancialSummary = () => {
     </Paper>
   );
 };
-export default withRoleProtection(FinancialSummary, [
-  "Super Admin",
-  "Admin",
-  "Manager",
-]);
+
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(FinancialSummary, protectionConfig);

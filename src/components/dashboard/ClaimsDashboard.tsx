@@ -2,7 +2,7 @@
 import React from "react";
 import { DataGrid, GridToolbar, GridColDef } from "@mui/x-data-grid";
 import { Paper, Box, Chip } from "@mui/material";
-
+import { PERMISSIONS } from "../../../src/config/permissions";
 import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
 // Define el tipo para tus datos
@@ -166,8 +166,8 @@ function ClaimsReport() {
     </Paper>
   );
 }
-export default withRoleProtection(ClaimsReport, [
-  "Super Admin",
-  "Admin",
-  "Manager",
-]);
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(ClaimsReport, protectionConfig);

@@ -9,6 +9,7 @@ import {
   ArrowDownward as ArrowDownwardIcon,
 } from "@mui/icons-material";
 import { withRoleProtection } from "../withRoleProtection";
+import { PERMISSIONS } from "../../../src/config/permissions";
 const DashboardCards = () => {
   const cardData = [
     {
@@ -113,4 +114,9 @@ const DashboardCards = () => {
     </Grid>
   );
 };
-export default withRoleProtection(DashboardCards, ["Super Admin"]);
+
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(DashboardCards, protectionConfig);
