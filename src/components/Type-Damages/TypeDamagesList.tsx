@@ -24,6 +24,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import Alert from "@mui/material/Alert";
 import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
+import { PERMISSIONS } from "../../../src/config/permissions";
 interface TypeDamagesListProps {
   typeDamages: TypeDamageData[];
   onDelete: (uuid: string) => void;
@@ -257,4 +258,9 @@ const TypeDamagesList: React.FC<TypeDamagesListProps> = ({
     </Box>
   );
 };
-export default withRoleProtection(TypeDamagesList, ["Super Admin"]);
+
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(TypeDamagesList, protectionConfig);

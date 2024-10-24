@@ -28,7 +28,7 @@ import Link from "next/link";
 import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
 import usePhoneFormatter from "../../hooks/usePhoneFormatter ";
-
+import { PERMISSIONS } from "../../../src/config/permissions";
 interface UsersListProps {
   users: UserData[];
   onDelete: (uuid: string) => Promise<void>;
@@ -466,5 +466,8 @@ const UsersList: React.FC<UsersListProps> = ({
     </Box>
   );
 };
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
 
-export default withRoleProtection(UsersList, ["Super Admin", "Admin"]);
+export default withRoleProtection(UsersList, protectionConfig);
