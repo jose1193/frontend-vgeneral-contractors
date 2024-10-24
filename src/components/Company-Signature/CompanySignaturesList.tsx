@@ -27,6 +27,7 @@ import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
 import usePhoneFormatter from "../../hooks/usePhoneFormatter ";
 
+import { PERMISSIONS } from "../../../src/config/permissions";
 interface CompanySignaturesListProps {
   companySignatures: CompanySignatureData[];
   onDelete: (uuid: string) => void;
@@ -344,4 +345,9 @@ function Component({
   );
 }
 
-export default withRoleProtection(Component, ["Super Admin"]);
+// Configuración de protección basada en permisos
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(Component, protectionConfig);
