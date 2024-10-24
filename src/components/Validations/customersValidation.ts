@@ -40,9 +40,11 @@ export const customerSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
   occupation: yup
     .string()
+    .optional()
     .nullable()
+    .transform((value) => (value === "" ? null : value))
     .matches(
-      /^[A-Za-z\s]+$/,
+      /^[A-Za-z\s]*$/, // Cambiado + por * para permitir string vacío
       "Occupation must contain only letters and spaces"
     ),
 

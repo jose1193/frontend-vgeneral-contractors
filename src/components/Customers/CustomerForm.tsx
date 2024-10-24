@@ -140,7 +140,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                     onChange={(e) =>
                       field.onChange(capitalizeWords(e.target.value))
                     }
-                    label="Occupation"
+                    label="Occupation - (Optional)"
                     variant="outlined"
                     fullWidth
                     error={!!errors.occupation}
