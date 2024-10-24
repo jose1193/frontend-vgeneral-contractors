@@ -17,6 +17,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import GeneralFormSkeleton from "@/components/skeletons/GeneralFormSkeleton";
 import { withRoleProtection } from "@/components/withRoleProtection";
 import { useSession } from "next-auth/react";
+import { PERMISSIONS } from "@/config/permissions";
 
 function EditCompanySignaturePage() {
   const { uuid } = useParams();
@@ -46,8 +47,13 @@ function EditCompanySignaturePage() {
   }, [uuid, token]);
 
   const handleSubmit = async (data: CompanySignatureData) => {
-    await updateCompanySignature(uuid as string, data);
-    router.push("/dashboard/company-signature");
+    try {
+      await updateCompanySignature(uuid as string, data);
+      router.push("/dashboard/company-signature");
+    } catch (error) {
+      console.error("Error updating company signature:", error);
+      setError("Failed to update company signature");
+    }
   };
 
   if (loading) {
@@ -113,4 +119,9 @@ function EditCompanySignaturePage() {
   );
 }
 
-export default withRoleProtection(EditCompanySignaturePage, ["Super Admin"]);
+// Configuración de protección basada en permisos
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(EditCompanySignaturePage, protectionConfig);

@@ -17,6 +17,7 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 import Image from "next/image";
 import DetailsSkeleton from "../../../../src/components/skeletons/DetailsSkeleton";
 import dynamic from "next/dynamic";
@@ -107,7 +108,6 @@ const CompanySignaturePage = () => {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-
         ml: -6,
         mb: 10,
         p: { xs: 3, sm: 3, md: 2, lg: 4 },
@@ -204,4 +204,8 @@ const CompanySignaturePage = () => {
   );
 };
 
-export default withRoleProtection(CompanySignaturePage, ["Super Admin"]);
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(CompanySignaturePage, protectionConfig);

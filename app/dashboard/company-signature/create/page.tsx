@@ -1,4 +1,3 @@
-// src/app/company-signatures/create/page.tsx
 "use client";
 
 import React, { Suspense } from "react";
@@ -10,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { CompanySignatureData } from "../../../../app/types/company-signature";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 
 const CreateCompanySignaturePage = () => {
   const { data: session } = useSession();
@@ -73,4 +73,8 @@ const CreateCompanySignaturePage = () => {
   );
 };
 
-export default withRoleProtection(CreateCompanySignaturePage, ["Super Admin"]);
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(CreateCompanySignaturePage, protectionConfig);

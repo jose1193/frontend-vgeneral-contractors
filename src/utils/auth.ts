@@ -1,3 +1,4 @@
+// src/utils/auth.ts
 import { PERMISSIONS, PermissionType } from "../config/permissions";
 import { ROLES, RoleName } from "../config/roles";
 
@@ -47,18 +48,23 @@ export const canAccessRoute = (
   if (isPublicRoute(route)) return true;
   if (isSuperAdmin(role)) return true;
 
-  // Check if user is trying to access their role-specific dashboard
-  const roleBasePath = getRoleBasePath(role);
-  if (!route.startsWith(roleBasePath)) {
-    return false;
+  // Si la ruta es /dashboard, permitir acceso basado en VIEW_DASHBOARD
+  if (route === "/dashboard") {
+    return hasPermission(role, PERMISSIONS.VIEW_DASHBOARD);
   }
 
   const roleConfig = ROLES[role as RoleName];
   if (!roleConfig) return false;
 
-  // If they have VIEW_DASHBOARD permission, they can access their dashboard
+  // Verificar permisos específicos basados en la ruta
+  if (route.startsWith("/dashboard/claims")) {
+    return hasPermission(role, PERMISSIONS.MANAGE_CLAIMS);
+  }
+  if (route.startsWith("/dashboard/customers")) {
+    return hasPermission(role, PERMISSIONS.MANAGE_CUSTOMERS);
+  }
+  // Añadir más verificaciones específicas según tus rutas
+
+  // Por defecto, verificar VIEW_DASHBOARD
   return hasPermission(role, PERMISSIONS.VIEW_DASHBOARD);
 };
-
-export const requiresAuth = (pathname: string): boolean =>
-  !isPublicRoute(pathname);

@@ -11,21 +11,16 @@ type ProtectionConfig = {
   paths?: string[];
 };
 
-/**
- * HOC para proteger componentes basado en roles, permisos o rutas
- * @param WrappedComponent Componente a proteger
- * @param config Configuración de protección (roles, permisos o rutas permitidas)
- * @param CustomFallback Componente opcional personalizado a mostrar cuando no hay acceso
- */
 export function withRoleProtection<P extends object>(
   WrappedComponent: ComponentType<P>,
   config: ProtectionConfig,
   CustomFallback?: ComponentType<P>
 ) {
   return function WithRoleProtection(props: P) {
-    const { hasRole, hasPermission, canAccessPath, isLoading } = useRoleCheck();
+    const { hasRole, hasPermission, canAccessPath, isLoading, userRole } =
+      useRoleCheck();
 
-    // Componente de loading centralizado
+    // Si el rol del usuario aún no se ha cargado, mostrar loading
     if (isLoading) {
       return (
         <Box
@@ -41,6 +36,9 @@ export function withRoleProtection<P extends object>(
 
     // Verificar acceso
     const hasAccess = () => {
+      // Si no hay rol de usuario, no tiene acceso
+      if (!userRole) return false;
+
       // Verificar roles si se especificaron
       if (config.roles?.length) {
         const hasAllowedRole = config.roles.some((role) => hasRole(role));
@@ -66,13 +64,17 @@ export function withRoleProtection<P extends object>(
       return true;
     };
 
-    // Si no tiene acceso, mostrar el fallback apropiado
-    if (!hasAccess()) {
-      const FallbackComponent = CustomFallback || Forbidden;
-      return <FallbackComponent {...props} />;
-    }
-
-    // Si tiene acceso, mostrar el componente protegido
-    return <WrappedComponent {...props} />;
+    // Renderizar el layout de la página siempre, pero con el contenido apropiado
+    return (
+      <Box sx={{ width: "100%", minHeight: "100vh" }}>
+        {hasAccess() ? (
+          <WrappedComponent {...props} />
+        ) : (
+          <Box sx={{ pt: 4 }}>
+            {CustomFallback ? <CustomFallback {...props} /> : <Forbidden />}
+          </Box>
+        )}
+      </Box>
+    );
   };
 }

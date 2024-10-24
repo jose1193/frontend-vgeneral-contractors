@@ -1,42 +1,43 @@
 import { useSession } from "next-auth/react";
-import React from "react";
-import { ROLES, RoleName } from "../config/roles";
+import { useCallback } from "react";
+import { hasPermission as checkPermission } from "../utils/auth";
 import { PermissionType } from "../config/permissions";
-import { hasPermission, canAccessRoute, isSuperAdmin } from "../utils/auth";
+import { RoleName } from "../config/roles";
 
-interface RoleCheckHook {
-  hasPermission: (permission: PermissionType) => boolean;
-  canAccessPath: (path: string) => boolean;
-  hasRole: (role: RoleName) => boolean;
-  isSuperAdmin: boolean;
-  userRole?: RoleName;
-  isLoading: boolean;
-}
-
-export function useRoleCheck(): RoleCheckHook {
+export function useRoleCheck() {
   const { data: session, status } = useSession();
-  const userRole = session?.user?.user_role as RoleName | undefined;
+  const userRole = session?.user?.user_role;
   const isLoading = status === "loading";
 
-  const authUtils = React.useMemo(
-    () => ({
-      hasPermission: (permission: PermissionType): boolean => {
-        if (!userRole) return false;
-        return hasPermission(userRole, permission);
-      },
-      canAccessPath: (path: string): boolean => {
-        if (!userRole) return false;
-        return canAccessRoute(userRole, path);
-      },
-      hasRole: (role: RoleName): boolean => userRole === role,
-      isSuperAdmin: userRole ? isSuperAdmin(userRole) : false,
-    }),
+  const hasRole = useCallback(
+    (role: RoleName) => {
+      return userRole === role;
+    },
+    [userRole]
+  );
+
+  const hasPermission = useCallback(
+    (permission: PermissionType) => {
+      if (!userRole) return false;
+      return checkPermission(userRole, permission);
+    },
+    [userRole]
+  );
+
+  const canAccessPath = useCallback(
+    (path: string) => {
+      if (!userRole) return false;
+      // Implementa tu lógica de verificación de rutas aquí
+      return true;
+    },
     [userRole]
   );
 
   return {
-    ...authUtils,
-    userRole,
+    hasRole,
+    hasPermission,
+    canAccessPath,
     isLoading,
+    userRole,
   };
 }

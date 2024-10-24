@@ -1,4 +1,5 @@
 "use client";
+
 import React, { Suspense } from "react";
 import {
   Box,
@@ -27,6 +28,8 @@ import InvoiceTable from "../../../../src/components/Claims/InvoiceTable";
 import ClaimHeader from "../../../../src/components/Claims/ClaimHeader";
 import ClaimTabs from "../../../../src/components/Claims/ClaimTabs";
 import { useClaimProfile } from "../../../../src/hooks/useClaimProfile";
+import { withRoleProtection } from "../../../../src/components/withRoleProtection";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 
 const ClaimProfile: React.FC = () => {
   const { uuid } = useParams();
@@ -77,4 +80,9 @@ const ClaimProfile: React.FC = () => {
   );
 };
 
-export default ClaimProfile;
+// Configuración de protección basada en permisos
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CLAIMS],
+};
+
+export default withRoleProtection(ClaimProfile, protectionConfig);

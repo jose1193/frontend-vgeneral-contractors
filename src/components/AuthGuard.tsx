@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { CircularProgress, Box } from "@mui/material";
-import { isPublicRoute, getDefaultRoute, getRoleBasePath } from "../utils/auth";
+import { isPublicRoute, getDefaultRoute, canAccessRoute } from "../utils/auth";
 
 const AUTH_CONFIG = {
   loginRoute: "/login",
@@ -28,13 +28,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         const isPublic = isPublicRoute(pathname);
 
         if (status === "authenticated" && userRole) {
-          const roleBasePath = getRoleBasePath(userRole);
-
-          if (isPublic || pathname === "/dashboard") {
-            // Redirect to role-specific dashboard
+          // Si está en una ruta pública y autenticado, redirigir a dashboard
+          if (isPublic) {
             await router.push(getDefaultRoute(userRole));
-          } else if (!pathname.startsWith(roleBasePath)) {
-            // If trying to access another role's dashboard, redirect to their own
+          }
+          // Si no puede acceder a la ruta actual, redirigir a su dashboard
+          else if (!canAccessRoute(userRole, pathname)) {
             await router.push(getDefaultRoute(userRole));
           }
         } else if (status === "unauthenticated" && !isPublic) {
