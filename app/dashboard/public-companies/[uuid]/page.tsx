@@ -11,6 +11,7 @@ import {
   IconButton,
   Box,
   Button,
+  Divider,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useSession } from "next-auth/react";
@@ -19,6 +20,7 @@ import DetailsSkeleton from "../../../../src/components/skeletons/DetailsSkeleto
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import TypographyHeading from "../../../components/TypographyHeading";
 import { PERMISSIONS } from "../../../../src/config/permissions";
+
 interface DetailRowProps {
   label: string;
   value: string | number | null | undefined;
@@ -144,10 +146,48 @@ const PublicCompanyPage = () => {
         <DetailRow label="Email" value={publicCompany.email} />
         <DetailRow label="Address" value={publicCompany.address} />
         <DetailRow label="Website" value={publicCompany.website} />
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Información del creador */}
+        <Box sx={{ mt: 2 }}>
+          <Typography
+            variant="subtitle1"
+            gutterBottom
+            sx={{ fontWeight: "bold" }}
+          >
+            Created By
+          </Typography>
+          <DetailRow
+            label="Name"
+            value={`${publicCompany.created_by_user?.name} ${publicCompany.created_by_user?.last_name}`}
+          />
+          <DetailRow
+            label="Email"
+            value={publicCompany.created_by_user?.email}
+          />
+          <DetailRow
+            label="Created At"
+            value={
+              publicCompany.created_at
+                ? new Date(publicCompany.created_at).toLocaleDateString()
+                : null
+            }
+          />
+          <DetailRow
+            label="Last Updated"
+            value={
+              publicCompany.updated_at
+                ? new Date(publicCompany.updated_at).toLocaleDateString()
+                : null
+            }
+          />
+        </Box>
       </Paper>
     </Box>
   );
 };
+
 const protectionConfig = {
   permissions: [PERMISSIONS.MANAGE_COMPANIES],
 };

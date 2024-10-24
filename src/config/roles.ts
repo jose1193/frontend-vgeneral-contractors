@@ -46,6 +46,7 @@ export const ROLES: Record<string, RoleConfig> = {
       PERMISSIONS.MANAGE_CUSTOMERS,
       PERMISSIONS.MANAGE_SIGNATURES,
       PERMISSIONS.MANAGE_DOCUMENTS,
+      PERMISSIONS.MANAGE_COMPANIES,
     ],
     defaultRoute: "/dashboard/salesperson",
   },

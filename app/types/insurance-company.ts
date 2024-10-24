@@ -1,4 +1,5 @@
 import { AllianceCompanyData } from "./alliance-company";
+import { UserData } from "./user";
 export interface InsuranceCompanyData {
   id?: number;
   uuid?: string;
@@ -8,6 +9,7 @@ export interface InsuranceCompanyData {
   email: string | null;
   website: string | null;
   alliance_companies?: AllianceCompanyData[];
+  created_by_user?: UserData;
   created_at?: string | null;
   updated_at?: string | null;
 }

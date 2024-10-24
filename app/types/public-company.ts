@@ -1,3 +1,4 @@
+import { UserData } from "./user";
 export interface PublicCompanyData {
   id?: number;
   uuid?: string;
@@ -7,6 +8,7 @@ export interface PublicCompanyData {
   email?: string;
   website?: string;
   unit?: string;
+  created_by_user?: UserData;
   created_at?: string | null;
   updated_at?: string | null;
 }
