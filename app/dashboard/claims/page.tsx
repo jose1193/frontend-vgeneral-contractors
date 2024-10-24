@@ -63,11 +63,9 @@ const ClaimsPage = () => {
   );
 };
 
-// Configuración de protección para la página de Claims
+// Configuración de protección simplificada basada solo en permisos
 const protectionConfig = {
-  roles: ["Super Admin", "Admin", "Manager", "Salesperson"],
   permissions: [PERMISSIONS.MANAGE_CLAIMS],
-  paths: ["/dashboard/claims"],
 };
 
 export default withRoleProtection(ClaimsPage, protectionConfig);

@@ -1,17 +1,17 @@
 // src/config/roles.ts
 import { PERMISSIONS, PermissionType } from "./permissions";
 
-export type Role = {
+type RoleConfig = {
   name: string;
   permissions: PermissionType[];
   defaultRoute: string;
 };
 
-export const ROLES: Record<string, Role> = {
+export const ROLES: Record<string, RoleConfig> = {
   "Super Admin": {
     name: "Super Admin",
     permissions: Object.keys(PERMISSIONS) as PermissionType[],
-    defaultRoute: "/dashboard",
+    defaultRoute: "/dashboard/admin",
   },
   Admin: {
     name: "Admin",
@@ -24,7 +24,7 @@ export const ROLES: Record<string, Role> = {
       PERMISSIONS.MANAGE_SIGNATURES,
       PERMISSIONS.MANAGE_CONFIG,
     ],
-    defaultRoute: "/dashboard",
+    defaultRoute: "/dashboard/admin",
   },
   Manager: {
     name: "Manager",
@@ -34,7 +34,7 @@ export const ROLES: Record<string, Role> = {
       PERMISSIONS.MANAGE_CUSTOMERS,
       PERMISSIONS.MANAGE_DOCUMENTS,
     ],
-    defaultRoute: "/dashboard",
+    defaultRoute: "/dashboard/manager",
   },
   Salesperson: {
     name: "Salesperson",
@@ -45,31 +45,13 @@ export const ROLES: Record<string, Role> = {
       PERMISSIONS.MANAGE_SIGNATURES,
       PERMISSIONS.MANAGE_DOCUMENTS,
     ],
-    defaultRoute: "/dashboard",
+    defaultRoute: "/dashboard/salesperson",
   },
   "Technical Services": {
     name: "Technical Services",
     permissions: [PERMISSIONS.VIEW_DASHBOARD, PERMISSIONS.MANAGE_CLAIMS],
-    defaultRoute: "/dashboard",
+    defaultRoute: "/dashboard/technical-services",
   },
 } as const;
-
-// Helper function para verificar que todos los permisos son válidos
-const validatePermissions = () => {
-  Object.values(ROLES).forEach((role) => {
-    role.permissions.forEach((permission) => {
-      if (!PERMISSIONS[permission]) {
-        console.error(
-          `Invalid permission "${permission}" in role "${role.name}"`
-        );
-      }
-    });
-  });
-};
-
-// Ejecutar validación en desarrollo
-if (process.env.NODE_ENV === "development") {
-  validatePermissions();
-}
 
 export type RoleName = keyof typeof ROLES;

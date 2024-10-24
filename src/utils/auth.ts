@@ -1,66 +1,64 @@
-// src/utils/auth.ts
-import { PUBLIC_ROUTES, ROUTE_GROUPS, DEFAULT_ROUTES } from "../config/routes";
 import { PERMISSIONS, PermissionType } from "../config/permissions";
-import { ROLES } from "../config/roles";
+import { ROLES, RoleName } from "../config/roles";
 
-export function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_ROUTES.includes(pathname as any);
-}
+export const PUBLIC_ROUTES = [
+  "/",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/enter-pin",
+  "/reset-password",
+  "/verify-email",
+] as const;
 
-export function hasPermission(
-  role: string,
+export const isSuperAdmin = (role: string): boolean => role === "Super Admin";
+
+export const isPublicRoute = (pathname: string): boolean =>
+  PUBLIC_ROUTES.includes(pathname as any);
+
+export const hasPermission = (
+  role: string | undefined,
   permission: PermissionType
-): boolean {
-  const roleConfig = ROLES[role];
+): boolean => {
+  if (!role) return false;
+  if (isSuperAdmin(role)) return true;
+
+  const roleConfig = ROLES[role as RoleName];
   if (!roleConfig) return false;
-  if (role === "Super Admin") return true;
+
   return roleConfig.permissions.includes(permission);
-}
+};
 
-export function getDefaultRoute(role: string): string {
-  return DEFAULT_ROUTES[role as keyof typeof DEFAULT_ROUTES] ?? "/dashboard";
-}
+export const getDefaultRoute = (role: string | undefined): string => {
+  if (!role) return "/login";
+  const roleConfig = ROLES[role as RoleName];
+  return roleConfig?.defaultRoute ?? "/dashboard";
+};
 
-export function canAccessRoute(role: string, route: string): boolean {
-  // Si no hay rol o ruta, denegar acceso
+export const getRoleBasePath = (role: string): string => {
+  return `/dashboard/${role.toLowerCase().replace(/\s+/g, "-")}`;
+};
+
+export const canAccessRoute = (
+  role: string | undefined,
+  route: string
+): boolean => {
   if (!role || !route) return false;
-
-  // Si es una ruta pública, permitir acceso
   if (isPublicRoute(route)) return true;
+  if (isSuperAdmin(role)) return true;
 
-  // Super Admin tiene acceso a todo
-  if (role === "Super Admin") return true;
+  // Check if user is trying to access their role-specific dashboard
+  const roleBasePath = getRoleBasePath(role);
+  if (!route.startsWith(roleBasePath)) {
+    return false;
+  }
 
-  // Verificar si el rol existe
-  const roleConfig = ROLES[role];
+  const roleConfig = ROLES[role as RoleName];
   if (!roleConfig) return false;
 
-  // Buscar la configuración de la ruta
-  const routeConfig = findRouteConfig(ROUTE_GROUPS, route);
-  if (!routeConfig) return false;
+  // If they have VIEW_DASHBOARD permission, they can access their dashboard
+  return hasPermission(role, PERMISSIONS.VIEW_DASHBOARD);
+};
 
-  // Verificar el permiso
-  return !routeConfig.permission || hasPermission(role, routeConfig.permission);
-}
-
-function findRouteConfig(routeGroup: any, targetRoute: string): any {
-  for (const key in routeGroup) {
-    const route = routeGroup[key];
-
-    if (typeof route === "object") {
-      if (route.path && targetRoute.startsWith(route.path)) {
-        return route;
-      }
-      if (route.children) {
-        const found = findRouteConfig(route.children, targetRoute);
-        if (found) return found;
-      }
-    }
-  }
-  return null;
-}
-
-// Función de utilidad para verificar si una ruta específica requiere autenticación
-export function requiresAuth(pathname: string): boolean {
-  return !isPublicRoute(pathname);
-}
+export const requiresAuth = (pathname: string): boolean =>
+  !isPublicRoute(pathname);

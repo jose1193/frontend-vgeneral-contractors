@@ -1,5 +1,3 @@
-// src/app/claims/create/page.tsx
-
 "use client";
 
 import React, { Suspense } from "react";
@@ -13,6 +11,8 @@ import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import TypographyHeading from "../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../src/config/permissions";
+
 const CreateClaimPage = () => {
   const { data: session } = useSession();
   const router = useRouter();
@@ -62,9 +62,10 @@ const CreateClaimPage = () => {
     </Suspense>
   );
 };
-export default withRoleProtection(CreateClaimPage, [
-  "Super Admin",
-  "Admin",
-  "Manager",
-  "Salesperson",
-]);
+
+// Configuración de protección basada solo en permisos
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CLAIMS],
+};
+
+export default withRoleProtection(CreateClaimPage, protectionConfig);

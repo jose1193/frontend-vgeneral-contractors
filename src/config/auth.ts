@@ -1,5 +1,4 @@
 // src/config/auth.ts
-
 /**
  * Configuration for authentication and authorization
  */

@@ -1,16 +1,44 @@
 // src/app/claims/[uuid]/edit/page.tsx
 "use client";
+
 import React, { useEffect, useState, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getData } from "../../../../lib/actions/claimsActions";
 import { useClaims } from "../../../../../src/hooks/useClaims";
 import ClaimsForm from "../../../../../src/components/Claims/ClaimsForm";
 import { ClaimsData } from "../../../../types/claims";
-import { Container, Typography, Box, Paper, Button } from "@mui/material";
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  Button,
+  Alert,
+  CircularProgress,
+} from "@mui/material";
 import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
 import { useSession } from "next-auth/react";
 import ClaimsFormSkeleton from "../../../../../src/components/skeletons/ClaimsFormSkeleton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { PERMISSIONS } from "../../../../../src/config/permissions";
+import Forbidden from "../../../../../src/components/Forbidden";
+
+// Componente de error personalizado
+const ErrorComponent = ({ message }: { message: string }) => (
+  <Box sx={{ p: 3 }}>
+    <Alert severity="error" sx={{ mb: 2 }}>
+      {message}
+    </Alert>
+    <Button
+      variant="contained"
+      onClick={() => window.history.back()}
+      startIcon={<ArrowBackIcon />}
+    >
+      Go Back
+    </Button>
+  </Box>
+);
+
 const EditClaimPage = () => {
   const { uuid } = useParams();
   const router = useRouter();
@@ -26,15 +54,21 @@ const EditClaimPage = () => {
     const fetchClaim = async () => {
       try {
         const data = await getData(token, uuid as string);
+        if (!data) {
+          setError("Claim not found");
+          return;
+        }
         setClaim(data);
-        setLoading(false);
       } catch (err) {
         setError("Failed to fetch claim");
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchClaim();
+    if (token && uuid) {
+      fetchClaim();
+    }
   }, [uuid, token]);
 
   const handleSubmit = async (
@@ -50,11 +84,16 @@ const EditClaimPage = () => {
     }
   };
 
-  if (error) return <div>Error: {error}</div>;
-  if (!claim) return <ClaimsFormSkeleton />;
+  if (error) {
+    return <ErrorComponent message={error} />;
+  }
+
+  if (!claim || loading) {
+    return <ClaimsFormSkeleton />;
+  }
 
   return (
-    <Suspense>
+    <Suspense fallback={<ClaimsFormSkeleton />}>
       <Box
         sx={{
           flexGrow: 1,
@@ -72,6 +111,7 @@ const EditClaimPage = () => {
         >
           Back
         </Button>
+
         <Typography
           variant="h4"
           sx={{
@@ -88,6 +128,7 @@ const EditClaimPage = () => {
         >
           Edit Claim
         </Typography>
+
         <Paper
           elevation={3}
           style={{
@@ -102,9 +143,9 @@ const EditClaimPage = () => {
   );
 };
 
-export default withRoleProtection(EditClaimPage, [
-  "Super Admin",
-  "Admin",
-  "Manager",
-  "Salesperson",
-]);
+// Configuración de protección con componente de fallback personalizado
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CLAIMS],
+};
+
+export default withRoleProtection(EditClaimPage, protectionConfig);
