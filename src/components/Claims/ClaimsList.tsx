@@ -28,6 +28,7 @@ import Alert from "@mui/material/Alert";
 import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
 
+import { PERMISSIONS } from "../../../src/config/permissions";
 interface ClaimsListProps {
   claims: ClaimsData[];
   onDelete: (uuid: string) => Promise<void>;
@@ -521,10 +522,8 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
   );
 };
 
-export default withRoleProtection(ClaimsList, [
-  "Super Admin",
-  "Admin",
-  "Manager",
-  "Technical Services",
-  "Technical Supervisor",
-]);
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CLAIMS],
+};
+
+export default withRoleProtection(ClaimsList, protectionConfig);
