@@ -7,7 +7,7 @@ import { CircularProgress, Box } from "@mui/material";
 import { isPublicRoute, getDefaultRoute, canAccessRoute } from "../utils/auth";
 
 const AUTH_CONFIG = {
-  loginRoute: "/login",
+  loginRoute: "/",
   errorRoute: "/error",
 };
 

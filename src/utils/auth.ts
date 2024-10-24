@@ -31,7 +31,7 @@ export const hasPermission = (
 };
 
 export const getDefaultRoute = (role: string | undefined): string => {
-  if (!role) return "/login";
+  if (!role) return "/";
   const roleConfig = ROLES[role as RoleName];
   return roleConfig?.defaultRoute ?? "/dashboard";
 };

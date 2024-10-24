@@ -19,7 +19,7 @@ export default auth((req) => {
 
   // Si no está logueado y trata de acceder a dashboard
   if (!isLoggedIn && pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   // Si está logueado
