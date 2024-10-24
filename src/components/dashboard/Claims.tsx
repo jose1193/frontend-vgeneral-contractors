@@ -5,7 +5,7 @@ import { Paper, Box, Grid, Chip } from "@mui/material";
 
 import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
-
+import { PERMISSIONS } from "../../../src/config/permissions";
 // Define el tipo para tus datos
 interface ClaimData {
   id: number;
@@ -173,9 +173,8 @@ function ClaimsReport() {
     </Box>
   );
 }
-export default withRoleProtection(ClaimsReport, [
-  "Super Admin",
-  "Admin",
-  "Manager",
-  "Lead",
-]);
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(ClaimsReport, protectionConfig);
