@@ -1,29 +1,30 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { useDocumentTemplates } from "../../../../src/hooks/useDocumentTemplate";
-import DocumentTemplateForm from "../../../../src/components/Document-Template/DocumentTemplateForm";
+import { useDocumentTemplatesAlliance } from "../../../../src/hooks/useDocumentTemplatesAlliance";
+import DocumentTemplateAllianceForm from "../../../../src/components/Document-Template-Alliance/DocumentTemplateAllianceForm";
 import { Box, Paper, Button } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useRouter } from "next/navigation";
-import { DocumentTemplateFormData } from "../../../../app/types/document-template";
+import { DocumentTemplateAllianceFormData } from "../../../../app/types/document-template-alliance";
 import { useSession } from "next-auth/react";
 import TypographyHeading from "../../../components/TypographyHeading";
 
-const CreateDocumentTemplatePage = () => {
+const DocumentTemplateAlliancePage = () => {
   const { data: session } = useSession();
   const router = useRouter();
 
   const token = session?.accessToken as string;
-  const { createDocumentTemplate } = useDocumentTemplates(token);
+  const { createDocumentTemplateAlliance } =
+    useDocumentTemplatesAlliance(token);
 
-  const handleSubmit = async (formData: DocumentTemplateFormData) => {
-    await createDocumentTemplate({
+  const handleSubmit = async (formData: DocumentTemplateAllianceFormData) => {
+    await createDocumentTemplateAlliance({
       ...formData,
       uuid: "",
     });
-    console.log("Document Template data to submit:", formData);
-    router.push("/dashboard/document-templates");
+    console.log("Document Template Alliance data to submit:", formData);
+    router.push("/dashboard/document-template-alliances");
   };
 
   return (
@@ -47,7 +48,7 @@ const CreateDocumentTemplatePage = () => {
           Back
         </Button>
 
-        <TypographyHeading>Create Document Template</TypographyHeading>
+        <TypographyHeading>Create Document Template Alliance</TypographyHeading>
 
         <Paper
           elevation={3}
@@ -56,11 +57,12 @@ const CreateDocumentTemplatePage = () => {
             border: "1px solid rgba(255, 255, 255, 0.2)",
           }}
         >
-          <DocumentTemplateForm onSubmit={handleSubmit} />
+          <DocumentTemplateAllianceForm onSubmit={handleSubmit} />{" "}
+          {/* Asegúrate de que este componente exista */}
         </Paper>
       </Box>
     </Suspense>
   );
 };
 
-export default CreateDocumentTemplatePage;
+export default DocumentTemplateAlliancePage;

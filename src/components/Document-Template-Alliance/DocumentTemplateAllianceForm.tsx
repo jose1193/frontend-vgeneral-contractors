@@ -14,17 +14,26 @@ import {
   MenuItem,
 } from "@mui/material";
 import {
-  DocumentTemplateFormData,
-  TEMPLATE_TYPES,
-  TemplateType,
-} from "../../../app/types/document-template";
+  DocumentTemplateAllianceData,
+  TEMPLATE_TYPES_ALLIANCE,
+  TemplateTypeAlliance,
+} from "../../../app/types/document-template-alliance";
 import { documentTemplateValidation } from "../Validations/documentTemplateValidation";
 import useFormSnackbar from "../../hooks/useFormSnackbar";
 
 import dynamic from "next/dynamic";
+
+const SelectAllianceCompanyId = dynamic(
+  () => import("../SelectAllianceCompanyId"),
+  {
+    loading: () => <CircularProgress />,
+    ssr: false,
+  }
+);
+
 interface DocumentTemplateFormProps {
-  initialData?: Partial<DocumentTemplateFormData>;
-  onSubmit: (data: DocumentTemplateFormData) => Promise<void>;
+  initialData?: Partial<DocumentTemplateAllianceData>;
+  onSubmit: (data: DocumentTemplateAllianceData) => Promise<void>;
 }
 
 const FileUpload = dynamic(() => import("./FileUpload"), {
@@ -32,27 +41,26 @@ const FileUpload = dynamic(() => import("./FileUpload"), {
   ssr: false,
 });
 
-const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
+export default function DocumentTemplateAllianceForm({
   initialData,
   onSubmit,
-}) => {
+}: DocumentTemplateFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
-  // Inicializamos selectedFile con el archivo inicial si existe
   const [selectedFile, setSelectedFile] = useState<File | null>(
-    initialData?.template_path || null
+    initialData?.template_path_alliance || null
   );
 
-  const methods = useForm<DocumentTemplateFormData>({
+  const methods = useForm<DocumentTemplateAllianceData>({
     defaultValues: {
-      template_name: "",
-      template_description: null,
-      template_type: TEMPLATE_TYPES[0],
-      template_path: initialData?.template_path,
+      template_name_alliance: "",
+      template_description_alliance: null,
+      template_type_alliance: TEMPLATE_TYPES_ALLIANCE[0],
+      template_path_alliance: initialData?.template_path_alliance,
       ...initialData,
     },
-    resolver: yupResolver(documentTemplateValidation),
-    mode: "onChange",
+    //resolver: yupResolver(documentTemplateValidation),
+    //mode: "onChange",
   });
 
   const {
@@ -64,15 +72,16 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
 
   const handleFileSelect = (file: File | null) => {
     setSelectedFile(file);
-    setValue("template_path", file as File, {
+    setValue("template_path_alliance", file as File, {
       shouldValidate: true,
       shouldDirty: true,
     });
   };
 
-  const onSubmitHandler = async (data: DocumentTemplateFormData) => {
+  // En la función onSubmitHandler
+  const onSubmitHandler = async (data: DocumentTemplateAllianceData) => {
     // Solo validamos archivo requerido en creación nueva
-    if (!selectedFile && !initialData?.template_path && !initialData) {
+    if (!selectedFile && !initialData?.template_path_alliance && !initialData) {
       setSnackbar({
         open: true,
         message: "Please select a file",
@@ -85,11 +94,12 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
     try {
       // Si hay un nuevo archivo seleccionado, usamos ese
       // Si no, y es una actualización, mantenemos el archivo existente
-      const fileToSubmit = selectedFile || initialData?.template_path || null;
+      const fileToSubmit =
+        selectedFile || initialData?.template_path_alliance || null;
 
       await onSubmit({
         ...data,
-        template_path: fileToSubmit,
+        template_path_alliance: fileToSubmit,
       });
 
       setSnackbar({
@@ -118,16 +128,16 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Controller
-                name="template_name"
+                name="template_name_alliance"
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Template Name"
+                    label="Alliance Template Name"
                     variant="outlined"
                     fullWidth
-                    error={!!errors.template_name}
-                    helperText={errors.template_name?.message}
+                    error={!!errors.template_name_alliance}
+                    helperText={errors.template_name_alliance?.message}
                   />
                 )}
               />
@@ -135,7 +145,7 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
 
             <Grid item xs={12}>
               <Controller
-                name="template_description"
+                name="template_description_alliance"
                 control={control}
                 render={({ field }) => (
                   <TextField
@@ -145,8 +155,8 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
                     fullWidth
                     multiline
                     rows={3}
-                    error={!!errors.template_description}
-                    helperText={errors.template_description?.message}
+                    error={!!errors.template_description_alliance}
+                    helperText={errors.template_description_alliance?.message}
                   />
                 )}
               />
@@ -154,25 +164,25 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
 
             <Grid item xs={12} sm={6}>
               <Controller
-                name="template_type"
+                name="template_type_alliance"
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
                     select
-                    label="Template Type"
+                    label="Alliance Template Type"
                     variant="outlined"
                     fullWidth
-                    error={!!errors.template_type}
+                    error={!!errors.template_type_alliance}
                     helperText={
-                      errors.template_type?.message ||
+                      errors.template_type_alliance?.message ||
                       "Please select a template type"
                     }
                   >
                     <MenuItem value="" disabled>
                       Select a type
                     </MenuItem>
-                    {TEMPLATE_TYPES.map((type) => (
+                    {TEMPLATE_TYPES_ALLIANCE.map((type) => (
                       <MenuItem key={type} value={type}>
                         {type.charAt(0).toUpperCase() + type.slice(1)}
                       </MenuItem>
@@ -181,16 +191,21 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
                 )}
               />
             </Grid>
-
+            <Grid item xs={12} sm={6}>
+              <SelectAllianceCompanyId
+                control={control}
+                initialAlliances={initialData?.alliance_companies || []}
+              />
+            </Grid>
             <Grid item xs={12}>
               <Controller
-                name="template_path"
+                name="template_path_alliance"
                 control={control}
                 render={({ field: { value, onChange, ...field } }) => (
                   <FileUpload
                     {...field}
                     onFileSelect={handleFileSelect}
-                    error={errors.template_path?.message}
+                    error={errors.template_path_alliance?.message}
                     selectedFile={selectedFile}
                     onChange={onChange}
                   />
@@ -237,6 +252,4 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
       </Snackbar>
     </FormProvider>
   );
-};
-
-export default DocumentTemplateForm;
+}

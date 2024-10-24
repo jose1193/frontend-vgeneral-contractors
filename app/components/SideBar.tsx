@@ -328,7 +328,7 @@ export default function MiniDrawer() {
         },
         {
           name: "Alliance Company",
-          href: "/dashboard/document-templates",
+          href: "/dashboard/document-template-alliances",
           icon: <ReceiptLongIcon />,
         },
       ],

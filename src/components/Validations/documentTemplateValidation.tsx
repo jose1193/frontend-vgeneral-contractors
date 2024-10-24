@@ -25,19 +25,46 @@ export const documentTemplateValidation = yup.object().shape({
 
   template_path: yup
     .mixed()
-    .nullable("Template file is required")
-    .test("isFile", "A valid file is required", (value) => {
-      return value instanceof File;
-    })
-    .test("fileSize", "File is too large (max 15MB)", (value) => {
-      return value instanceof File ? value.size <= MAX_FILE_SIZE : false;
-    })
-    .test("fileFormat", "Unsupported file format", (value) => {
-      return value instanceof File
-        ? SUPPORTED_FORMATS.includes(
-            value.type as (typeof SUPPORTED_FORMATS)[number]
-          )
-        : false;
+    .test("fileValidation", "Invalid file", function (value) {
+      const isUpdate = this.parent.id !== undefined;
+
+      // For updates: file is optional
+      if (isUpdate) {
+        // If no new file is selected, validation passes
+        if (!value || value === null) {
+          return true;
+        }
+        // If a new file is selected, validate it
+        if (value instanceof File) {
+          if (value.size > MAX_FILE_SIZE) {
+            return this.createError({
+              message: "File is too large (max 15MB)",
+            });
+          }
+          if (!SUPPORTED_FORMATS.includes(value.type as any)) {
+            return this.createError({ message: "Unsupported file format" });
+          }
+          return true;
+        }
+        return true;
+      }
+
+      // For new templates: file is required
+      if (!value || value === null) {
+        return this.createError({ message: "Template file is required" });
+      }
+
+      if (value instanceof File) {
+        if (value.size > MAX_FILE_SIZE) {
+          return this.createError({ message: "File is too large (max 15MB)" });
+        }
+        if (!SUPPORTED_FORMATS.includes(value.type as any)) {
+          return this.createError({ message: "Unsupported file format" });
+        }
+        return true;
+      }
+
+      return false;
     }),
 }) as yup.ObjectSchema<DocumentTemplateFormData>;
 

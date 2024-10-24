@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { DocumentTemplateData } from "../../../../app/types/document-template";
-
-import { getData } from "../../../lib/actions/documentTemplateActions";
+import { DocumentTemplateAllianceData } from "../../../../app/types/document-template-alliance";
+import { getData } from "../../../lib/actions/documentTemplateAllianceActions";
+import { AllianceCompanyData } from "../../../../app/types/alliance-company";
 import {
   Typography,
   Paper,
@@ -39,16 +39,16 @@ interface DetailRowProps {
   value: string | number | null | undefined;
 }
 
-const DocumentTemplatePage = () => {
+export default function Component() {
   const { uuid } = useParams();
+
   const [documentTemplate, setDocumentTemplate] =
-    useState<DocumentTemplateData | null>(null);
+    useState<DocumentTemplateAllianceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSession();
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
   const [isLoading, setIsLoading] = useState(false);
-  // Share menu state
   const [shareAnchorEl, setShareAnchorEl] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
@@ -87,8 +87,8 @@ const DocumentTemplatePage = () => {
           documentTemplate.uuid
         );
 
-        if (template.template_path) {
-          window.open(template.template_path.toString(), "_blank");
+        if (template.template_path_alliance) {
+          window.open(template.template_path_alliance.toString(), "_blank");
         } else {
           throw new Error("No template URL available");
         }
@@ -104,25 +104,6 @@ const DocumentTemplatePage = () => {
     }
   };
 
-  // Y en el botón:
-  <Tooltip title="Download template">
-    <IconButton
-      onClick={handleDownload}
-      color="primary"
-      disabled={isLoading}
-      sx={{
-        "&:hover": {
-          backgroundColor: "rgba(25, 118, 210, 0.04)",
-        },
-      }}
-    >
-      {isLoading ? (
-        <CircularProgress size={24} color="inherit" />
-      ) : (
-        <DownloadIcon />
-      )}
-    </IconButton>
-  </Tooltip>;
   const handleShareClick = (event: React.MouseEvent<HTMLElement>) => {
     setShareAnchorEl(event.currentTarget);
   };
@@ -134,15 +115,14 @@ const DocumentTemplatePage = () => {
   const handleCopyLink = async () => {
     if (documentTemplate?.uuid && session?.accessToken) {
       try {
-        // Asumiendo que template_path contiene la URL del documento
         const template = await getData(
           session.accessToken,
           documentTemplate.uuid
         );
 
-        if (template.template_path) {
+        if (template.template_path_alliance) {
           await navigator.clipboard.writeText(
-            template.template_path.toString()
+            template.template_path_alliance.toString()
           );
           setSnackbar({
             open: true,
@@ -171,9 +151,9 @@ const DocumentTemplatePage = () => {
           documentTemplate.uuid
         );
 
-        if (template.template_path) {
+        if (template.template_path_alliance) {
           window.location.href = `mailto:?subject=Document Template Share&body=${encodeURIComponent(
-            template.template_path.toString()
+            template.template_path_alliance.toString()
           )}`;
         } else {
           throw new Error("No template URL available");
@@ -197,10 +177,10 @@ const DocumentTemplatePage = () => {
           documentTemplate.uuid
         );
 
-        if (template.template_path) {
+        if (template.template_path_alliance) {
           window.open(
             `https://wa.me/?text=${encodeURIComponent(
-              template.template_path.toString()
+              template.template_path_alliance.toString()
             )}`,
             "_blank"
           );
@@ -294,10 +274,10 @@ const DocumentTemplatePage = () => {
           </IconButton>
           <Box flex={1} ml={2}>
             <Typography variant="h6" gutterBottom>
-              {documentTemplate.template_name}
+              {documentTemplate.template_name_alliance}
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              Type: {documentTemplate.template_type}
+              Type: {documentTemplate.template_type_alliance}
             </Typography>
           </Box>
           <Box sx={{ display: "flex", gap: 1 }}>
@@ -305,13 +285,18 @@ const DocumentTemplatePage = () => {
               <IconButton
                 onClick={handleDownload}
                 color="primary"
+                disabled={isLoading}
                 sx={{
                   "&:hover": {
                     backgroundColor: "rgba(25, 118, 210, 0.04)",
                   },
                 }}
               >
-                <DownloadIcon />
+                {isLoading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  <DownloadIcon />
+                )}
               </IconButton>
             </Tooltip>
             <Tooltip title="Share template">
@@ -332,7 +317,7 @@ const DocumentTemplatePage = () => {
 
         <DetailRow
           label="Description"
-          value={documentTemplate.template_description}
+          value={documentTemplate.template_description_alliance}
         />
         <DetailRow
           label="Created At"
@@ -350,11 +335,18 @@ const DocumentTemplatePage = () => {
               : "N/A"
           }
         />
+        <DetailRow
+          label="Alliance Company"
+          value={
+            documentTemplate.alliance_company_name
+              ? documentTemplate.alliance_company_name
+              : "N/A"
+          }
+        />
 
         <DetailRow label="UUID" value={documentTemplate.uuid} />
       </Paper>
 
-      {/* Share Menu */}
       <Menu
         anchorEl={shareAnchorEl}
         open={Boolean(shareAnchorEl)}
@@ -396,6 +388,4 @@ const DocumentTemplatePage = () => {
       </Snackbar>
     </Box>
   );
-};
-
-export default DocumentTemplatePage;
+}
