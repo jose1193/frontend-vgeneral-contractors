@@ -1,6 +1,6 @@
 import * as yup from "yup";
 
-const websiteRegExp = /^www\.[a-zA-Z0-9-]+\.com$/;
+const websiteRegExp = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
 
 export const publicCompanyValidation = yup.object().shape({
   public_company_name: yup
@@ -22,6 +22,7 @@ export const publicCompanyValidation = yup.object().shape({
 
   website: yup
     .string()
+    .optional()
     .nullable()
     .matches(websiteRegExp, "Website must be in the format www.company.com"),
 

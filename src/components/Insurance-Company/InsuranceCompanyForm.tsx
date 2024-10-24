@@ -126,11 +126,18 @@ const InsuranceCompanyForm: React.FC<InsuranceCompanyFormProps> = ({
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Website"
+                    onChange={(e) => {
+                      const value =
+                        e.target.value === "" ? null : e.target.value;
+                      field.onChange(value);
+                    }}
+                    name="website"
+                    label="Website (Optional)"
                     variant="outlined"
                     fullWidth
                     error={!!errors.website}
                     helperText={errors.website?.message}
+                    autoComplete="off"
                   />
                 )}
               />

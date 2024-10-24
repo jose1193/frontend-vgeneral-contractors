@@ -125,11 +125,18 @@ const AllianceCompanyForm: React.FC<AllianceCompanyFormProps> = ({
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    label="Website"
+                    onChange={(e) => {
+                      const value =
+                        e.target.value === "" ? null : e.target.value;
+                      field.onChange(value);
+                    }}
+                    name="website" // Asegúrate que coincida con el schema
+                    label="Website (Optional)" // El label puede tener el texto que quieras
                     variant="outlined"
                     fullWidth
                     error={!!errors.website}
                     helperText={errors.website?.message}
+                    autoComplete="off"
                   />
                 )}
               />

@@ -1,6 +1,6 @@
 import * as yup from "yup";
 
-const websiteRegExp = /^www\.[a-zA-Z0-9-]+\.com$/;
+const websiteRegExp = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
 
 export const insuranceCompanyValidation = yup.object().shape({
   insurance_company_name: yup
@@ -15,9 +15,10 @@ export const insuranceCompanyValidation = yup.object().shape({
       /^\+1\d{10}$/,
       "Phone number must be in US format +1 (XXX)-XXX-XXXX"
     ),
-  email: yup.string().nullable().email("Invalid email format"),
+  email: yup.string().optional().nullable().email("Invalid email format"),
   website: yup
     .string()
+    .optional()
     .nullable()
     .matches(websiteRegExp, "Website must be in the format www.company.com"),
   prohibited_alliances: yup.array().nullable(),

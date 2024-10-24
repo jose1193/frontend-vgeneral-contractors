@@ -1,6 +1,6 @@
 import * as yup from "yup";
 
-const websiteRegExp = /^www\.[a-zA-Z0-9-]+\.com$/;
+const websiteRegExp = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
 
 export const allianceCompanyValidation = yup.object().shape({
   alliance_company_name: yup
