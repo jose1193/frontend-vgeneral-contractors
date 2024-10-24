@@ -11,6 +11,8 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
 import ButtonCreate from "../../components/ButtonCreate";
+import TypographyHeading from "../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../src/config/permissions";
 const PermissionsPage = () => {
   const { data: session, update } = useSession();
 
@@ -57,4 +59,9 @@ const PermissionsPage = () => {
     </Suspense>
   );
 };
-export default withRoleProtection(PermissionsPage, ["Super Admin"]);
+
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(PermissionsPage, protectionConfig);

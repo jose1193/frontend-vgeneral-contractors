@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 import { UserData } from "../../../../app/types/user";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
+import TypographyHeading from "../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 const CreateUserPage = () => {
   const { data: session, update } = useSession();
@@ -74,4 +76,8 @@ const CreateUserPage = () => {
     </Suspense>
   );
 };
-export default withRoleProtection(CreateUserPage, ["Super Admin"]);
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_DOCUMENTS],
+};
+
+export default withRoleProtection(CreateUserPage, protectionConfig);

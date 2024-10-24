@@ -9,7 +9,8 @@ import { RolesData } from "../../../../types/roles";
 import { Typography, Box, Paper } from "@mui/material";
 import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
 import { useSession } from "next-auth/react";
-
+import TypographyHeading from "../../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../../src/config/permissions";
 const EditRolePage = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -78,4 +79,10 @@ const EditRolePage = () => {
     </Box>
   );
 };
-export default withRoleProtection(EditRolePage, ["Super Admin"]);
+// Protection configuration
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+// Single export default with protection
+export default withRoleProtection(EditRolePage, protectionConfig);

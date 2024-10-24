@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { TypeDamageData } from "../../../../app/types/type-damage";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
+import TypographyHeading from "../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 
 const CreateTypeDamagePage = () => {
   const { data: session } = useSession();
@@ -63,4 +65,9 @@ const CreateTypeDamagePage = () => {
     </Suspense>
   );
 };
-export default withRoleProtection(CreateTypeDamagePage, ["Super Admin"]);
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+// Single export default with protection
+export default withRoleProtection(CreateTypeDamagePage, protectionConfig);

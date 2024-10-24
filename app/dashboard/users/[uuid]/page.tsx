@@ -8,6 +8,9 @@ import { UserData } from "../../../types/user";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import dynamic from "next/dynamic";
+
+import TypographyHeading from "../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 import {
   Typography,
   Paper,
@@ -201,5 +204,8 @@ const UserPage = () => {
     </Box>
   );
 };
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_DOCUMENTS],
+};
 
-export default withRoleProtection(UserPage, ["Super Admin", "Admin"]);
+export default withRoleProtection(UserPage, protectionConfig);

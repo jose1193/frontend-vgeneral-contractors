@@ -10,6 +10,8 @@ import { Container, Typography, Box, Paper, Button } from "@mui/material";
 import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
 import { useSession } from "next-auth/react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import TypographyHeading from "../../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../../src/config/permissions";
 const EditUserPage = () => {
   const { uuid } = useParams();
   const router = useRouter();
@@ -96,4 +98,8 @@ const EditUserPage = () => {
     </Suspense>
   );
 };
-export default withRoleProtection(EditUserPage, ["Super Admin", "Admin"]);
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_DOCUMENTS],
+};
+
+export default withRoleProtection(EditUserPage, protectionConfig);

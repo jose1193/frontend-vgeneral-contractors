@@ -10,7 +10,8 @@ import { TypeDamageData } from "../../../../types/type-damage";
 import { Typography, Box, Paper } from "@mui/material";
 import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
 import { useSession } from "next-auth/react";
-
+import TypographyHeading from "../../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../../src/config/permissions";
 const EditTypeDamagePage = () => {
   const { uuid } = useParams();
   const router = useRouter();
@@ -84,4 +85,9 @@ const EditTypeDamagePage = () => {
     </Suspense>
   );
 };
-export default withRoleProtection(EditTypeDamagePage, ["Super Admin"]);
+
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+export default withRoleProtection(EditTypeDamagePage, protectionConfig);

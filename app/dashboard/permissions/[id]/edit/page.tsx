@@ -1,5 +1,3 @@
-// src/app/permissions/[id]/edit/page.tsx
-
 "use client";
 
 import React, { useEffect, useState, Suspense } from "react";
@@ -8,10 +6,30 @@ import { getPermission } from "../../../../lib/actions/permissionsActions";
 import { usePermissions } from "../../../../../src/hooks/usePermissions";
 import { PermissionForm } from "../../../../../src/components/Permissions/PermissionForm";
 import { PermissionData } from "../../../../types/permissions";
-import { Typography, Box, Paper } from "@mui/material";
-
+import { Typography, Box, Paper, Button, Alert } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../../src/components/withRoleProtection";
+import TypographyHeading from "../../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../../src/config/permissions";
+import DetailsSkeleton from "@/components/skeletons/DetailsSkeleton";
+
+// Custom error component
+const ErrorComponent = ({ message }: { message: string }) => (
+  <Box sx={{ p: 3 }}>
+    <Alert severity="error" sx={{ mb: 2 }}>
+      {message}
+    </Alert>
+    <Button
+      variant="contained"
+      onClick={() => window.history.back()}
+      startIcon={<ArrowBackIcon />}
+    >
+      Go Back
+    </Button>
+  </Box>
+);
+
 const EditPermissionPage = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -25,21 +43,32 @@ const EditPermissionPage = () => {
 
   useEffect(() => {
     const fetchPermission = async () => {
+      if (!token) {
+        setError("Authentication required");
+        setLoading(false);
+        return;
+      }
+
       if (typeof id !== "string") {
         setError("Invalid permission ID");
         setLoading(false);
         return;
       }
+
       try {
         const permissionId = parseInt(id, 10);
         if (isNaN(permissionId)) {
           throw new Error("Invalid permission ID");
         }
         const data = await getPermission(token, permissionId.toString());
+        if (!data) {
+          setError("Permission not found");
+          return;
+        }
         setPermission(data);
-        setLoading(false);
       } catch (err) {
         setError("Failed to fetch permission");
+      } finally {
         setLoading(false);
       }
     };
@@ -52,11 +81,13 @@ const EditPermissionPage = () => {
       setError("Invalid permission ID");
       return;
     }
+
     const permissionId = parseInt(id, 10);
     if (isNaN(permissionId)) {
       setError("Invalid permission ID");
       return;
     }
+
     try {
       await updatePermission(permissionId, data);
       router.push("/dashboard/permissions");
@@ -65,12 +96,16 @@ const EditPermissionPage = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!permission) return <div>Permission not found</div>;
+  if (loading) {
+    return <DetailsSkeleton />;
+  }
+
+  if (error || !permission) {
+    return <ErrorComponent message={error || "Permission not found"} />;
+  }
 
   return (
-    <Suspense>
+    <Suspense fallback={<DetailsSkeleton />}>
       <Box
         sx={{
           flexGrow: 1,
@@ -80,21 +115,17 @@ const EditPermissionPage = () => {
           p: { xs: 3, sm: 3, md: 2, lg: 4 },
         }}
       >
-        <Typography
-          variant="h4"
-          sx={{
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-          }}
-          component="h1"
-          gutterBottom
+        <Button
+          variant="outlined"
+          onClick={() => window.history.back()}
+          startIcon={<ArrowBackIcon />}
+          style={{ marginBottom: "20px" }}
         >
-          Edit Permission
-        </Typography>
+          Back
+        </Button>
+
+        <TypographyHeading>Edit Permission</TypographyHeading>
+
         <Paper
           elevation={3}
           style={{
@@ -108,4 +139,11 @@ const EditPermissionPage = () => {
     </Suspense>
   );
 };
-export default withRoleProtection(EditPermissionPage, ["Super Admin"]);
+
+// Protection configuration
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+// Single export default with protection
+export default withRoleProtection(EditPermissionPage, protectionConfig);

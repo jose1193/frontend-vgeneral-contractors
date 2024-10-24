@@ -10,7 +10,8 @@ import { useRouter } from "next/navigation";
 import { PermissionData } from "../../../../app/types/permissions";
 import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
-
+import TypographyHeading from "../../../components/TypographyHeading";
+import { PERMISSIONS } from "../../../../src/config/permissions";
 const CreatePermissionPage = () => {
   const { data: session } = useSession();
   const router = useRouter();
@@ -64,4 +65,9 @@ const CreatePermissionPage = () => {
     </Suspense>
   );
 };
-export default withRoleProtection(CreatePermissionPage, ["Super Admin"]);
+const protectionConfig = {
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
+};
+
+// Single export default with protection
+export default withRoleProtection(CreatePermissionPage, protectionConfig);
