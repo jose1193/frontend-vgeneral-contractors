@@ -4,6 +4,15 @@ import { checkEmailAvailable } from "../lib/api";
 import { useSession } from "next-auth/react";
 import { Controller, useFormContext } from "react-hook-form";
 
+interface EmailResponse {
+  success: boolean;
+  data: {
+    available: boolean;
+    message: string;
+  };
+  message: number;
+}
+
 const EmailField: React.FC = () => {
   const [emailAvailability, setEmailAvailability] = useState<boolean | null>(
     null
@@ -36,11 +45,15 @@ const EmailField: React.FC = () => {
       setIsCheckingEmail(true);
       setErrorMessage(null);
       try {
-        const result = await checkEmailAvailable(
+        const response = await checkEmailAvailable(
           session?.accessToken as string,
           debouncedEmail
         );
-        setEmailAvailability(result.available);
+
+        setEmailAvailability(response.data.available);
+        if (!response.data.available) {
+          setErrorMessage(response.data.message);
+        }
       } catch (error) {
         console.error("Failed to check email availability", error);
         setEmailAvailability(null);
@@ -57,6 +70,26 @@ const EmailField: React.FC = () => {
     checkEmail();
   }, [debouncedEmail, session?.accessToken]);
 
+  const getHelperTextStyle = () => {
+    if (emailAvailability === true) {
+      return { color: "#2e7d32" }; // Verde de Material-UI success
+    } else if (emailAvailability === false || errorMessage) {
+      return { color: "#d32f2f" }; // Rojo de Material-UI error
+    }
+    return {};
+  };
+
+  const getHelperText = () => {
+    if (errorMessage) {
+      return errorMessage;
+    } else if (emailAvailability === true) {
+      return "Email is available ✓";
+    } else if (emailAvailability === false) {
+      return "Email is already taken ✗";
+    }
+    return "";
+  };
+
   return (
     <Controller
       name="email"
@@ -68,45 +101,46 @@ const EmailField: React.FC = () => {
           message: "Invalid email address",
         },
       }}
-      render={({ field, fieldState: { error } }) => (
-        <>
+      render={({
+        field: { onChange, value, ...restField },
+        fieldState: { error },
+      }) => (
+        <div className="relative w-full">
           <TextField
-            {...field}
+            {...restField}
+            value={value || ""}
             fullWidth
             label="Email Address"
             variant="outlined"
             onChange={(e) => {
-              field.onChange(e);
+              onChange(e);
               handleEmailChange(e.target.value);
             }}
             error={!!error || !!errorMessage || emailAvailability === false}
             helperText={
-              error?.message ||
-              errorMessage ||
-              (emailAvailability === false && (
-                <Typography
-                  variant="caption"
-                  style={{ color: "red" }}
-                  display="block"
-                  gutterBottom
-                >
-                  Email is already taken
-                </Typography>
-              )) ||
-              (emailAvailability === true && (
-                <Typography
-                  variant="caption"
-                  style={{ color: "green" }}
-                  display="block"
-                  gutterBottom
-                >
-                  Email is available
-                </Typography>
-              ))
+              <div className="flex items-center gap-2 mt-1">
+                {isCheckingEmail ? (
+                  <div className="flex items-center gap-2">
+                    <CircularProgress size={16} />
+                    <span>Checking availability...</span>
+                  </div>
+                ) : (
+                  <span style={getHelperTextStyle()}>
+                    {error?.message || getHelperText()}
+                  </span>
+                )}
+              </div>
             }
+            InputProps={{
+              style: {
+                borderColor: emailAvailability === true ? "#2e7d32" : undefined,
+              },
+            }}
+            InputLabelProps={{
+              shrink: true,
+            }}
           />
-          {isCheckingEmail && <CircularProgress size={20} />}
-        </>
+        </div>
       )}
     />
   );

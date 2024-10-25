@@ -56,6 +56,9 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
   const [mapCoordinates, setMapCoordinates] = useState({ lat: 0, lng: 0 });
   const { data: session } = useSession();
   const capitalizeWords = useCapitalizeWords();
+  const [usernameModifiedManually, setUsernameModifiedManually] =
+    useState(false);
+  const [generatedUsername, setGeneratedUsername] = useState<string>("");
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -109,6 +112,53 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
     }
   }, [initialData, methods]);
 
+  const generateUsername = (firstName: string, lastName: string) => {
+    if (!firstName) return "";
+
+    // Remove special characters and spaces, convert to lowercase
+    const cleanFirstName = firstName.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const cleanLastName =
+      lastName?.toLowerCase().replace(/[^a-z0-9]/g, "") || "";
+
+    // Create base username from first name and first letter of last name if available
+    let baseUsername = cleanFirstName;
+    if (cleanLastName) {
+      baseUsername += cleanLastName.charAt(0);
+    }
+
+    // Add a random number between 1-999 if needed for uniqueness
+    const randomNum = Math.floor(1 + Math.random() * 999);
+    return `${baseUsername}${randomNum}`;
+  };
+
+  const handleNameChange = (newName: string, field: any) => {
+    const capitalizedName = capitalizeWords(newName);
+    field.onChange(capitalizedName);
+
+    // Get current values
+    const lastName = methods.getValues("last_name") || "";
+
+    // Only generate username if it hasn't been manually modified
+    if (!usernameModifiedManually) {
+      const newUsername = generateUsername(capitalizedName, lastName);
+      setGeneratedUsername(newUsername);
+    }
+  };
+
+  const handleLastNameChange = (newLastName: string, field: any) => {
+    const capitalizedLastName = capitalizeWords(newLastName);
+    field.onChange(capitalizedLastName);
+
+    // Get current values
+    const firstName = methods.getValues("name") || "";
+
+    // Only generate username if it hasn't been manually modified
+    if (!usernameModifiedManually) {
+      const newUsername = generateUsername(firstName, capitalizedLastName);
+      setGeneratedUsername(newUsername);
+    }
+  };
+
   const handleSubmit = async (data: UserData) => {
     setIsSubmitting(true);
     try {
@@ -148,6 +198,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
       methods.setValue("zip_code", addressDetails.zip_code);
     }
   };
+
   const handleSnackbarClose = (
     event?: React.SyntheticEvent | Event,
     reason?: string
@@ -157,6 +208,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
     }
     setSnackbar({ ...snackbar, open: false });
   };
+
   const handleAddressClear = () => {
     methods.setValue("address", "");
     methods.setValue("address_2", "");
@@ -168,6 +220,13 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
     methods.setValue("longitude", null);
     setMapCoordinates({ lat: 0, lng: 0 });
   };
+
+  useEffect(() => {
+    if (generatedUsername) {
+      methods.setValue("username", generatedUsername);
+    }
+  }, [generatedUsername, methods]);
+
   return (
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(handleSubmit)}>
@@ -179,9 +238,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               render={({ field, fieldState: { error } }) => (
                 <TextField
                   {...field}
-                  onChange={(e) =>
-                    field.onChange(capitalizeWords(e.target.value))
-                  }
+                  onChange={(e) => handleNameChange(e.target.value, field)}
                   label="First Name"
                   fullWidth
                   error={!!error}
@@ -191,6 +248,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               )}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <Controller
               name="last_name"
@@ -198,9 +256,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               render={({ field, fieldState: { error } }) => (
                 <TextField
                   {...field}
-                  onChange={(e) =>
-                    field.onChange(capitalizeWords(e.target.value))
-                  }
+                  onChange={(e) => handleLastNameChange(e.target.value, field)}
                   label="Last Name"
                   fullWidth
                   error={!!error}
@@ -210,15 +266,22 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               )}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
-            <UsernameField />
+            <UsernameField
+              autoGenerated={generatedUsername}
+              onManualChange={() => setUsernameModifiedManually(true)}
+            />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <EmailField />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <PhoneInputField name="phone" label="Phone" />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <AddressAutocomplete
               onAddressSelect={handleAddressSelect}
@@ -228,6 +291,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               defaultValue={initialData?.address || ""}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <Controller
               name="address_2"
@@ -242,6 +306,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               )}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <Controller
               name="city"
@@ -264,6 +329,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               )}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <Controller
               name="state"
@@ -286,6 +352,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               )}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <Controller
               name="country"
@@ -308,6 +375,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               )}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <Controller
               name="zip_code"
@@ -330,6 +398,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               )}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <Controller
               name="user_role"
@@ -350,6 +419,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               )}
             />
           </Grid>
+
           {initialData && (
             <Grid item xs={12}>
               <Controller
@@ -366,8 +436,10 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               />
             </Grid>
           )}
+
           <input type="hidden" {...methods.register("latitude")} />
           <input type="hidden" {...methods.register("longitude")} />
+
           <Grid item xs={12}>
             {mapCoordinates.lat !== 0 && mapCoordinates.lng !== 0 && (
               <Box height={400} width="100%" position="relative" sx={{ mt: 2 }}>
@@ -378,6 +450,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               </Box>
             )}
           </Grid>
+
           <Grid item xs={12}>
             <Box display="flex" justifyContent="center">
               <Button
@@ -402,6 +475,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
           </Grid>
         </Grid>
       </form>
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
