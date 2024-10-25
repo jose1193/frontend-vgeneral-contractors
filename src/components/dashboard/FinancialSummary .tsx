@@ -1,5 +1,14 @@
 import React from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+import { Box, Grid, Paper, Typography } from "@mui/material";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const data = [
   { name: "Invoice", value: 4000 },
@@ -11,39 +20,58 @@ const data = [
 
 const FinancialSummary = () => {
   return (
-    <div
-      className="p-6 mt-8 mb-8 rounded-lg shadow-xl bg-white text-white"
-      style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}
+    <Paper
+      elevation={6}
+      sx={{
+        p: 3,
+        mt: 4,
+        mb: 4,
+        color: "white",
+        borderRadius: 2,
+        border: "1px solid rgba(255, 255, 255, 0.2)",
+      }}
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <div className="flex flex-wrap gap-3">
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
             {data.map((item) => (
-              <div
+              <Paper
                 key={item.name}
-                className="p-4 flex-1 min-w-[120px] text-center rounded-lg shadow-md"
-                style={{
+                elevation={3}
+                sx={{
+                  p: 1,
+                  flex: "1 1 calc(33% - 8px)",
+                  minWidth: "120px",
+                  textAlign: "center",
                   background: "rgba(255, 255, 255, 0.1)",
                   border: "1px solid rgba(255, 255, 255, 0.2)",
                 }}
               >
-                <h6 className="font-bold text-lg mb-2">{item.name}</h6>
-                <h5 className="text-xl">${item.value.toLocaleString()}</h5>
-              </div>
+                <Typography sx={{ fontWeight: "bold" }} variant="h6">
+                  {item.name}
+                </Typography>
+                <Typography variant="h5">
+                  ${item.value.toLocaleString()}
+                </Typography>
+              </Paper>
             ))}
-          </div>
-        </div>
-        <div className="h-[300px]">
-          <BarChart width={500} height={300} data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="value" fill="#8884d8" />
-          </BarChart>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Box sx={{ height: 300 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
+        </Grid>
+      </Grid>
+    </Paper>
   );
 };
 
