@@ -8,8 +8,7 @@ import {
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
 } from "@mui/icons-material";
-import { withRoleProtection } from "../withRoleProtection";
-import { PERMISSIONS } from "../../../src/config/permissions";
+
 const DashboardCards = () => {
   const cardData = [
     {
@@ -115,8 +114,4 @@ const DashboardCards = () => {
   );
 };
 
-const protectionConfig = {
-  permissions: [PERMISSIONS.MANAGE_CONFIG],
-};
-
-export default withRoleProtection(DashboardCards, protectionConfig);
+export default DashboardCards;
