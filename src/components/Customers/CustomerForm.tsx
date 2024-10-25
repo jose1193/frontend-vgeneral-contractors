@@ -157,7 +157,10 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             </Grid>
             <Grid item xs={12} sm={6}>
               <Suspense fallback={<CircularProgress />}>
-                <PhoneInputField name="home_phone" label="Home Phone" />
+                <PhoneInputField
+                  name="home_phone"
+                  label="Home Phone - (Optional)"
+                />
               </Suspense>
             </Grid>
           </Grid>
