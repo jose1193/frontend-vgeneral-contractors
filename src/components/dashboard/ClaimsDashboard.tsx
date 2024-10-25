@@ -1,5 +1,10 @@
+"use client";
 import React from "react";
+import { DataGrid, GridToolbar, GridColDef } from "@mui/x-data-grid";
+import { Paper, Box, Chip } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
+// Define el tipo para tus datos
 interface ClaimData {
   id: number;
   dateReported: Date;
@@ -11,6 +16,66 @@ interface ClaimData {
   assignedTechnician: string;
   insuranceProvider: string;
 }
+
+// Define las columnas con el tipo correcto
+const columns: GridColDef<ClaimData>[] = [
+  { field: "id", headerName: "Claim ID", width: 90 },
+  {
+    field: "dateReported",
+    headerName: "Date Reported",
+    width: 150,
+    type: "date",
+  },
+  { field: "customerName", headerName: "Customer Name", width: 150 },
+  { field: "propertyAddress", headerName: "Property Address", width: 200 },
+  { field: "damageType", headerName: "Damage Type", width: 130 },
+  {
+    field: "estimatedCost",
+    headerName: "Estimated Cost",
+    width: 130,
+    type: "number",
+  },
+  {
+    field: "status",
+    headerName: "Status",
+    width: 130,
+    renderCell: (params) => {
+      let color:
+        | "default"
+        | "primary"
+        | "secondary"
+        | "error"
+        | "info"
+        | "success"
+        | "warning";
+      let label;
+      switch (params.value) {
+        case "Completed":
+          color = "success";
+          label = "Completed";
+          break;
+        case "In Progress":
+          color = "warning";
+          label = "In Progress";
+          break;
+        case "Pending":
+          color = "default";
+          label = "Pending";
+          break;
+        default:
+          color = "default";
+          label = params.value;
+      }
+      return <Chip label={label} color={color} />;
+    },
+  },
+  {
+    field: "assignedTechnician",
+    headerName: "Assigned Technician",
+    width: 180,
+  },
+  { field: "insuranceProvider", headerName: "Insurance Provider", width: 180 },
+];
 
 const sampleData: ClaimData[] = [
   {
@@ -48,80 +113,53 @@ const sampleData: ClaimData[] = [
   },
 ];
 
-const StatusChip = ({ status }: { status: string }) => {
-  let colorClass = "";
-  switch (status) {
-    case "Completed":
-      colorClass = "bg-green-500";
-      break;
-    case "In Progress":
-      colorClass = "bg-yellow-500";
-      break;
-    case "Pending":
-      colorClass = "bg-gray-500";
-      break;
-    default:
-      colorClass = "bg-gray-500";
-  }
-
-  return (
-    <span className={`px-2 py-1 rounded-full text-white text-sm ${colorClass}`}>
-      {status}
-    </span>
-  );
-};
-
 function ClaimsReport() {
+  const theme = useTheme();
   return (
-    <div
-      className="p-6 mb-10 h-[400px] rounded-lg shadow-xl overflow-hidden w-full overflow-x-auto max-w-[88vw] lg:max-w-[88vw] md:max-w-[79vw] sm:max-w-[68vw]"
-      style={{
-        backgroundColor: "rgba(255, 255, 255, 0.05)",
+    <Paper
+      elevation={3}
+      sx={{
+        p: 3,
+        mb: 5,
+        height: 400,
+        backgroundColor: theme.palette.background.paper,
+        borderRadius: 2,
+        overflow: "hidden",
+        "& .MuiDataGrid-root": {
+          border: "none",
+        },
+        width: "100%",
+        overflowX: "auto",
+        maxWidth: {
+          xs: "68vw",
+          sm: "79vw",
+          lg: "88vw",
+        },
         border: "1px solid rgba(255, 255, 255, 0.2)",
       }}
     >
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-transparent">
-          <thead>
-            <tr className="border-b border-white/20">
-              <th className="py-3 px-4 text-left">Claim ID</th>
-              <th className="py-3 px-4 text-left">Date Reported</th>
-              <th className="py-3 px-4 text-left">Customer Name</th>
-              <th className="py-3 px-4 text-left">Property Address</th>
-              <th className="py-3 px-4 text-left">Damage Type</th>
-              <th className="py-3 px-4 text-left">Estimated Cost</th>
-              <th className="py-3 px-4 text-left">Status</th>
-              <th className="py-3 px-4 text-left">Assigned Technician</th>
-              <th className="py-3 px-4 text-left">Insurance Provider</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sampleData.map((row) => (
-              <tr
-                key={row.id}
-                className="border-b border-white/10 hover:bg-white/5"
-              >
-                <td className="py-3 px-4">{row.id}</td>
-                <td className="py-3 px-4">
-                  {row.dateReported.toLocaleDateString()}
-                </td>
-                <td className="py-3 px-4">{row.customerName}</td>
-                <td className="py-3 px-4">{row.propertyAddress}</td>
-                <td className="py-3 px-4">{row.damageType}</td>
-                <td className="py-3 px-4">
-                  ${row.estimatedCost.toLocaleString()}
-                </td>
-                <td className="py-3 px-4">
-                  <StatusChip status={row.status} />
-                </td>
-                <td className="py-3 px-4">{row.assignedTechnician}</td>
-                <td className="py-3 px-4">{row.insuranceProvider}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <DataGrid
+        rows={sampleData}
+        columns={columns}
+        initialState={{
+          pagination: {
+            paginationModel: { pageSize: 5, page: 0 },
+          },
+        }}
+        pageSizeOptions={[5, 10, 20]}
+        checkboxSelection
+        disableRowSelectionOnClick
+        slots={{
+          toolbar: GridToolbar,
+        }}
+        sx={{
+          "& .MuiDataGrid-cell:hover": {
+            color: "primary.main",
+          },
+          p: { xs: 1, sm: 2, md: 3 },
+        }}
+      />
+    </Paper>
   );
 }
 
