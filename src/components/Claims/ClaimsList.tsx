@@ -1,5 +1,3 @@
-// src/components/Claims/ClaimsList.tsx
-
 "use client";
 
 import React, { useState } from "react";
@@ -27,22 +25,22 @@ import RestoreIcon from "@mui/icons-material/Restore";
 import Alert from "@mui/material/Alert";
 import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
-
+import { useListPermissions } from "../../hooks/useListPermissions";
 import { PERMISSIONS } from "../../../src/config/permissions";
+
 interface ClaimsListProps {
   claims: ClaimsData[];
   onDelete: (uuid: string) => Promise<void>;
   onRestore: (uuid: string) => Promise<void>;
-  userRole: string | undefined;
 }
 
 const ClaimsList: React.FC<ClaimsListProps> = ({
   claims,
   onDelete,
   onRestore,
-  userRole,
 }) => {
   const theme = useTheme();
+  const { canModifyList, can, hasRole } = useListPermissions();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [claimToAction, setClaimToAction] = useState<ClaimsData | null>(null);
@@ -56,6 +54,16 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
     message: "",
     severity: "success",
   });
+
+  const listConfig = {
+    permission: PERMISSIONS.MANAGE_CLAIMS,
+    restrictedRoles: ["Salesperson"],
+  };
+
+  const isTechnicalRole = hasRole([
+    "Technical Services",
+    "Technical Supervisor",
+  ]);
 
   const handleDeleteClick = (claim: ClaimsData) => {
     setClaimToAction(claim);
@@ -153,7 +161,6 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
       headerAlign: "center",
       align: "center",
     },
-
     {
       field: "claim_status",
       headerName: "Claim Status",
@@ -201,12 +208,8 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
       width: 250,
       headerAlign: "center",
       align: "center",
-
       renderCell: (params) => {
-        if (
-          userRole === "Technical Services" ||
-          userRole === "Technical Supervisor"
-        ) {
+        if (isTechnicalRole) {
           return (
             <Link href={`/dashboard/claims/${params.row.uuid}`} passHref>
               <Button
@@ -234,34 +237,40 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
               justifyContent: "center",
             }}
           >
-            <Link href={`/dashboard/claims/${params.row.uuid}`} passHref>
-              <Button
-                size="small"
-                variant="contained"
-                sx={{
-                  minWidth: "unset",
-                  padding: "8px 12px",
-                  backgroundColor: "#2563eb",
-                  "&:hover": { backgroundColor: "#3b82f6" },
-                }}
-              >
-                <VisibilityIcon fontSize="small" />
-              </Button>
-            </Link>
-            <Link href={`/dashboard/claims/${params.row.uuid}/edit`} passHref>
-              <Button
-                size="small"
-                variant="contained"
-                color="warning"
-                sx={{
-                  minWidth: "unset",
-                  padding: "8px 12px",
-                }}
-              >
-                <EditIcon fontSize="small" />
-              </Button>
-            </Link>
-            {params.row.data_status && userRole !== "Salesperson" && (
+            {can(PERMISSIONS.MANAGE_CLAIMS) && (
+              <Link href={`/dashboard/claims/${params.row.uuid}`} passHref>
+                <Button
+                  size="small"
+                  variant="contained"
+                  sx={{
+                    minWidth: "unset",
+                    padding: "8px 12px",
+                    backgroundColor: "#2563eb",
+                    "&:hover": { backgroundColor: "#3b82f6" },
+                  }}
+                >
+                  <VisibilityIcon fontSize="small" />
+                </Button>
+              </Link>
+            )}
+
+            {canModifyList(listConfig) && (
+              <Link href={`/dashboard/claims/${params.row.uuid}/edit`} passHref>
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="warning"
+                  sx={{
+                    minWidth: "unset",
+                    padding: "8px 12px",
+                  }}
+                >
+                  <EditIcon fontSize="small" />
+                </Button>
+              </Link>
+            )}
+
+            {params.row.data_status && canModifyList(listConfig) && (
               <Button
                 size="small"
                 variant="contained"
@@ -275,7 +284,8 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
                 <DeleteIcon fontSize="small" />
               </Button>
             )}
-            {!params.row.data_status && (
+
+            {!params.row.data_status && canModifyList(listConfig) && (
               <Button
                 size="small"
                 variant="contained"

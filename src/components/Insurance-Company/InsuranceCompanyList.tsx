@@ -24,23 +24,31 @@ import Link from "next/link";
 import { useTheme } from "@mui/material/styles";
 import useFormSnackbar from "../../hooks/useFormSnackbar";
 import usePhoneFormatter from "../../hooks/usePhoneFormatter ";
+import { useListPermissions } from "../../hooks/useListPermissions";
+import { PERMISSIONS } from "../../config/permissions";
+
 interface InsuranceCompanyListProps {
   insuranceCompanies: InsuranceCompanyData[];
   onDelete: (uuid: string) => void;
-  userRole: string | undefined;
 }
 
 const InsuranceCompanyList: React.FC<InsuranceCompanyListProps> = ({
   insuranceCompanies,
   onDelete,
-  userRole,
 }) => {
   const theme = useTheme();
+  const { canModifyList, can } = useListPermissions();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [companyToDelete, setCompanyToDelete] =
     useState<InsuranceCompanyData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
+  const formatPhoneNumber = usePhoneFormatter();
+
+  const listConfig = {
+    permission: PERMISSIONS.MANAGE_COMPANIES,
+    restrictedRoles: ["Salesperson"],
+  };
 
   const handleDeleteClick = (row: any) => {
     const company = insuranceCompanies.find((c) => c.uuid === row.uuid);
@@ -72,14 +80,12 @@ const InsuranceCompanyList: React.FC<InsuranceCompanyListProps> = ({
       }
     }
   };
-  // Hook Format Phone
-  const formatPhoneNumber = usePhoneFormatter();
+
   const columns: GridColDef[] = [
     {
       field: "name",
       headerName: "Name",
       flex: 2,
-
       headerAlign: "center",
       align: "center",
     },
@@ -98,7 +104,6 @@ const InsuranceCompanyList: React.FC<InsuranceCompanyListProps> = ({
       align: "center",
       renderCell: (params) => formatPhoneNumber(params.value),
     },
-
     {
       field: "actions",
       headerName: "Actions",
@@ -112,13 +117,18 @@ const InsuranceCompanyList: React.FC<InsuranceCompanyListProps> = ({
             gap: 1,
             alignItems: "center",
             justifyContent: "center",
+            width: "100%",
+            height: "100%",
+            padding: "8px 0",
+            "& .MuiButton-root": {
+              height: "35px",
+            },
           }}
         >
-          <Link
-            href={`/dashboard/insurance-companies/${params.row.uuid}`}
-            passHref
-          >
+          {can(PERMISSIONS.MANAGE_COMPANIES) && (
             <Button
+              component={Link}
+              href={`/dashboard/insurance-companies/${params.row.uuid}`}
               size="small"
               variant="contained"
               sx={{
@@ -130,36 +140,36 @@ const InsuranceCompanyList: React.FC<InsuranceCompanyListProps> = ({
             >
               <VisibilityIcon fontSize="small" />
             </Button>
-          </Link>
-          <Link
+          )}
+
+          <Button
+            component={Link}
             href={`/dashboard/insurance-companies/${params.row.uuid}/edit`}
-            passHref
+            size="small"
+            variant="contained"
+            color="warning"
+            sx={{
+              minWidth: "unset",
+              padding: "8px 12px",
+            }}
           >
-            <Button
-              size="small"
-              variant="contained"
-              color="warning"
-              sx={{
-                minWidth: "unset",
-                padding: "8px 12px",
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </Button>
-          </Link>
-          {userRole !== "Salesperson" && (
-            <Button
-              size="small"
-              variant="contained"
-              color="error"
-              onClick={() => handleDeleteClick(params.row)}
-              sx={{
-                minWidth: "unset",
-                padding: "8px 12px",
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </Button>
+            <EditIcon fontSize="small" />
+          </Button>
+          {canModifyList(listConfig) && (
+            <>
+              <Button
+                size="small"
+                variant="contained"
+                color="error"
+                onClick={() => handleDeleteClick(params.row)}
+                sx={{
+                  minWidth: "unset",
+                  padding: "8px 12px",
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </Button>
+            </>
           )}
         </Box>
       ),

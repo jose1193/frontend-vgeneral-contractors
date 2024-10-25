@@ -56,7 +56,6 @@ const ClaimsPage = () => {
           claims={claims}
           onDelete={deleteClaim}
           onRestore={restoreClaim}
-          userRole={userRole}
         />
       </Box>
     </Suspense>

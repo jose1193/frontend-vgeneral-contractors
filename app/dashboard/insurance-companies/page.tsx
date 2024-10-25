@@ -47,7 +47,6 @@ const InsuranceCompaniesPage = () => {
         <InsuranceCompanyList
           insuranceCompanies={insuranceCompanies}
           onDelete={deleteInsuranceCompany}
-          userRole={userRole}
         />
       </Box>
     </Suspense>

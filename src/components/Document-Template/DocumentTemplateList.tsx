@@ -24,24 +24,30 @@ import Alert from "@mui/material/Alert";
 import Link from "next/link";
 import { useTheme } from "@mui/material/styles";
 import useFormSnackbar from "../../hooks/useFormSnackbar";
+import { useListPermissions } from "../../hooks/useListPermissions";
+import { PERMISSIONS } from "../../config/permissions";
 
 interface DocumentTemplateListProps {
   documentTemplates: DocumentTemplateData[];
   onDelete: (uuid: string) => Promise<void>;
-  userRole: string | undefined;
 }
 
 export default function Component({
   documentTemplates,
   onDelete,
-  userRole,
 }: DocumentTemplateListProps) {
   const theme = useTheme();
+  const { canModifyList, can } = useListPermissions();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] =
     useState<DocumentTemplateData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
+
+  const listConfig = {
+    permission: PERMISSIONS.MANAGE_DOCUMENTS,
+    restrictedRoles: ["Salesperson"],
+  };
 
   const handleDeleteClick = (row: any) => {
     const template = documentTemplates.find((t) => t.uuid === row.id);
@@ -120,13 +126,18 @@ export default function Component({
             gap: 1,
             alignItems: "center",
             justifyContent: "center",
+            width: "100%",
+            height: "100%",
+            padding: "8px 0",
+            "& .MuiButton-root": {
+              height: "35px",
+            },
           }}
         >
-          <Link
-            href={`/dashboard/document-templates/${params.row.id}`}
-            passHref
-          >
+          {can(PERMISSIONS.MANAGE_DOCUMENTS) && (
             <Button
+              component={Link}
+              href={`/dashboard/document-templates/${params.row.id}`}
               size="small"
               variant="contained"
               sx={{
@@ -138,22 +149,21 @@ export default function Component({
             >
               <VisibilityIcon fontSize="small" />
             </Button>
-          </Link>
-          {userRole !== "Salesperson" && (
-            <Link
-              href={`/dashboard/document-templates/${params.row.id}/edit`}
-              passHref
-            >
-              <Button
-                size="small"
-                variant="contained"
-                color="warning"
-                sx={{ minWidth: "unset", padding: "8px 12px" }}
-              >
-                <EditIcon fontSize="small" />
-              </Button>
-            </Link>
           )}
+
+          {canModifyList(listConfig) && (
+            <Button
+              component={Link}
+              href={`/dashboard/document-templates/${params.row.id}/edit`}
+              size="small"
+              variant="contained"
+              color="warning"
+              sx={{ minWidth: "unset", padding: "8px 12px" }}
+            >
+              <EditIcon fontSize="small" />
+            </Button>
+          )}
+
           <Button
             size="small"
             variant="contained"
@@ -163,7 +173,8 @@ export default function Component({
           >
             <DownloadIcon fontSize="small" />
           </Button>
-          {userRole !== "Salesperson" && (
+
+          {canModifyList(listConfig) && (
             <Button
               size="small"
               variant="contained"

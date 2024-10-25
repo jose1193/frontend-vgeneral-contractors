@@ -8,8 +8,8 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import ButtonCreate from "../../components/ButtonCreate";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
-import TypographyHeading from "../../components/TypographyHeading";
 import { PERMISSIONS } from "../../../src/config/permissions";
+import { useListPermissions } from "../../../src/hooks/useListPermissions";
 
 // Custom loading component
 const LoadingComponent = () => (
@@ -28,7 +28,12 @@ const ErrorComponent = ({ message }: { message: string }) => (
 const DocumentTemplateAlliancePage = () => {
   const { data: session } = useSession();
   const token = session?.accessToken as string;
-  const userRole = session?.user?.user_role;
+  const { canModifyList } = useListPermissions();
+
+  const listConfig = {
+    permission: PERMISSIONS.MANAGE_DOCUMENTS,
+    restrictedRoles: ["Salesperson"],
+  };
 
   const {
     documentTemplatesAlliance,
@@ -48,9 +53,27 @@ const DocumentTemplateAlliancePage = () => {
   return (
     <Suspense>
       <Box sx={{ width: "100%", ml: -6, overflow: "hidden" }}>
-        <TypographyHeading>Alliance Document Templates</TypographyHeading>
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{
+            textAlign: "left",
+            mb: 3,
+            fontSize: {
+              xs: "1.5rem",
+              sm: "1.75rem",
+              md: "2rem",
+              lg: "2.25rem",
+            },
+            fontWeight: "bold",
+            ml: 4,
+          }}
+        >
+          Alliance Document Templates
+        </Typography>
 
-        {userRole !== "Salesperson" && (
+        {canModifyList(listConfig) && (
           <Link href="/dashboard/document-template-alliances/create" passHref>
             <ButtonCreate sx={{ ml: 4 }}>
               Create Alliance Document Template
@@ -64,7 +87,6 @@ const DocumentTemplateAlliancePage = () => {
           <DocumentTemplateAllianceList
             documentTemplates={documentTemplatesAlliance}
             onDelete={deleteDocumentTemplateAlliance}
-            userRole={userRole}
           />
         )}
       </Box>

@@ -8,15 +8,21 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import ButtonCreate from "../../components/ButtonCreate";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
-import TypographyHeading from "../../components/TypographyHeading";
 import { PERMISSIONS } from "../../../src/config/permissions";
+import { useListPermissions } from "../../../src/hooks/useListPermissions";
+
 const DocumentTemplatesPage = () => {
   const { data: session } = useSession();
   const token = session?.accessToken as string;
-  const userRole = session?.user?.user_role;
+  const { canModifyList } = useListPermissions();
 
   const { documentTemplates, deleteDocumentTemplate } =
     useDocumentTemplates(token);
+
+  const listConfig = {
+    permission: PERMISSIONS.MANAGE_DOCUMENTS,
+    restrictedRoles: ["Salesperson"],
+  };
 
   return (
     <Suspense>
@@ -41,7 +47,7 @@ const DocumentTemplatesPage = () => {
           Document Templates
         </Typography>
 
-        {userRole !== "Salesperson" && (
+        {canModifyList(listConfig) && (
           <Link href="/dashboard/document-templates/create" passHref>
             <ButtonCreate sx={{ ml: 4 }}>Create Document Template</ButtonCreate>
           </Link>
@@ -50,12 +56,12 @@ const DocumentTemplatesPage = () => {
         <DocumentTemplateList
           documentTemplates={documentTemplates}
           onDelete={deleteDocumentTemplate}
-          userRole={userRole}
         />
       </Box>
     </Suspense>
   );
 };
+
 const protectionConfig = {
   permissions: [PERMISSIONS.MANAGE_DOCUMENTS],
 };

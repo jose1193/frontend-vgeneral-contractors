@@ -1,3 +1,4 @@
+// src/hooks/useRoleCheck.ts
 import { useSession } from "next-auth/react";
 import { useCallback } from "react";
 import { hasPermission as checkPermission } from "../utils/auth";
@@ -33,11 +34,15 @@ export function useRoleCheck() {
     [userRole]
   );
 
+  // Alias 'can' para una sintaxis más limpia
+  const can = hasPermission;
+
   return {
     hasRole,
     hasPermission,
     canAccessPath,
     isLoading,
     userRole,
+    can,
   };
 }

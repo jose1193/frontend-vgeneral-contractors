@@ -24,6 +24,8 @@ import Link from "next/link";
 import { useTheme } from "@mui/material/styles";
 import useFormSnackbar from "../../hooks/useFormSnackbar";
 import usePhoneFormatter from "../../hooks/usePhoneFormatter ";
+import { useListPermissions } from "../../hooks/useListPermissions";
+import { PERMISSIONS } from "../../config/permissions";
 
 interface PublicCompanyListProps {
   publicCompanies: PublicCompanyData[];
@@ -37,11 +39,18 @@ const PublicCompanyList: React.FC<PublicCompanyListProps> = ({
   userRole,
 }) => {
   const theme = useTheme();
+  const { canModifyList, can } = useListPermissions();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [companyToDelete, setCompanyToDelete] =
     useState<PublicCompanyData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
+  const formatPhoneNumber = usePhoneFormatter();
+
+  const listConfig = {
+    permission: PERMISSIONS.MANAGE_COMPANIES,
+    restrictedRoles: ["Salesperson"],
+  };
 
   const handleDeleteClick = (row: any) => {
     const company = publicCompanies.find((c) => c.uuid === row.uuid);
@@ -73,8 +82,6 @@ const PublicCompanyList: React.FC<PublicCompanyListProps> = ({
       }
     }
   };
-
-  const formatPhoneNumber = usePhoneFormatter();
 
   const columns: GridColDef[] = [
     {
@@ -112,13 +119,19 @@ const PublicCompanyList: React.FC<PublicCompanyListProps> = ({
             gap: 1,
             alignItems: "center",
             justifyContent: "center",
+            width: "100%",
+            height: "100%",
+            padding: "8px 0",
+            "& .MuiButton-root": {
+              height: "35px",
+            },
           }}
         >
-          <Link
-            href={`/dashboard/public-companies/${params.row.uuid}`}
-            passHref
-          >
+          {/* View button - always visible for users with permission */}
+          {can(PERMISSIONS.MANAGE_COMPANIES) && (
             <Button
+              component={Link}
+              href={`/dashboard/public-companies/${params.row.uuid}`}
               size="small"
               variant="contained"
               sx={{
@@ -130,36 +143,36 @@ const PublicCompanyList: React.FC<PublicCompanyListProps> = ({
             >
               <VisibilityIcon fontSize="small" />
             </Button>
-          </Link>
-          <Link
+          )}
+
+          <Button
+            component={Link}
             href={`/dashboard/public-companies/${params.row.uuid}/edit`}
-            passHref
+            size="small"
+            variant="contained"
+            color="warning"
+            sx={{
+              minWidth: "unset",
+              padding: "8px 12px",
+            }}
           >
-            <Button
-              size="small"
-              variant="contained"
-              color="warning"
-              sx={{
-                minWidth: "unset",
-                padding: "8px 12px",
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </Button>
-          </Link>
-          {userRole !== "Salesperson" && (
-            <Button
-              size="small"
-              variant="contained"
-              color="error"
-              onClick={() => handleDeleteClick(params.row)}
-              sx={{
-                minWidth: "unset",
-                padding: "8px 12px",
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </Button>
+            <EditIcon fontSize="small" />
+          </Button>
+          {canModifyList(listConfig) && (
+            <>
+              <Button
+                size="small"
+                variant="contained"
+                color="error"
+                onClick={() => handleDeleteClick(params.row)}
+                sx={{
+                  minWidth: "unset",
+                  padding: "8px 12px",
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </Button>
+            </>
           )}
         </Box>
       ),
