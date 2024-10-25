@@ -12,30 +12,33 @@ export default auth((req) => {
   const userRole = req.auth?.user?.user_role;
   const pathname = req.nextUrl.pathname;
 
-  // Si es una ruta pública, permitir acceso
+  // If it's just /dashboard, redirect to role-specific dashboard
+  if (isLoggedIn && userRole && pathname === "/dashboard") {
+    return NextResponse.redirect(new URL(getDefaultRoute(userRole), req.url));
+  }
+
+  // Handle public routes
   if (isPublicRoute(pathname)) {
+    if (isLoggedIn && userRole) {
+      // Redirect authenticated users from public routes to their dashboard
+      return NextResponse.redirect(new URL(getDefaultRoute(userRole), req.url));
+    }
     return NextResponse.next();
   }
 
-  // Si no está logueado y trata de acceder a dashboard
-  if (!isLoggedIn && pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
+  // Handle dashboard access
+  if (pathname.startsWith("/dashboard")) {
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
 
-  // Si está logueado
-  if (isLoggedIn) {
-    // Si no tiene rol, redirigir a unauthorized
     if (!userRole) {
       return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
 
-    // Si puede acceder a la ruta, permitir
-    if (canAccessRoute(userRole, pathname)) {
-      return NextResponse.next();
+    if (!canAccessRoute(userRole, pathname)) {
+      return NextResponse.redirect(new URL(getDefaultRoute(userRole), req.url));
     }
-
-    // Si no puede acceder, redirigir a su dashboard por defecto
-    return NextResponse.redirect(new URL(getDefaultRoute(userRole), req.url));
   }
 
   return NextResponse.next();

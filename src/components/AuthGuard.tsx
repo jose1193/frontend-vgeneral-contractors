@@ -1,5 +1,6 @@
 // src/components/AuthGuard.tsx
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,24 +29,34 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         const isPublic = isPublicRoute(pathname);
 
         if (status === "authenticated" && userRole) {
-          // Si está en una ruta pública y autenticado, redirigir a dashboard
-          if (isPublic) {
-            await router.push(getDefaultRoute(userRole));
+          // Handle root dashboard route
+          if (pathname === "/dashboard") {
+            await router.replace(getDefaultRoute(userRole));
+            return;
           }
-          // Si no puede acceder a la ruta actual, redirigir a su dashboard
-          else if (!canAccessRoute(userRole, pathname)) {
-            await router.push(getDefaultRoute(userRole));
+
+          // Handle public routes when authenticated
+          if (isPublic) {
+            await router.replace(getDefaultRoute(userRole));
+            return;
+          }
+
+          // Handle unauthorized access to role-specific routes
+          if (!canAccessRoute(userRole, pathname)) {
+            await router.replace(getDefaultRoute(userRole));
+            return;
           }
         } else if (status === "unauthenticated" && !isPublic) {
-          await router.push(AUTH_CONFIG.loginRoute);
+          await router.replace(AUTH_CONFIG.loginRoute);
+          return;
         }
       } catch (error) {
         console.error("Navigation error:", error);
-        await router.push(AUTH_CONFIG.errorRoute);
-      }
-
-      if (isMounted) {
-        setIsLoading(false);
+        await router.replace(AUTH_CONFIG.errorRoute);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
