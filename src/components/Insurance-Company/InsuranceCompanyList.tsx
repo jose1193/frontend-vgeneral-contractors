@@ -88,6 +88,66 @@ const InsuranceCompanyList: React.FC<InsuranceCompanyListProps> = ({
       flex: 2,
       headerAlign: "center",
       align: "center",
+      renderCell: (params) => {
+        const name = params.value as string;
+        if (name.includes("(N/A Alliance")) {
+          const [companyName, allianceInfo] = name.split("(");
+          return (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                height: "100%",
+                gap: 0.5,
+              }}
+            >
+              <Typography
+                component="span"
+                sx={{
+                  fontSize: "0.875rem",
+                  display: "inline-block",
+                  verticalAlign: "middle",
+                }}
+              >
+                {companyName.trim()}
+              </Typography>
+              <Typography
+                component="span"
+                sx={{
+                  color: "error.main",
+                  fontWeight: "medium",
+                  fontSize: "0.75rem",
+                  display: "inline-block",
+                  verticalAlign: "middle",
+                }}
+              >
+                ({allianceInfo}
+              </Typography>
+            </Box>
+          );
+        }
+        return (
+          <Box
+            sx={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: "0.875rem",
+              }}
+            >
+              {name}
+            </Typography>
+          </Box>
+        );
+      },
     },
     {
       field: "email",
