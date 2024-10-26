@@ -40,7 +40,8 @@
     "recharts": "^2.12.7",
     "use-debounce": "^10.0.2",
     "yup": "^1.4.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@types/google.maps": "^3.58.1",
