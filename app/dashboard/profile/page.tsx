@@ -6,14 +6,7 @@ import { Box, Paper, Grid, Typography } from "@mui/material";
 import UserProfileSkeleton from "../../../src/components/skeletons/UserProfileSkeleton";
 export default function ProfilePage() {
   return (
-    <Box
-      sx={{
-        overflow: "hidden",
-        mt: 2,
-        ml: -8,
-        p: { xs: 0, sm: 0, md: 2, lg: 2 },
-      }}
-    >
+    <Box sx={{ width: "100%", ml: -6, overflow: "hidden" }}>
       <Suspense fallback={<UserProfileSkeleton />}>
         <Typography
           variant="h4"

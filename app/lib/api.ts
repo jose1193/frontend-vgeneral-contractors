@@ -69,11 +69,16 @@ export const Logout = (token: string) =>
     token
   );
 
-export const updateProfile = (token: string, userData: UserData) =>
+export const updateProfile = (
+  token: string,
+  uuid: string,
+  userData: UserData
+) =>
   fetchWithCSRF(
-    "/api/update-profile",
+    `/api/users/update-profile/${uuid}`,
+
     {
-      method: "POST",
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(userData),
     },

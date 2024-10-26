@@ -17,9 +17,11 @@ declare module "next-auth" {
     email: string;
     phone: string;
     address: string;
+    address_2: string;
     zip_code: string;
     city: string;
     country: string;
+    state: string;
     gender: string;
     profile_photo_path: string;
     token: string;

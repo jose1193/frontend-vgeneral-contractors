@@ -11,7 +11,9 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth?.user;
   const userRole = req.auth?.user?.user_role;
   const pathname = req.nextUrl.pathname;
-
+  //console.log("Middleware - Is logged in:", isLoggedIn);
+  //console.log("Middleware - User role:", userRole);
+  //console.log("Middleware - User:", req.auth?.user);
   // If it's just /dashboard, redirect to role-specific dashboard
   if (isLoggedIn && userRole && pathname === "/dashboard") {
     return NextResponse.redirect(new URL(getDefaultRoute(userRole), req.url));
