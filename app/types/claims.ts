@@ -52,6 +52,8 @@ export interface ClaimsData {
   requested_services: ServiceRequestData[];
 
   affidavit: {
+    mortgage_company_name?: string | null;
+    mortgage_company_phone?: string | null;
     mortgage_company_id?: number | null;
     mortgage_loan_number: string | null;
     amount_paid: number | null;
