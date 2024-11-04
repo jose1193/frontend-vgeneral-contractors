@@ -39,14 +39,24 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
 
   const formatAmount = (amount: number | string | null | undefined): string => {
     if (amount === null || amount === undefined) return "N/A";
-    if (typeof amount === "number") {
-      return `$${amount.toFixed(2)}`;
-    }
+
+    let numAmount: number;
+
     if (typeof amount === "string") {
-      const numAmount = parseFloat(amount);
-      return isNaN(numAmount) ? amount : `$${numAmount.toFixed(2)}`;
+      numAmount = parseFloat(amount);
+      if (isNaN(numAmount)) return "N/A";
+    } else if (typeof amount === "number") {
+      numAmount = amount;
+    } else {
+      return "N/A";
     }
-    return String(amount);
+
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(numAmount);
   };
 
   const renderAffidavitInfo = (
@@ -299,11 +309,13 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
           </Typography>
           {renderAffidavitInfo(
             "Mortgage Company Name",
-            claim.affidavit?.mortgage_company_name
+            claim.mortgage_companies?.mortgage_company_name ||
+              claim.affidavit?.mortgage_company_name
           )}
           {renderAffidavitInfo(
             "Mortgage Company Phone",
-            claim.affidavit?.mortgage_company_phone
+            claim.mortgage_companies?.phone ||
+              claim.affidavit?.mortgage_company_phone
           )}
           {renderAffidavitInfo(
             "Mortgage Loan Number",
