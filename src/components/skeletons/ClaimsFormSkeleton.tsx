@@ -26,9 +26,9 @@ const ClaimsFormSkeleton: React.FC = () => {
     <Box
       sx={{
         width: "100%",
-        marginLeft: -7,
+
         overflow: "hidden",
-        p: { xs: 3, sm: 3, md: 2, lg: 4 },
+        p: { xs: 1, lg: 2 },
       }}
     >
       <Section title="Property and Customer">

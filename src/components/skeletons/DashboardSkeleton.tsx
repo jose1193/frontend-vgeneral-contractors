@@ -3,7 +3,7 @@ import { Box, Grid, Skeleton, Typography } from "@mui/material";
 // Componente Skeleton para el dashboard
 export default function DashboardSkeleton() {
   return (
-    <Box sx={{ flexGrow: 1, p: 5, ml: -8 }}>
+    <Box sx={{ flexGrow: 1, p: 5 }}>
       <Grid container spacing={3}>
         <Grid container spacing={2}>
           <Grid item xs={12} md={8}>

@@ -34,21 +34,12 @@ const CreateDocumentTemplatePage = () => {
         sx={{
           flexGrow: 1,
           overflow: "hidden",
-          ml: -7,
+
           mb: 10,
-          mt: -2,
-          p: { xs: 3, sm: 3, md: 2, lg: 4 },
+
+          p: { xs: 1, lg: 2 },
         }}
       >
-        <Button
-          variant="outlined"
-          onClick={() => window.history.back()}
-          startIcon={<ArrowBackIcon />}
-          style={{ marginBottom: "20px" }}
-        >
-          Back
-        </Button>
-
         <TypographyHeading>Create Document Template</TypographyHeading>
 
         <Paper

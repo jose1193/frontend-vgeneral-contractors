@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Controller, Control } from "react-hook-form";
+import React, { useEffect } from "react";
+import { Controller, Control, useWatch } from "react-hook-form";
 import {
   FormControl,
   InputLabel,
@@ -10,20 +10,34 @@ import {
 import { AllianceCompanyData } from "../../app/types/alliance-company";
 import { checkAllianceCompaniesAvailable } from "../../app/lib/actions/claimsActions";
 import { useSession } from "next-auth/react";
+import { useAllianceCompanyStore } from "../../app/zustand/useAllianceCompanyStore";
 
 interface SelectAllianceCompanyProps {
   control: Control<any>;
+  name?: string; // Allow custom field name
+  onChange?: (value: any) => void;
 }
 
 const SelectAllianceCompany: React.FC<SelectAllianceCompanyProps> = ({
   control,
+  name = "alliance_company_id",
+  onChange: externalOnChange,
 }) => {
   const { data: session } = useSession();
-  const [allianceCompanies, setAllianceCompanies] = useState<
-    AllianceCompanyData[]
-  >([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    allianceCompanies,
+    loading,
+    error,
+    setAllianceCompanies,
+    setLoading,
+    setError,
+  } = useAllianceCompanyStore();
+
+  // Watch the field value
+  const watchedValue = useWatch({
+    control,
+    name,
+  });
 
   useEffect(() => {
     const fetchAllianceCompanies = async () => {
@@ -54,14 +68,22 @@ const SelectAllianceCompany: React.FC<SelectAllianceCompanyProps> = ({
     };
 
     fetchAllianceCompanies();
-  }, [session?.accessToken]);
+  }, [session?.accessToken, setAllianceCompanies, setLoading, setError]);
+
+  // Find the selected company based on the watched value
+  const selectedCompany = allianceCompanies.find(
+    (company) => company.id === watchedValue
+  );
 
   return (
     <Controller
-      name="alliance_company_id"
+      name={name}
       control={control}
-      render={({ field: { onChange, value, ...rest } }) => (
-        <FormControl fullWidth>
+      render={({
+        field: { onChange, value, ...rest },
+        fieldState: { error: fieldError },
+      }) => (
+        <FormControl fullWidth error={!!fieldError}>
           <InputLabel id="alliance-select-label">Alliance Company</InputLabel>
           <Select
             labelId="alliance-select-label"
@@ -69,7 +91,12 @@ const SelectAllianceCompany: React.FC<SelectAllianceCompanyProps> = ({
             value={value ?? ""}
             onChange={(e) => {
               const selectedValue = e.target.value;
-              onChange(selectedValue === "" ? null : Number(selectedValue));
+              const newValue =
+                selectedValue === "" ? null : Number(selectedValue);
+              onChange(newValue);
+              if (externalOnChange) {
+                externalOnChange(newValue);
+              }
             }}
             label="Alliance Company"
           >
@@ -81,6 +108,9 @@ const SelectAllianceCompany: React.FC<SelectAllianceCompanyProps> = ({
             ))}
           </Select>
           {error && <FormHelperText error>{error}</FormHelperText>}
+          {fieldError && (
+            <FormHelperText error>{fieldError.message}</FormHelperText>
+          )}
         </FormControl>
       )}
     />

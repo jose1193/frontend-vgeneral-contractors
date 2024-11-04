@@ -9,8 +9,8 @@ const DataSkeletonList = () => {
       sx={{
         width: "100%",
         overflow: "hidden",
-        marginLeft: -3,
-        p: { xs: 3, sm: 3, md: 2, lg: 4 },
+
+        p: { xs: 1, lg: 2 },
       }}
     >
       {/* Header */}

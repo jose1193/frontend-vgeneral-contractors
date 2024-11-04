@@ -9,6 +9,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useRouter } from "next/navigation";
 import { CustomerData } from "../../../../app/types/customer";
 import { useSession } from "next-auth/react";
+import TypographyHeading from "../../../components/TypographyHeading";
 const CreateCustomerPage = () => {
   const router = useRouter();
   const { data: session } = useSession();
@@ -26,9 +27,9 @@ const CreateCustomerPage = () => {
         sx={{
           flexGrow: 1,
           overflow: "hidden",
-          ml: -7,
+
           mb: 10,
-          p: { xs: 3, sm: 3, md: 2, lg: 4 },
+          p: { xs: 1, lg: 2 },
         }}
       >
         <Button
@@ -39,22 +40,9 @@ const CreateCustomerPage = () => {
         >
           Back
         </Button>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            mb: 5,
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-          }}
-        >
-          Create Customer
-        </Typography>
+
+        <TypographyHeading> Create Customer</TypographyHeading>
+
         <Paper
           elevation={3}
           style={{

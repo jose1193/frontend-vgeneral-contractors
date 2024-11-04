@@ -18,7 +18,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import DetailsSkeleton from "../../../../src/components/skeletons/DetailsSkeleton";
-
+import TypographyHeading from "../../../components/TypographyHeading";
 interface DetailRowProps {
   label: string;
   value: string | number | null | undefined;
@@ -66,14 +66,6 @@ const CustomerPage = () => {
     return (
       <Container maxWidth="lg">
         <Box sx={{ mt: 4, mb: 4 }}>
-          <Button
-            variant="outlined"
-            onClick={() => window.history.back()}
-            startIcon={<ArrowBackIcon />}
-            sx={{ mb: 2 }}
-          >
-            Back
-          </Button>
           <Typography variant="h6" color="error">
             {error || "No customer found"}
           </Typography>
@@ -84,19 +76,10 @@ const CustomerPage = () => {
 
   return (
     <Suspense fallback={<DetailsSkeleton />}>
-      <Container maxWidth="lg" sx={{ marginLeft: -4 }}>
+      <Container maxWidth="lg">
         <Box sx={{ mt: 4, mb: 4 }}>
-          <Button
-            variant="outlined"
-            onClick={() => window.history.back()}
-            startIcon={<ArrowBackIcon />}
-            sx={{ mb: 2 }}
-          >
-            Back
-          </Button>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3 }}>
-            Customer Details
-          </Typography>
+          <TypographyHeading> Customer Details</TypographyHeading>
+
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <Paper elevation={3} sx={{ p: 3 }}>

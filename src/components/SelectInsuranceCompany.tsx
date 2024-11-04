@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Controller, Control } from "react-hook-form";
+import React, { useEffect } from "react";
+import { Controller, Control, useWatch } from "react-hook-form";
 import {
   FormControl,
   Autocomplete,
@@ -7,23 +7,36 @@ import {
   CircularProgress,
   FormHelperText,
 } from "@mui/material";
-import { InsuranceCompanyData } from "../../app/types/insurance-company";
-import { checkInsuranceCompaniesAvailable } from "../../app/lib/actions/claimsActions";
 import { useSession } from "next-auth/react";
+import { useInsuranceCompanyStore } from "../../app/zustand/useInsuranceCompanyStore";
+import { checkInsuranceCompaniesAvailable } from "../../app/lib/actions/claimsActions";
 
 interface SelectInsuranceCompanyProps {
   control: Control<any>;
+  name?: string; // Allow custom field name
+  onChange?: (value: any) => void; // Optional callback for parent components
 }
 
 const SelectInsuranceCompany: React.FC<SelectInsuranceCompanyProps> = ({
   control,
+  name = "insurance_company_id",
+  onChange: externalOnChange,
 }) => {
   const { data: session } = useSession();
-  const [insuranceCompanies, setInsuranceCompanies] = useState<
-    InsuranceCompanyData[]
-  >([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    insuranceCompanies,
+    loading,
+    error,
+    setInsuranceCompanies,
+    setLoading,
+    setError,
+  } = useInsuranceCompanyStore();
+
+  // Watch the field value
+  const watchedValue = useWatch({
+    control,
+    name,
+  });
 
   useEffect(() => {
     const fetchInsuranceCompanies = async () => {
@@ -31,7 +44,6 @@ const SelectInsuranceCompany: React.FC<SelectInsuranceCompanyProps> = ({
         setLoading(true);
         const token = session?.accessToken as string;
         const response = await checkInsuranceCompaniesAvailable(token);
-        console.log("Fetched insurance companies response:", response);
 
         if (response.success && Array.isArray(response.data)) {
           setInsuranceCompanies(response.data);
@@ -54,7 +66,12 @@ const SelectInsuranceCompany: React.FC<SelectInsuranceCompanyProps> = ({
     };
 
     fetchInsuranceCompanies();
-  }, [session?.accessToken]);
+  }, [session?.accessToken, setInsuranceCompanies, setLoading, setError]);
+
+  // Find the selected company based on the watched value
+  const selectedCompany = insuranceCompanies.find(
+    (company) => company.id === watchedValue
+  );
 
   return (
     <Controller
@@ -94,11 +111,13 @@ const SelectInsuranceCompany: React.FC<SelectInsuranceCompanyProps> = ({
             )}
             loading={loading}
             onChange={(_, newValue) => {
-              onChange(newValue ? newValue.id : null);
+              const newId = newValue ? newValue.id : null;
+              onChange(newId);
+              if (externalOnChange) {
+                externalOnChange(newId);
+              }
             }}
-            value={
-              insuranceCompanies.find((company) => company.id === value) || null
-            }
+            value={selectedCompany || null}
             isOptionEqualToValue={(option, value) =>
               option.id === (value?.id ?? value)
             }

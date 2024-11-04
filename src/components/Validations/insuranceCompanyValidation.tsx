@@ -7,7 +7,14 @@ export const insuranceCompanyValidation = yup.object().shape({
     .string()
     .required("Insurance company name is required")
     .max(255, "Insurance company name must be at most 255 characters"),
-  address: yup.string().nullable(),
+  address: yup
+    .string()
+    .nullable()
+    .matches(
+      /^[A-Za-zÀ-ÿ0-9\s.,#-]*$/,
+      "Address can contain letters, numbers, spaces and basic punctuation"
+    )
+    .max(255, "Address can't be longer than 255 characters"),
   phone: yup
     .string()
     .nullable("Phone is required")

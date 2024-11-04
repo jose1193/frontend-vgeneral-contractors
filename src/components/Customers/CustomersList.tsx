@@ -252,12 +252,17 @@ const CustomerList: React.FC<CustomerListProps> = ({
 
   return (
     <Box
-      component="section"
+      component="main"
       sx={{
         flexGrow: 1,
-        pr: { xs: 2, sm: 3, md: 4 },
-        pl: { xs: 1, sm: 2, md: 3 },
-        py: { xs: 2, sm: 3, md: 4 },
+        p: { xs: 1, sm: 2, md: 2, lg: 2 },
+        maxWidth: {
+          xs: "420px", // Por defecto en móviles
+          sm: "540px", // ~576px
+          md: "720px", // ~768px
+          lg: "1120px", // ~1024px+
+        },
+        mx: "auto", // Para centrar el contenedor
       }}
     >
       <Grid container spacing={2}>
@@ -268,7 +273,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
               p: 3,
               mb: 5,
               height: 600,
-              width: "100%",
+
               backgroundColor: theme.palette.background.paper,
               borderRadius: 2,
               overflow: "hidden",

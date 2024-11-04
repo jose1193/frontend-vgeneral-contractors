@@ -130,8 +130,8 @@ const PublicCompanyForm: React.FC<PublicCompanyFormProps> = ({
                         e.target.value === "" ? null : e.target.value;
                       field.onChange(value);
                     }}
-                    name="website" // Asegúrate que coincida con el schema
-                    label="Website (Optional)" // El label puede tener el texto que quieras
+                    name="website"
+                    label="Website (Optional)"
                     variant="outlined"
                     fullWidth
                     error={!!errors.website}

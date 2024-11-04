@@ -7,7 +7,7 @@ import { Box, Typography } from "@mui/material";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import ButtonCreate from "../../components/ButtonCreate";
-
+import TypographyHeading from "../../../app/components/TypographyHeading";
 const SalesPersonSignaturePage = () => {
   const { data: session } = useSession();
   const token = session?.accessToken as string;
@@ -22,26 +22,8 @@ const SalesPersonSignaturePage = () => {
 
   return (
     <Suspense>
-      <Box sx={{ width: "100%", ml: -6, overflow: "hidden" }}>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            textAlign: "left",
-            mb: 3,
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-            fontWeight: "bold",
-            ml: 4,
-          }}
-        >
-          Sales Person Signatures
-        </Typography>
+      <Box>
+        <TypographyHeading>Sales Person Signatures</TypographyHeading>
 
         <SalesPersonSignatureList
           signatures={salespersonSignatures}

@@ -110,6 +110,26 @@ export const useClaims = (token: string) => {
     [token, fetchClaims]
   );
 
+  const validateAlliance = useCallback(
+    async (
+      allianceCompanyId: number | string,
+      insuranceCompanyId: number | string
+    ) => {
+      try {
+        const response = await claimActions.validateAllianceRelationship(
+          token,
+          allianceCompanyId,
+          insuranceCompanyId
+        );
+        return response;
+      } catch (err) {
+        console.error("Error validating alliance relationship:", err);
+        throw new Error("Failed to validate alliance relationship");
+      }
+    },
+    [token]
+  );
+
   return {
     claims,
     loading,
@@ -118,5 +138,6 @@ export const useClaims = (token: string) => {
     updateClaim,
     deleteClaim,
     restoreClaim,
+    validateAlliance,
   };
 };

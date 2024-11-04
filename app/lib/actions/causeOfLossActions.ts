@@ -32,7 +32,7 @@ export const updateCauseOfLoss = (
   fetchWithCSRF(
     `/api/cause-of-losses/update/${uuid}`,
     {
-      method: "PATCH",
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(causeData),
     },

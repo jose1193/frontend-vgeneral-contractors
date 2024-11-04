@@ -73,11 +73,11 @@ const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
     },
     { title: "Claim Details", component: ClaimDetailsWizard },
     {
-      title: "Insurance & Work Details",
+      title: "Insurance & Alliance & Work Details",
       component: InsuranceAndWorkDetailsWizard,
     },
     {
-      title: "Affidavit & Alliance Company",
+      title: "Affidavit ",
       component: AffidavitAllianceWizard,
     },
     {
@@ -122,8 +122,16 @@ const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
     <FormProvider {...methods}>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <form onSubmit={handleSubmit(onSubmitHandler)}>
-          <Box sx={{ maxWidth: 900, margin: "auto", mt: 4 }}>
-            <Stepper activeStep={step} alternativeLabel sx={{ ml: -3 }}>
+          <Box
+            sx={{
+              flexGrow: 5,
+              overflow: "hidden",
+
+              mb: 10,
+              p: { xs: 3, sm: 3, md: 2, lg: 4 },
+            }}
+          >
+            <Stepper activeStep={step} alternativeLabel>
               {steps.map((stepItem, index) => (
                 <Step key={stepItem.title}>
                   <StepLabel>

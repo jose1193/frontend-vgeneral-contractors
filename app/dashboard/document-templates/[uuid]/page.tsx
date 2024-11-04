@@ -247,27 +247,13 @@ const DocumentTemplatePage = () => {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-        ml: -6,
+
         mb: 10,
-        p: { xs: 3, sm: 3, md: 2, lg: 4 },
+        p: { xs: 1, lg: 2 },
       }}
     >
-      <Button
-        variant="outlined"
-        onClick={() => window.history.back()}
-        startIcon={<ArrowBackIcon />}
-        style={{ marginBottom: "20px" }}
-      >
-        Back
-      </Button>
-      <Typography
-        variant="h4"
-        component="h1"
-        gutterBottom
-        sx={{ mb: 5, fontWeight: "bold" }}
-      >
-        Document Template Details
-      </Typography>
+      <TypographyHeading> Document Template Details</TypographyHeading>
+
       <Paper
         elevation={3}
         style={{

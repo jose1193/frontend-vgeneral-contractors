@@ -26,29 +26,11 @@ const RolesPage = () => {
       <Box
         sx={{
           width: "100%",
-          ml: -6,
+
           overflow: "hidden",
         }}
       >
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            textAlign: "left",
-            mb: 3,
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-            fontWeight: "bold",
-            ml: 4,
-          }}
-        >
-          Roles
-        </Typography>
+         <TypographyHeading>Roles</TypographyHeading>
 
         <Link href="/dashboard/roles/create" passHref>
           <ButtonCreate sx={{ ml: 4 }}>Create Role</ButtonCreate>

@@ -2,7 +2,7 @@ import React from "react";
 import { Typography, Paper, Grid, Skeleton, Box } from "@mui/material";
 
 const DetailsSkeleton: React.FC = () => (
-  <Box sx={{ flexGrow: 1, marginLeft: -7, p: { xs: 2, sm: 3, md: 4 } }}>
+  <Box sx={{ flexGrow: 1, p: { xs: 1, lg: 2 } }}>
     <Paper elevation={3} sx={{ p: 5, mb: 7 }}>
       {/* Main content section */}
       <Grid container spacing={3}>

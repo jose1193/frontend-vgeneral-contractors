@@ -43,14 +43,14 @@ const UsersPage = () => {
       <Box
         sx={{
           width: "100%",
-          ml: -6,
+
           overflow: "hidden",
         }}
       >
         <TypographyHeading>Users</TypographyHeading>
 
         <Link href="/dashboard/users/create" passHref>
-          <ButtonCreate sx={{ ml: 4 }}>Create User</ButtonCreate>
+          <ButtonCreate>Create User</ButtonCreate>
         </Link>
 
         {users ? (

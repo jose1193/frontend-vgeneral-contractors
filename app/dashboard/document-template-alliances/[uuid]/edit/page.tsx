@@ -82,37 +82,12 @@ const DocumentTemplateAlliancePage = () => {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-        ml: -7,
+
         mb: 10,
-        p: { xs: 3, sm: 3, md: 2, lg: 4 },
-        mt: -3,
+        p: { xs: 1, lg: 2 },
       }}
     >
-      <Button
-        variant="outlined"
-        onClick={() => window.history.back()}
-        startIcon={<ArrowBackIcon />}
-        style={{ marginBottom: "20px" }}
-      >
-        Back
-      </Button>
-      <Typography
-        variant="h4"
-        sx={{
-          fontSize: {
-            xs: "1.5rem",
-            sm: "1.75rem",
-            md: "2rem",
-            lg: "2.25rem",
-          },
-          my: 3,
-          fontWeight: "bold",
-        }}
-        component="h1"
-        gutterBottom
-      >
-        Edit Document Template Alliance
-      </Typography>
+      <TypographyHeading> Edit Document Template Alliance</TypographyHeading>
       {error ? (
         <Typography variant="h6" color="error">
           {error}

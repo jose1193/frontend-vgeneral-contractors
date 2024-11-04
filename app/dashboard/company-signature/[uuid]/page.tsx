@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from "react";
 import { useParams } from "next/navigation";
 import { CompanySignatureData } from "../../../../app/types/company-signature";
 import { getData } from "../../../lib/actions/companySignatureActions";
+import TypographyHeading from "../../../components/TypographyHeading";
 import {
   Container,
   Typography,
@@ -108,22 +109,13 @@ const CompanySignaturePage = () => {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-        ml: -6,
+
         mb: 10,
-        p: { xs: 3, sm: 3, md: 2, lg: 4 },
+        p: { xs: 1, lg: 2 },
       }}
     >
-      <Button
-        variant="outlined"
-        onClick={() => window.history.back()}
-        startIcon={<ArrowBackIcon />}
-        style={{ marginBottom: "20px" }}
-      >
-        Back
-      </Button>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 5 }}>
-        Company Signature Details
-      </Typography>
+      <TypographyHeading> Company Signature Details</TypographyHeading>
+
       <Paper
         elevation={3}
         style={{

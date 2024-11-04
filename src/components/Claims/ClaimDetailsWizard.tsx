@@ -7,13 +7,32 @@ import {
   Select,
   MenuItem,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import { Controller, Control } from "react-hook-form";
-import SelectTypeDamage from "../SelectTypeDamage";
-import SelectDateOfLoss from "../SelectDateOfLoss";
-import SelectCauseOfLoss from "../SelectCauseOfLoss";
-import SelectClaimStatus from "../SelectClaimStatus";
-import { ClaimsData } from "../../../app/types/claims"; // Asegúrate de que la ruta sea correcta
+
+import { ClaimsData } from "../../../app/types/claims";
+import dynamic from "next/dynamic";
+
+const SelectTypeDamage = dynamic(() => import("../SelectTypeDamage"), {
+  loading: () => <CircularProgress />,
+  ssr: false,
+});
+
+const SelectDateOfLoss = dynamic(() => import("../SelectDateOfLoss"), {
+  loading: () => <CircularProgress />,
+  ssr: false,
+});
+
+const SelectCauseOfLoss = dynamic(() => import("../SelectCauseOfLoss"), {
+  loading: () => <CircularProgress />,
+  ssr: false,
+});
+
+const SelectClaimStatus = dynamic(() => import("../SelectClaimStatus"), {
+  loading: () => <CircularProgress />,
+  ssr: false,
+});
 
 interface ClaimDetailsProps {
   control: Control<ClaimsData>;

@@ -1,5 +1,6 @@
+"use client";
 import { Container, Grid, Box, Typography, Paper, Link } from "@mui/material";
-import SideBar from "../components/SideBar";
+import ResponsiveDrawer from "../components/Sidebar/ResponsiveDrawer";
 import BasicSpeedDial from "../components/SupportButton";
 export default function Layout({
   children,
@@ -7,15 +8,9 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        mt: 12,
-      }}
-    >
-      <SideBar />
+    <ResponsiveDrawer>
       <BasicSpeedDial />
       {children}
-    </Box>
+    </ResponsiveDrawer>
   );
 }

@@ -19,7 +19,7 @@ import GeneralFormSkeleton from "@/components/skeletons/GeneralFormSkeleton";
 import { withRoleProtection } from "@/components/withRoleProtection";
 import { useSession } from "next-auth/react";
 import { PERMISSIONS } from "../../../../../src/config/permissions";
-
+import TypographyHeading from "../../../../components/TypographyHeading";
 // Custom error component matching the claims pattern
 const ErrorComponent = ({ message }: { message: string }) => (
   <Box sx={{ p: 3 }}>
@@ -91,37 +91,12 @@ function EditInsuranceCompanyPage() {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-        ml: -7,
+
         mb: 10,
-        p: { xs: 3, sm: 3, md: 2, lg: 4 },
-        mt: -3,
+        p: { xs: 1, lg: 2 },
       }}
     >
-      <Button
-        variant="outlined"
-        onClick={() => window.history.back()}
-        startIcon={<ArrowBackIcon />}
-        style={{ marginBottom: "20px" }}
-      >
-        Back
-      </Button>
-      <Typography
-        variant="h4"
-        sx={{
-          fontSize: {
-            xs: "1.5rem",
-            sm: "1.75rem",
-            md: "2rem",
-            lg: "2.25rem",
-          },
-          my: 3,
-          fontWeight: "bold",
-        }}
-        component="h1"
-        gutterBottom
-      >
-        Edit Insurance Company
-      </Typography>
+      <TypographyHeading> Edit Insurance Company</TypographyHeading>
       {insuranceCompany ? (
         <Paper
           elevation={3}

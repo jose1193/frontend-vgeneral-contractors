@@ -30,7 +30,7 @@ const DashboardItemSkeleton = () => (
 
 const DashboardUserRoleSkeleton = () => {
   return (
-    <Box sx={{ flexGrow: 1, p: 5, ml: -8 }}>
+    <Box sx={{ flexGrow: 1, p: 5 }}>
       <Grid container spacing={3}>
         {/* Welcome Section Skeleton */}
         <Grid item xs={12}>

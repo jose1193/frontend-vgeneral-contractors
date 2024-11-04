@@ -7,6 +7,7 @@ import { ClaimStatusData } from "./claim-status";
 import { CauseOfLossData } from "./cause-of-loss";
 import { UserData } from "./user";
 import { ClaimAgreementData } from "./claim-agreement";
+import { MortgageCompanyData } from "./mortgage-company";
 
 export interface TechnicalAssignment {
   id: number;
@@ -31,6 +32,7 @@ export interface ClaimsData {
   description_of_loss: string | null;
   number_of_floors?: number | null;
   insurance_company_id?: number;
+
   insurance_company_assignment: string | null;
   public_company_id: number | null;
   public_adjuster_id: number | null;
@@ -44,11 +46,13 @@ export interface ClaimsData {
   scope_of_work: string | null;
   alliance_company_id?: number | null;
   alliance_companies: AllianceCompanyData;
+
+  mortgage_companies: MortgageCompanyData;
+
   requested_services: ServiceRequestData[];
 
   affidavit: {
-    mortgage_company_name: string | null;
-    mortgage_company_phone: string | null;
+    mortgage_company_id?: number | null;
     mortgage_loan_number: string | null;
     amount_paid: number | null;
     description: string | null;

@@ -59,7 +59,7 @@ function SuperAdminDashboardContent() {
   }
 
   return (
-    <Box component="main" sx={{ flexGrow: 1, p: 5, ml: -8 }}>
+    <Box component="main" sx={{ flexGrow: 1, p: { md: 2, lg: 2 } }}>
       <Grid container spacing={3}>
         <Grid container spacing={2}>
           <Grid
@@ -106,11 +106,6 @@ function SuperAdminDashboardContent() {
         <Grid item xs={12}>
           <Suspense fallback={<CircularProgress />}>
             <FinancialSummary />
-          </Suspense>
-        </Grid>
-        <Grid item xs={12}>
-          <Suspense fallback={<CircularProgress />}>
-            <ClaimsDashboard />
           </Suspense>
         </Grid>
       </Grid>

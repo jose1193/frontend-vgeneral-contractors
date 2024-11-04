@@ -1,21 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Controller, Control } from "react-hook-form";
+import React, { useEffect } from "react";
+import { Controller, Control, useWatch } from "react-hook-form";
 import {
   FormControl,
+  Autocomplete,
   TextField,
   CircularProgress,
   FormHelperText,
 } from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
 import { useSession } from "next-auth/react";
 import { checkUsersAvailable } from "../../app/lib/actions/claimsActions";
 import { ClaimsData } from "../../app/types/claims";
-
-interface PublicAdjuster {
-  id: number;
-  name: string;
-  last_name: string | null;
-}
+import { useUserStore } from "../../app/zustand/useUserStore";
 
 interface SelectPublicAdjusterProps {
   control: Control<ClaimsData>;
@@ -31,9 +26,20 @@ const SelectPublicAdjuster: React.FC<SelectPublicAdjusterProps> = ({
   publicAdjusterAssignment,
 }) => {
   const { data: session } = useSession();
-  const [publicAdjusters, setPublicAdjusters] = useState<PublicAdjuster[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    users: publicAdjusters,
+    loading,
+    error,
+    setUsers: setPublicAdjusters,
+    setLoading,
+    setError,
+  } = useUserStore();
+
+  // Watch the field value
+  const watchedValue = useWatch({
+    control,
+    name: "public_adjuster_id" as const,
+  });
 
   useEffect(() => {
     const fetchPublicAdjusters = async () => {
@@ -42,22 +48,35 @@ const SelectPublicAdjuster: React.FC<SelectPublicAdjusterProps> = ({
         const token = session?.accessToken as string;
         const role = "Public Adjuster";
         const response = await checkUsersAvailable(token, role);
+
         if (response.success && Array.isArray(response.data)) {
           setPublicAdjusters(response.data);
           setError(null);
         } else {
+          console.error(
+            "Fetched data is not in the expected format:",
+            response
+          );
           setPublicAdjusters([]);
           setError("Received invalid data format");
         }
       } catch (err) {
+        console.error("Error fetching public adjusters:", err);
         setPublicAdjusters([]);
         setError("Failed to fetch Public Adjusters");
       } finally {
         setLoading(false);
       }
     };
+
     fetchPublicAdjusters();
-  }, [session?.accessToken]);
+  }, [session?.accessToken, setPublicAdjusters, setLoading, setError]);
+
+  // Find the selected adjuster based on the watched value or initialData
+  const selectedAdjuster =
+    publicAdjusters.find((adjuster) => adjuster.id === watchedValue) ||
+    publicAdjusterAssignment ||
+    null;
 
   return (
     <Controller
@@ -75,7 +94,7 @@ const SelectPublicAdjuster: React.FC<SelectPublicAdjusterProps> = ({
             getOptionLabel={(option) =>
               typeof option === "string"
                 ? option
-                : `${option.name} ${option.last_name || ""}`
+                : `${option.name} ${option.last_name || ""}`.trim()
             }
             renderInput={(params) => (
               <TextField
@@ -98,13 +117,10 @@ const SelectPublicAdjuster: React.FC<SelectPublicAdjusterProps> = ({
             )}
             loading={loading}
             onChange={(_, newValue) => {
-              onChange(newValue ? newValue.id : null);
+              const newId = newValue ? newValue.id : null;
+              onChange(newId);
             }}
-            value={
-              publicAdjusters.find((adjuster) => adjuster.id === value) ||
-              publicAdjusterAssignment ||
-              null
-            }
+            value={selectedAdjuster}
             isOptionEqualToValue={(option, value) =>
               option.id === (value?.id ?? value)
             }

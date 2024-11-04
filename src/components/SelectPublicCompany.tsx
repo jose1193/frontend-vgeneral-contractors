@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Controller, Control } from "react-hook-form";
+import React, { useEffect } from "react";
+import { Controller, Control, useWatch } from "react-hook-form";
 import {
   FormControl,
   Autocomplete,
@@ -10,20 +10,34 @@ import {
 import { PublicCompanyData } from "../../app/types/public-company";
 import { checkPublicCompaniesAvailable } from "../../app/lib/actions/claimsActions";
 import { useSession } from "next-auth/react";
+import { usePublicCompanyStore } from "../../app/zustand/usePublicCompanyStore";
 
 interface SelectPublicCompanyProps {
   control: Control<any>;
+  name?: string; // Allow custom field name
+  onChange?: (value: any) => void; // Optional callback for parent components
 }
 
 const SelectPublicCompany: React.FC<SelectPublicCompanyProps> = ({
   control,
+  name = "public_company_id",
+  onChange: externalOnChange,
 }) => {
   const { data: session } = useSession();
-  const [publicCompanies, setPublicCompanies] = useState<PublicCompanyData[]>(
-    []
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    publicCompanies,
+    loading,
+    error,
+    setPublicCompanies,
+    setLoading,
+    setError,
+  } = usePublicCompanyStore();
+
+  // Watch the field value
+  const watchedValue = useWatch({
+    control,
+    name,
+  });
 
   useEffect(() => {
     const fetchPublicCompanies = async () => {
@@ -54,11 +68,16 @@ const SelectPublicCompany: React.FC<SelectPublicCompanyProps> = ({
     };
 
     fetchPublicCompanies();
-  }, [session?.accessToken]);
+  }, [session?.accessToken, setPublicCompanies, setLoading, setError]);
+
+  // Find the selected company based on the watched value
+  const selectedCompany = publicCompanies.find(
+    (company) => company.id === watchedValue
+  );
 
   return (
     <Controller
-      name="public_company_id"
+      name={name}
       control={control}
       render={({
         field: { onChange, value, ...rest },
@@ -92,11 +111,13 @@ const SelectPublicCompany: React.FC<SelectPublicCompanyProps> = ({
             )}
             loading={loading}
             onChange={(_, newValue) => {
-              onChange(newValue ? newValue.id : null);
+              const newId = newValue ? newValue.id : null;
+              onChange(newId);
+              if (externalOnChange) {
+                externalOnChange(newId);
+              }
             }}
-            value={
-              publicCompanies.find((company) => company.id === value) || null
-            }
+            value={selectedCompany || null}
             isOptionEqualToValue={(option, value) =>
               option.id === (value?.id ?? value)
             }

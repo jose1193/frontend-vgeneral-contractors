@@ -10,6 +10,7 @@ import ButtonCreate from "../../components/ButtonCreate";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
 import { PERMISSIONS } from "../../../src/config/permissions";
 import { useListPermissions } from "../../../src/hooks/useListPermissions";
+import TypographyHeading from "../../components/TypographyHeading";
 
 const DocumentTemplatesPage = () => {
   const { data: session } = useSession();
@@ -26,30 +27,11 @@ const DocumentTemplatesPage = () => {
 
   return (
     <Suspense>
-      <Box sx={{ width: "100%", ml: -6, overflow: "hidden" }}>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            textAlign: "left",
-            mb: 3,
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-            fontWeight: "bold",
-            ml: 4,
-          }}
-        >
-          Document Templates
-        </Typography>
-
+      <Box sx={{ width: "100%", overflow: "hidden" }}>
+        <TypographyHeading>Document Templates</TypographyHeading>
         {canModifyList(listConfig) && (
           <Link href="/dashboard/document-templates/create" passHref>
-            <ButtonCreate sx={{ ml: 4 }}>Create Document Template</ButtonCreate>
+            <ButtonCreate>Create Document Template</ButtonCreate>
           </Link>
         )}
 

@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import Button, { ButtonProps } from "@mui/material/Button";
 import { styled } from "@mui/material/styles";
-
+import { Box, Typography } from "@mui/material";
 interface ButtonCreateProps extends ButtonProps {
   children: ReactNode;
 }
@@ -28,9 +28,11 @@ const StyledButton = styled(Button)(({ theme }) => ({
 
 const ButtonCreate: React.FC<ButtonCreateProps> = ({ children, ...props }) => {
   return (
-    <StyledButton variant="contained" {...props}>
-      {children}
-    </StyledButton>
+    <Box sx={{ mb: 4, ml: 2, mt: -1 }}>
+      <StyledButton variant="contained" {...props}>
+        {children}
+      </StyledButton>
+    </Box>
   );
 };
 

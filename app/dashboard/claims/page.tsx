@@ -10,6 +10,7 @@ import { withRoleProtection } from "../../../src/components/withRoleProtection";
 import UserInfo from "@/components/UserInfo";
 import ButtonCreate from "../../components/ButtonCreate";
 import { PERMISSIONS } from "../../../src/config/permissions";
+import TypographyHeading from "../../components/TypographyHeading";
 
 const ClaimsPage = () => {
   const { data: session, update } = useSession();
@@ -22,35 +23,13 @@ const ClaimsPage = () => {
 
   return (
     <Suspense>
-      <Box
-        sx={{
-          width: "100%",
-          ml: -6,
-          overflow: "hidden",
-        }}
-      >
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            textAlign: "left",
-            mb: 3,
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-            fontWeight: "bold",
-            ml: 4,
-          }}
-        >
-          Claims
-        </Typography>
+      <Box>
+        <Box sx={{ textAlign: "center" }}>
+          <TypographyHeading>Claims</TypographyHeading>
+        </Box>
 
         <Link href="/dashboard/claims/create" passHref>
-          <ButtonCreate sx={{ ml: 4 }}>Create Claim</ButtonCreate>
+          <ButtonCreate>Create Claim</ButtonCreate>
         </Link>
         <ClaimsList
           claims={claims}

@@ -32,6 +32,10 @@ export const validationSchema = Yup.object().shape({
     .max(10, "Zip code can't be longer than 10 characters"),
   address: Yup.string()
     .nullable()
+    .matches(
+      /^[A-Za-zÀ-ÿ0-9\s.,#-]*$/,
+      "Address can contain letters, numbers, spaces and basic punctuation"
+    )
     .max(255, "Address can't be longer than 255 characters"),
   address_2: Yup.string()
     .nullable()

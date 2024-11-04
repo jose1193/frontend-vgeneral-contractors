@@ -19,29 +19,10 @@ const AllianceCompaniesPage = () => {
 
   return (
     <Suspense>
-      <Box sx={{ width: "100%", ml: -6, overflow: "hidden" }}>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            textAlign: "left",
-            mb: 3,
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-            fontWeight: "bold",
-            ml: 4,
-          }}
-        >
-          Alliance Companies
-        </Typography>
-
+      <Box sx={{ width: "100%", overflow: "hidden" }}>
+        <TypographyHeading> Alliance Companies</TypographyHeading>
         <Link href="/dashboard/alliance-companies/create" passHref>
-          <ButtonCreate sx={{ ml: 4 }}>Create Alliance Company</ButtonCreate>
+          <ButtonCreate>Create Alliance Company</ButtonCreate>
         </Link>
 
         <AllianceCompanyList

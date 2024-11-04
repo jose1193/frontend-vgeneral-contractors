@@ -89,3 +89,21 @@ export const checkUsersAvailable = async (token: string, role: string) => {
   );
   return response;
 };
+
+export const validateAllianceRelationship = (
+  token: string,
+  allianceCompanyId: number | string,
+  insuranceCompanyId: number | string
+) =>
+  fetchWithCSRF(
+    `/api/claim/validate-alliance`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        alliance_company_id: allianceCompanyId,
+        insurance_company_id: insuranceCompanyId,
+      }),
+    },
+    token
+  );

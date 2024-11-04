@@ -12,9 +12,9 @@ const GeneralFormSkeleton = ({
     <Box
       sx={{
         flexGrow: 1,
-        marginLeft: -7,
+
         overflow: "hidden",
-        p: { xs: 3, sm: 3, md: 2, lg: 4 },
+        p: { xs: 1, lg: 2 },
       }}
     >
       <Box sx={{ width: "100%", mx: "auto", mt: 4 }}>

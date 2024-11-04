@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { TextField, Button, Box, CircularProgress } from "@mui/material";
 import { TypeDamageData } from "../../../app/types/type-damage";
-
+import useCapitalizeWords from "../../hooks/useCapitalizeWords";
 interface TypeDamageFormProps {
   initialData?: TypeDamageData;
   onSubmit: (data: TypeDamageData) => Promise<void>;
@@ -12,6 +12,7 @@ const TypeDamagesForm: React.FC<TypeDamageFormProps> = ({
   initialData,
   onSubmit,
 }) => {
+  const capitalizeWords = useCapitalizeWords();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     control,
@@ -50,6 +51,10 @@ const TypeDamagesForm: React.FC<TypeDamageFormProps> = ({
               fullWidth
               error={!!errors.type_damage_name}
               helperText={errors.type_damage_name?.message}
+              onChange={(e) => {
+                const value = e.target.value;
+                field.onChange(capitalizeWords(value));
+              }}
             />
           )}
         />

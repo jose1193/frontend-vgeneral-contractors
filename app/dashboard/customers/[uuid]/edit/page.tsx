@@ -10,7 +10,7 @@ import { Typography, Box, Paper, Button } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import GeneralFormSkeleton from "@/components/skeletons/GeneralFormSkeleton";
 import { useSession } from "next-auth/react";
-
+import TypographyHeading from "../../../../components/TypographyHeading";
 function EditCustomerPage() {
   const { uuid } = useParams();
   const router = useRouter();
@@ -52,9 +52,9 @@ function EditCustomerPage() {
         sx={{
           flexGrow: 1,
           overflow: "hidden",
-          ml: -7,
+
           mb: 10,
-          p: { xs: 3, sm: 3, md: 2, lg: 4 },
+          p: { xs: 1, lg: 2 },
         }}
       >
         <Paper
@@ -65,21 +65,7 @@ function EditCustomerPage() {
             p: 3,
           }}
         >
-          <Button
-            variant="outlined"
-            onClick={() => window.history.back()}
-            startIcon={<ArrowBackIcon />}
-            style={{ marginBottom: "20px" }}
-          >
-            Back
-          </Button>
-          <Typography
-            variant="h4"
-            gutterBottom
-            sx={{ marginBottom: 4, marginTop: 2 }}
-          >
-            Edit Customer
-          </Typography>
+          <TypographyHeading> Edit Customer</TypographyHeading>
           {error ? (
             <Typography color="error">{error}</Typography>
           ) : customer ? (

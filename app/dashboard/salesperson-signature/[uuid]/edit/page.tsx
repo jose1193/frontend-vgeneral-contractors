@@ -9,6 +9,7 @@ import { Typography, Box, Paper, Button } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import GeneralFormSkeleton from "@/components/skeletons/GeneralFormSkeleton";
 import { useSession } from "next-auth/react";
+import TypographyHeading from "../../../../components/TypographyHeading";
 
 function EditSalesPersonSignaturePage() {
   const { uuid } = useParams();
@@ -49,37 +50,12 @@ function EditSalesPersonSignaturePage() {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-        ml: -7,
+
         mb: 10,
-        p: { xs: 3, sm: 3, md: 2, lg: 4 },
+        p: { xs: 1, lg: 2 },
       }}
     >
-      <Button
-        variant="outlined"
-        onClick={() => window.history.back()}
-        startIcon={<ArrowBackIcon />}
-        style={{ marginBottom: "20px" }}
-      >
-        Back
-      </Button>
-      <Typography
-        variant="h4"
-        sx={{
-          fontSize: {
-            xs: "1.5rem",
-            sm: "1.75rem",
-            md: "2rem",
-            lg: "2.25rem",
-          },
-          fontWeight: "bold",
-          paddingTop: 3,
-          paddingBottom: 3,
-        }}
-        component="h1"
-        gutterBottom
-      >
-        Edit Salesperson Signature
-      </Typography>
+      <TypographyHeading> Edit Salesperson Signature</TypographyHeading>
       {error ? (
         <Typography variant="h6" color="error">
           {error}

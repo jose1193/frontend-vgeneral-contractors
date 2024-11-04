@@ -27,7 +27,7 @@ import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
 import { useListPermissions } from "../../hooks/useListPermissions";
 import { PERMISSIONS } from "../../../src/config/permissions";
-
+import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
 interface ClaimsListProps {
   claims: ClaimsData[];
   onDelete: (uuid: string) => Promise<void>;
@@ -324,12 +324,17 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
 
   return (
     <Box
-      component="section"
+      component="main"
       sx={{
         flexGrow: 1,
-        pr: { xs: 2, sm: 3, md: 4 },
-        pl: { xs: 1, sm: 2, md: 3 },
-        py: { xs: 2, sm: 3, md: 4 },
+        p: { xs: 1, sm: 2, md: 2, lg: 2 },
+        maxWidth: {
+          xs: "420px", // Por defecto en móviles
+          sm: "540px", // ~576px
+          md: "720px", // ~768px
+          lg: "1120px", // ~1024px+
+        },
+        mx: "auto", // Para centrar el contenedor
       }}
     >
       <Grid container spacing={2}>
@@ -514,20 +519,12 @@ const ClaimsList: React.FC<ClaimsListProps> = ({
         </DialogActions>
       </Dialog>
 
-      <Snackbar
+      <FeedbackSnackbar
         open={snackbar.open}
-        autoHideDuration={5000}
+        message={snackbar.message}
+        severity={snackbar.severity}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      />
     </Box>
   );
 };

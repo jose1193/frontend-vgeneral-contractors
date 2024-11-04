@@ -1,5 +1,5 @@
-import DetailsSkeleton from "../../../../src/components/skeletons/DetailsSkeleton";
+import GeneralFormSkeleton from "../../../../src/components/skeletons/GeneralFormSkeleton";
 export default function Loading() {
   // Or a custom loading skeleton component
-  return <DetailsSkeleton />;
+  return <GeneralFormSkeleton />;
 }

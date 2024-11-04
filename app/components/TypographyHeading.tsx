@@ -1,6 +1,6 @@
 import React from "react";
 import { Typography as MuiTypography, SxProps, Theme } from "@mui/material";
-
+import { Box } from "@mui/material";
 interface TypographyHeadingProps {
   children: React.ReactNode;
   component?: React.ElementType;
@@ -18,6 +18,7 @@ const TypographyHeading: React.FC<TypographyHeadingProps> = ({
 }) => {
   const typographySx: SxProps<Theme> = {
     mb: 5,
+    ml: 4,
     fontSize: {
       xs: "1.5rem",
       sm: "1.75rem",
@@ -26,18 +27,20 @@ const TypographyHeading: React.FC<TypographyHeadingProps> = ({
     },
     fontWeight: "bold",
     color: color,
-    ...sx, // This allows for additional style overrides
+    ...sx,
   };
 
   return (
-    <MuiTypography
-      variant="h4"
-      component={component}
-      gutterBottom={gutterBottom}
-      sx={typographySx}
-    >
-      {children}
-    </MuiTypography>
+    <Box sx={{ textAlign: "center" }}>
+      <MuiTypography
+        variant="h4"
+        component={component}
+        gutterBottom={gutterBottom}
+        sx={typographySx}
+      >
+        {children}
+      </MuiTypography>
+    </Box>
   );
 };
 

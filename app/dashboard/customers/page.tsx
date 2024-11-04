@@ -10,6 +10,7 @@ import ButtonCreate from "../../components/ButtonCreate";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
 import { PERMISSIONS } from "../../../src/config/permissions";
 import { useListPermissions } from "../../../src/hooks/useListPermissions";
+import TypographyHeading from "../../../app/components/TypographyHeading";
 
 const CustomersPage = () => {
   const { data: session } = useSession();
@@ -25,30 +26,14 @@ const CustomersPage = () => {
 
   return (
     <Suspense>
-      <Box sx={{ width: "100%", ml: -6, overflow: "hidden" }}>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            textAlign: "left",
-            mb: 3,
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-            fontWeight: "bold",
-            ml: 4,
-          }}
-        >
-          Customers
-        </Typography>
+      <Box>
+        <Box sx={{ textAlign: "center" }}>
+          <TypographyHeading>Customers</TypographyHeading>
+        </Box>
 
         {canModifyList(listConfig) && (
           <Link href="/dashboard/customers/create" passHref>
-            <ButtonCreate sx={{ ml: 4 }}>Create Customer</ButtonCreate>
+            <ButtonCreate>Create Customer</ButtonCreate>
           </Link>
         )}
 

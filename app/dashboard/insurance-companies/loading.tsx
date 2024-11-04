@@ -9,7 +9,7 @@ export default function Loading() {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-        ml: -3,
+
         mb: 10,
         p: { xs: 3, sm: 3, md: 2, lg: 4 },
       }}

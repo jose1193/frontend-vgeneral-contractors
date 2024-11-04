@@ -6,6 +6,7 @@ import { getData } from "../../../../lib/actions/companySignatureActions";
 import { useCompanySignatures } from "@/hooks/useCompanySignature";
 import CompanySignatureForm from "@/components/Company-Signature/CompanySignatureForm";
 import { CompanySignatureData } from "../../../../types/company-signature";
+import TypographyHeading from "../../../../components/TypographyHeading";
 import {
   Typography,
   Box,
@@ -65,34 +66,13 @@ function EditCompanySignaturePage() {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-        ml: -7,
+
         mb: 10,
-        p: { xs: 3, sm: 3, md: 2, lg: 4 },
+        p: { xs: 1, lg: 2 },
       }}
     >
-      <Button
-        variant="outlined"
-        onClick={() => window.history.back()}
-        startIcon={<ArrowBackIcon />}
-        style={{ marginBottom: "20px" }}
-      >
-        Back
-      </Button>
-      <Typography
-        variant="h4"
-        sx={{
-          fontSize: {
-            xs: "1.5rem",
-            sm: "1.75rem",
-            md: "2rem",
-            lg: "2.25rem",
-          },
-        }}
-        component="h1"
-        gutterBottom
-      >
-        Edit Company Signature
-      </Typography>
+      <TypographyHeading> Edit Company Signature</TypographyHeading>
+
       {error ? (
         <Typography variant="h6" color="error">
           {error}

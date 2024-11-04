@@ -1,5 +1,3 @@
-// src/components/typeDamages/TypeDamagesList.tsx
-
 "use client";
 
 import React, { useState } from "react";
@@ -16,15 +14,16 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Snackbar,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import Alert from "@mui/material/Alert";
 import { useTheme } from "@mui/material/styles";
 import { withRoleProtection } from "../withRoleProtection";
 import { PERMISSIONS } from "../../../src/config/permissions";
+import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
+
 interface TypeDamagesListProps {
   typeDamages: TypeDamageData[];
   onDelete: (uuid: string) => void;
@@ -38,6 +37,7 @@ const TypeDamagesList: React.FC<TypeDamagesListProps> = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [typeDamageToDelete, setTypeDamageToDelete] =
     useState<TypeDamageData | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -55,6 +55,7 @@ const TypeDamagesList: React.FC<TypeDamagesListProps> = ({
 
   const handleDeleteConfirm = async () => {
     if (typeDamageToDelete && typeDamageToDelete.uuid) {
+      setIsSubmitting(true);
       try {
         await onDelete(typeDamageToDelete.uuid);
         setDeleteDialogOpen(false);
@@ -69,6 +70,8 @@ const TypeDamagesList: React.FC<TypeDamagesListProps> = ({
           message: "Failed to delete type damage",
           severity: "error",
         });
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -81,7 +84,6 @@ const TypeDamagesList: React.FC<TypeDamagesListProps> = ({
     { field: "type_damage_name", headerName: "Name", width: 250 },
     { field: "description", headerName: "Description", width: 400 },
     { field: "created_at", headerName: "Created At", width: 200 },
-
     {
       field: "actions",
       headerName: "Actions",
@@ -132,12 +134,17 @@ const TypeDamagesList: React.FC<TypeDamagesListProps> = ({
 
   return (
     <Box
-      component="section"
+      component="main"
       sx={{
         flexGrow: 1,
-        pr: { xs: 2, sm: 3, md: 4 },
-        pl: { xs: 1, sm: 2, md: 3 },
-        py: { xs: 2, sm: 3, md: 4 },
+        p: { xs: 1, sm: 2, md: 2, lg: 2 },
+        maxWidth: {
+          xs: "420px", // Por defecto en móviles
+          sm: "540px", // ~576px
+          md: "720px", // ~768px
+          lg: "1120px", // ~1024px+
+        },
+        mx: "auto", // Para centrar el contenedor
       }}
     >
       <Grid container spacing={2}>
@@ -235,26 +242,26 @@ const TypeDamagesList: React.FC<TypeDamagesListProps> = ({
             variant="contained"
             onClick={handleDeleteConfirm}
             color="error"
+            disabled={isSubmitting}
           >
-            Delete
+            {isSubmitting ? (
+              <>
+                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                Deleting...
+              </>
+            ) : (
+              "Delete"
+            )}
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Snackbar
+      <FeedbackSnackbar
         open={snackbar.open}
-        autoHideDuration={5000}
+        message={snackbar.message}
+        severity={snackbar.severity}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      />
     </Box>
   );
 };

@@ -22,7 +22,7 @@ import ClaimsFormSkeleton from "../../../../../src/components/skeletons/ClaimsFo
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { PERMISSIONS } from "../../../../../src/config/permissions";
 import Forbidden from "../../../../../src/components/Forbidden";
-
+import TypographyHeading from "../../../../components/TypographyHeading";
 // Componente de error personalizado
 const ErrorComponent = ({ message }: { message: string }) => (
   <Box sx={{ p: 3 }}>
@@ -98,36 +98,12 @@ const EditClaimPage = () => {
         sx={{
           flexGrow: 1,
           overflow: "hidden",
-          ml: -7,
+
           mb: 10,
-          p: { xs: 3, sm: 3, md: 2, lg: 4 },
+          p: { xs: 1, lg: 2 },
         }}
       >
-        <Button
-          variant="outlined"
-          onClick={() => window.history.back()}
-          startIcon={<ArrowBackIcon />}
-          style={{ marginBottom: "25px" }}
-        >
-          Back
-        </Button>
-
-        <Typography
-          variant="h4"
-          sx={{
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-            marginBottom: 5,
-          }}
-          component="h1"
-          gutterBottom
-        >
-          Edit Claim
-        </Typography>
+        <TypographyHeading> Edit Claim</TypographyHeading>
 
         <Paper
           elevation={3}

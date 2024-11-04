@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Controller, Control } from "react-hook-form";
+import React, { useEffect } from "react";
+import { Controller, Control, useWatch } from "react-hook-form";
 import {
   FormControl,
   Autocomplete,
@@ -10,16 +10,28 @@ import {
 import { TypeDamageData } from "../../app/types/type-damage";
 import { checkTypeDamagesAvailable } from "../../app/lib/actions/claimsActions";
 import { useSession } from "next-auth/react";
+import { useTypeDamageStore } from "../../app/zustand/useTypeDamageStore";
 
 interface SelectTypeDamageProps {
   control: Control<any>;
+  name?: string; // Allow custom field name
+  onChange?: (value: any) => void; // Optional callback for parent components
 }
 
-const SelectTypeDamage: React.FC<SelectTypeDamageProps> = ({ control }) => {
+const SelectTypeDamage: React.FC<SelectTypeDamageProps> = ({
+  control,
+  name = "type_damage_id",
+  onChange: externalOnChange,
+}) => {
   const { data: session } = useSession();
-  const [typeDamages, setTypeDamages] = useState<TypeDamageData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { typeDamages, loading, error, setTypeDamages, setLoading, setError } =
+    useTypeDamageStore();
+
+  // Watch the field value
+  const watchedValue = useWatch({
+    control,
+    name,
+  });
 
   useEffect(() => {
     const fetchTypeDamages = async () => {
@@ -50,11 +62,16 @@ const SelectTypeDamage: React.FC<SelectTypeDamageProps> = ({ control }) => {
     };
 
     fetchTypeDamages();
-  }, [session?.accessToken]);
+  }, [session?.accessToken, setTypeDamages, setLoading, setError]);
+
+  // Find the selected damage based on the watched value
+  const selectedDamage = typeDamages.find(
+    (damage) => damage.id === watchedValue
+  );
 
   return (
     <Controller
-      name="type_damage_id"
+      name={name}
       control={control}
       render={({
         field: { onChange, value, ...rest },
@@ -88,9 +105,13 @@ const SelectTypeDamage: React.FC<SelectTypeDamageProps> = ({ control }) => {
             )}
             loading={loading}
             onChange={(_, newValue) => {
-              onChange(newValue ? newValue.id : null);
+              const newId = newValue ? newValue.id : null;
+              onChange(newId);
+              if (externalOnChange) {
+                externalOnChange(newId);
+              }
             }}
-            value={typeDamages.find((damage) => damage.id === value) || null}
+            value={selectedDamage || null}
             isOptionEqualToValue={(option, value) =>
               option.id === (value?.id ?? value)
             }

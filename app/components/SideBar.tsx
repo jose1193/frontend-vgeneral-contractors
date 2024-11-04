@@ -57,6 +57,9 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import DocumentScannerIcon from "@mui/icons-material/DocumentScanner";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+
+import { FactCheckOutlined } from "@mui/icons-material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -208,6 +211,28 @@ export default function MiniDrawer() {
       ],
     },
     {
+      name: "DocuSign",
+      icon: <AssignmentTurnedInIcon />,
+      permission: PERMISSIONS.MANAGE_CONFIG,
+      subItems: [
+        {
+          name: "New Connection",
+          href: "/dashboard/docusign/connect",
+          icon: <AddCircleOutlineIcon />,
+        },
+        {
+          name: "Documents List",
+          href: "/dashboard/docusign/documents",
+          icon: <AssignmentIcon />,
+        },
+        {
+          name: "Status Monitor",
+          href: "/dashboard/docusign/status",
+          icon: <FactCheckOutlined />,
+        },
+      ],
+    },
+    {
       name: "Sign. SalesPerson",
       href: "/dashboard/salesperson-signature",
       icon: <BorderColorIcon />,
@@ -267,6 +292,11 @@ export default function MiniDrawer() {
           href: "/dashboard/alliance-companies",
           icon: <HandshakeIcon />,
         },
+        {
+          name: "Mortgage",
+          href: "/dashboard/mortgage-companies",
+          icon: <AccountBalanceIcon />,
+        },
       ],
     },
     {
@@ -274,11 +304,6 @@ export default function MiniDrawer() {
       icon: <ApiIcon />,
 
       subItems: [
-        {
-          name: "Docusign API",
-          href: "/dashboard/docusign-api",
-          icon: <AssignmentTurnedInIcon />,
-        },
         {
           name: "AI Tools",
           href: "/dashboard/ai-tools",
@@ -337,6 +362,11 @@ export default function MiniDrawer() {
           name: "Type Damages",
           href: "/dashboard/type-damages",
           icon: <WarningIcon />,
+        },
+        {
+          name: "Cause Of Losses",
+          href: "/dashboard/cause-of-losses",
+          icon: <ErrorOutlineIcon />,
         },
         {
           name: "VG Company",
@@ -417,6 +447,7 @@ export default function MiniDrawer() {
     React.useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
   const handleDropdownToggle = (name: string) => {
     if (open) {
       setOpenDropdown(openDropdown === name ? null : name);

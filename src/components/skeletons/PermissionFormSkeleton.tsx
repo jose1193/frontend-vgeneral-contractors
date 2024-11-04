@@ -6,7 +6,7 @@ const PermissionFormSkeleton = () => {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-        ml: -7,
+
         mb: 10,
         p: { xs: 3, sm: 3, md: 2, lg: 4 },
       }}

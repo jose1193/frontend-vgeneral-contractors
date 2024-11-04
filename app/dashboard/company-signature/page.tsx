@@ -9,7 +9,7 @@ import { useSession } from "next-auth/react";
 import { withRoleProtection } from "../../../src/components/withRoleProtection";
 import ButtonCreate from "../../components/ButtonCreate";
 import { PERMISSIONS } from "../../../src/config/permissions";
-
+import TypographyHeading from "../../components/TypographyHeading";
 const CompanySignaturesPage = () => {
   const { data: session } = useSession();
 
@@ -24,32 +24,14 @@ const CompanySignaturesPage = () => {
       <Box
         sx={{
           width: "100%",
-          ml: -6,
+
           overflow: "hidden",
         }}
       >
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            textAlign: "left",
-            mb: 3,
-            fontSize: {
-              xs: "1.5rem",
-              sm: "1.75rem",
-              md: "2rem",
-              lg: "2.25rem",
-            },
-            fontWeight: "bold",
-            ml: 4,
-          }}
-        >
-          Company Signature
-        </Typography>
+        <TypographyHeading>Company Signature</TypographyHeading>
 
         <Link href="/dashboard/company-signature/create" passHref>
-          <ButtonCreate sx={{ ml: 4 }}>Create Company Signature</ButtonCreate>
+          <ButtonCreate>Create Company Signature</ButtonCreate>
         </Link>
 
         <CompanySignaturesList
