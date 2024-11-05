@@ -101,3 +101,17 @@ export interface DocusignListResponse {
   data: DocusignData[];
   message?: string;
 }
+
+export interface DocusignImportDTO {
+  claim_uuid: string;
+  document: File;
+}
+
+export interface DocusignImportResponse {
+  success: boolean;
+  data: {
+    envelope_id?: string;
+    status?: string;
+    message?: string;
+  };
+}

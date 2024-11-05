@@ -20,7 +20,10 @@ import {
 } from "@mui/icons-material";
 import { useDocuSignConnection } from "../../hooks/useDocuSign";
 import { ClaimsData } from "../../../app/types/claims";
-import { DocusignSignDTO } from "../../../app/types/docusign";
+import {
+  DocusignSignDTO,
+  DocusignImportDTO,
+} from "../../../app/types/docusign";
 import { useSession } from "next-auth/react";
 import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
 
@@ -67,15 +70,21 @@ const DocusignFormTab: React.FC<DocusignFormTabProps> = ({
   const {
     signDocument,
     toSignature,
+    importDocument,
     error: docuSignError,
   } = useDocuSignConnection(token);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [confirmDialogOpenForSignature, setConfirmDialogOpenForSignature] =
     useState(false);
+  const [confirmDialogOpenForImport, setConfirmDialogOpenForImport] =
+    useState(false);
+
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     open: false,
     message: "",
@@ -120,6 +129,11 @@ const DocusignFormTab: React.FC<DocusignFormTabProps> = ({
 
   const handleCloseConfirmDialogForSignature = () => {
     setConfirmDialogOpenForSignature(false);
+  };
+
+  const handleCloseImportDialog = () => {
+    setConfirmDialogOpenForImport(false);
+    setSelectedFile(null);
   };
 
   const handleExportWithSignature = async () => {
@@ -192,14 +206,45 @@ const DocusignFormTab: React.FC<DocusignFormTabProps> = ({
     }
   };
 
-  const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (!file || !claim.uuid) return;
+
+    setSelectedFile(file);
+    setConfirmDialogOpenForImport(true);
+  };
+
+  const handleImportFile = async () => {
+    if (!selectedFile || !claim.uuid) return;
+
+    setIsSubmitting(true);
+    try {
+      const importData: DocusignImportDTO = {
+        claim_uuid: claim.uuid,
+        document: selectedFile,
+      };
+
+      const response = await importDocument(importData);
+
+      if (response?.data?.envelope_id) {
+        setSnackbar({
+          open: true,
+          message: "Document imported successfully",
+          severity: "success",
+        });
+        handleCloseImportDialog();
+        onDocumentSigned();
+      }
+    } catch (err) {
       setSnackbar({
         open: true,
-        message: `File ${file.name} imported successfully`,
-        severity: "success",
+        message: "Error importing document",
+        severity: "error",
       });
+      setError("Error importing document");
+      console.error("Error importing document:", err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -265,16 +310,26 @@ const DocusignFormTab: React.FC<DocusignFormTabProps> = ({
             variant="contained"
             component="label"
             startIcon={<FileUploadIcon />}
-            disabled={loading}
+            disabled={isSubmitting || loading}
           >
-            Import File
+            Select File
             <input
               type="file"
               hidden
-              onChange={handleImportFile}
-              accept=".pdf,.doc,.docx"
+              onChange={handleFileSelect}
+              accept=".pdf"
             />
           </Button>
+          {selectedFile && (
+            <Typography color="text.secondary">
+              Selected file: {selectedFile.name}
+            </Typography>
+          )}
+          {displayError && (
+            <Typography color="error" align="center">
+              {displayError}
+            </Typography>
+          )}
         </Stack>
       </TabPanel>
 
@@ -386,6 +441,59 @@ const DocusignFormTab: React.FC<DocusignFormTabProps> = ({
               </>
             ) : (
               "Confirm"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Diálogo para confirmar importación */}
+      <Dialog
+        open={confirmDialogOpenForImport}
+        onClose={handleCloseImportDialog}
+        aria-labelledby="import-dialog-title"
+        aria-describedby="import-dialog-description"
+      >
+        <DialogTitle
+          id="import-dialog-title"
+          sx={{
+            backgroundColor: "#0288d1",
+            mb: 5,
+            textAlign: "center",
+            color: "#fff",
+            fontWeight: "bold",
+          }}
+        >
+          {"Confirm Document Import"}
+        </DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontWeight: "500" }}>
+            Are you sure you want to import this document?
+          </Typography>
+          {selectedFile && (
+            <Typography
+              color="text.secondary"
+              sx={{ mt: 2, fontWeight: "bold" }}
+            >
+              File to import: {selectedFile.name}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseImportDialog}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="info"
+            onClick={handleImportFile}
+            disabled={isSubmitting}
+            autoFocus
+          >
+            {isSubmitting ? (
+              <>
+                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                Importing...
+              </>
+            ) : (
+              "Confirm Import"
             )}
           </Button>
         </DialogActions>

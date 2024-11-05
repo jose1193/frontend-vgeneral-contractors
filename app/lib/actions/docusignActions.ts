@@ -10,6 +10,7 @@ import {
   DocusignCallbackDTO,
   DocusignCheckStatusDTO,
   DocusignStatus,
+  DocusignImportResponse,
 } from "../../types/docusign";
 
 export const getConnectionStatus = async (
@@ -88,6 +89,19 @@ export const toSignDocumentSignature = async (
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
+    },
+    token
+  );
+
+export const importDocument = async (
+  token: string,
+  formData: FormData
+): Promise<DocusignImportResponse> =>
+  fetchWithCSRF(
+    "/api/docusign/sign-signature-file",
+    {
+      method: "POST",
+      body: formData,
     },
     token
   );

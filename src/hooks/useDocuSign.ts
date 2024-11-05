@@ -11,6 +11,8 @@ import {
   DocusignListResponse,
   DocusignSignResponse,
   DocusignStatus,
+  DocusignImportDTO,
+  DocusignImportResponse,
 } from "../../app/types/docusign";
 
 export const useDocuSignConnection = (token: string) => {
@@ -141,6 +143,29 @@ export const useDocuSignConnection = (token: string) => {
     },
     [token, setLoading, setError, loadDocuments]
   );
+
+  const importDocument = useCallback(
+    async (data: DocusignImportDTO): Promise<DocusignImportResponse> => {
+      try {
+        setLoading(true);
+        // Crear FormData para enviar el archivo
+        const formData = new FormData();
+        formData.append("claim_uuid", data.claim_uuid);
+        formData.append("document", data.document);
+
+        const response = await docusignActions.importDocument(token, formData);
+        await loadDocuments();
+        return response;
+      } catch (err) {
+        setError("Failed to import document");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token, setLoading, setError, loadDocuments]
+  );
+
   const handleCallback = useCallback(
     async (data: DocusignCallbackDTO): Promise<DocusignResponse> => {
       try {
@@ -212,6 +237,7 @@ export const useDocuSignConnection = (token: string) => {
     refreshToken,
     signDocument,
     toSignature,
+    importDocument,
     checkConnectionStatus,
     loadDocuments,
     handleCallback,
