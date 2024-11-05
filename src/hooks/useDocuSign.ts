@@ -1,11 +1,16 @@
-// src/hooks/useDocuSignConnection.ts
+// hooks/useDocuSignConnection.ts
 import { useCallback, useEffect } from "react";
 import { useDocuSignStore } from "../../app/zustand/useDocuSignStore";
 import * as docusignActions from "../../app/lib/actions/docusignActions";
 import {
+  DocusignData,
   DocusignSignDTO,
   DocusignCallbackDTO,
   DocusignCheckStatusDTO,
+  DocusignResponse,
+  DocusignListResponse,
+  DocusignSignResponse,
+  DocusignStatus,
 } from "../../app/types/docusign";
 
 export const useDocuSignConnection = (token: string) => {
@@ -18,12 +23,15 @@ export const useDocuSignConnection = (token: string) => {
     documents,
     loading,
     error,
+    checkConnectionStatus: storeCheckConnectionStatus,
   } = useDocuSignStore();
 
   const loadDocuments = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await docusignActions.getDocuments(token);
+      const response: DocusignListResponse = await docusignActions.getDocuments(
+        token
+      );
       if (response.success && Array.isArray(response.data)) {
         setDocuments(response.data);
       }
@@ -38,15 +46,14 @@ export const useDocuSignConnection = (token: string) => {
     try {
       setLoading(true);
       setError(null);
-      const status = await docusignActions.getConnectionStatus(token);
-      setConnectionStatus(status);
+      await storeCheckConnectionStatus(token);
     } catch (err) {
       setError("Failed to check connection status");
       console.error("Error checking connection status:", err);
     } finally {
       setLoading(false);
     }
-  }, [token, setLoading, setError, setConnectionStatus]);
+  }, [token, setLoading, setError, storeCheckConnectionStatus]);
 
   const connect = useCallback(async () => {
     try {
@@ -76,8 +83,30 @@ export const useDocuSignConnection = (token: string) => {
     }
   }, [token, checkConnectionStatus, setLoading, setError]);
 
+  const checkMultipleDocumentStatus = useCallback(
+    async (envelopeIds: string[]) => {
+      try {
+        const statusPromises = envelopeIds.map((envelopeId) =>
+          docusignActions.checkDocumentStatus(token, {
+            envelope_id: envelopeId,
+          })
+        );
+
+        const statuses = await Promise.all(statusPromises);
+        return statuses.reduce((acc, status, index) => {
+          acc[envelopeIds[index]] = status;
+          return acc;
+        }, {} as Record<string, DocusignStatus>);
+      } catch (err) {
+        setError("Failed to check documents status");
+        throw err;
+      }
+    },
+    [token, setError]
+  );
+
   const signDocument = useCallback(
-    async (data: DocusignSignDTO) => {
+    async (data: DocusignSignDTO): Promise<DocusignSignResponse> => {
       try {
         setLoading(true);
         const response = await docusignActions.signDocument(token, data);
@@ -93,8 +122,27 @@ export const useDocuSignConnection = (token: string) => {
     [token, setLoading, setError, loadDocuments]
   );
 
+  const toSignature = useCallback(
+    async (data: DocusignSignDTO): Promise<DocusignSignResponse> => {
+      try {
+        setLoading(true);
+        const response = await docusignActions.toSignDocumentSignature(
+          token,
+          data
+        );
+        await loadDocuments();
+        return response;
+      } catch (err) {
+        setError("Failed to send document for customer signature");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token, setLoading, setError, loadDocuments]
+  );
   const handleCallback = useCallback(
-    async (data: DocusignCallbackDTO) => {
+    async (data: DocusignCallbackDTO): Promise<DocusignResponse> => {
       try {
         setLoading(true);
         const response = await docusignActions.callbackDocusign(token, data);
@@ -110,14 +158,43 @@ export const useDocuSignConnection = (token: string) => {
     [token, setLoading, setError, loadDocuments]
   );
 
+  const deleteDocusignDocument = useCallback(
+    async (uuid: string) => {
+      try {
+        await docusignActions.deleteDocument(token, uuid);
+        setDocuments((prevDocuments) =>
+          prevDocuments.filter((document) => document.uuid !== uuid)
+        );
+      } catch (err) {
+        console.error("Error deleting document docusign:", err);
+        setError("Failed to delete document docusign");
+        throw err;
+      }
+    },
+    [token, setDocuments, setError]
+  );
+
   const checkDocumentStatus = useCallback(
     async (data: DocusignCheckStatusDTO) => {
       try {
+        if (!data.envelope_id) {
+          throw new Error("Envelope ID is required");
+        }
+
         setLoading(true);
         const status = await docusignActions.checkDocumentStatus(token, data);
+
+        if (!status || !status.details) {
+          throw new Error("Invalid status response");
+        }
+
         return status;
       } catch (err) {
-        setError("Failed to check document status");
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "Failed to check document status";
+        setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
@@ -125,11 +202,6 @@ export const useDocuSignConnection = (token: string) => {
     },
     [token, setLoading, setError]
   );
-
-  useEffect(() => {
-    checkConnectionStatus();
-    loadDocuments();
-  }, [checkConnectionStatus, loadDocuments]);
 
   return {
     connectionStatus,
@@ -139,9 +211,12 @@ export const useDocuSignConnection = (token: string) => {
     connect,
     refreshToken,
     signDocument,
+    toSignature,
     checkConnectionStatus,
     loadDocuments,
     handleCallback,
     checkDocumentStatus,
+    checkMultipleDocumentStatus,
+    deleteDocusignDocument,
   };
 };

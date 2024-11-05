@@ -27,6 +27,7 @@ import { useSession } from "next-auth/react";
 import InvoiceTable from "../../../../src/components/Claims/InvoiceTable";
 import ClaimHeader from "../../../../src/components/Claims/ClaimHeader";
 import ClaimTabs from "../../../../src/components/Claims/ClaimTabs";
+
 import { useClaimProfile } from "../../../../src/hooks/useClaimProfile";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import { PERMISSIONS } from "../../../../src/config/permissions";
@@ -74,6 +75,7 @@ const ClaimProfile: React.FC = () => {
           onUpdateAgreement={updateClaimAgreement}
           onDeleteAgreement={deleteClaimAgreement}
         />
+
         <InvoiceTable claim={claim} />
       </Box>
     </Suspense>

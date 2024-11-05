@@ -14,6 +14,7 @@ import {
 import { ClaimsData } from "../../../app/types/claims";
 import { ClaimAgreementData } from "../../../app/types/claim-agreement";
 import AgreementTab from "./AgreementTab/AgreementTab";
+import DocusignTab from "./DocusignTab";
 
 interface ClaimTabsProps {
   claim: ClaimsData | null;
@@ -107,7 +108,12 @@ const ClaimTabs: React.FC<ClaimTabsProps> = ({
         />
       ),
     },
-    { label: "Agreement Full", icon: <AssignmentIndIcon /> },
+    {
+      label: "Agreement Full Docusign",
+      icon: <AssignmentIndIcon />,
+      content: <DocusignTab claim={claim} />,
+    },
+
     { label: "Notes", icon: <DescriptionIcon /> },
     { label: "Invoices", icon: <ReceiptIcon /> },
     { label: "Estimates", icon: <CalculateIcon /> },

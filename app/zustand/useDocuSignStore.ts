@@ -4,8 +4,8 @@ import {
   DocusignData,
   DocusignStatus,
   DocusignConnect,
-} from "../../app/types/docusign";
-import * as docusignActions from "../../app/lib/actions/docusignActions";
+} from "../types/docusign";
+import * as docusignActions from "../lib/actions/docusignActions";
 
 interface DocuSignStore {
   // State
@@ -19,17 +19,24 @@ interface DocuSignStore {
     expiresAt: string | null;
     lastRefresh: string | null;
   };
+  token: string | null;
 
   // Actions
   connectToDocusign: (token: string) => Promise<DocusignConnect>;
   refreshToken: (token: string) => Promise<void>;
   checkConnectionStatus: (token: string) => Promise<void>;
+  refreshDocuments: () => Promise<void>;
 
   // Setters
-  setDocuments: (documents: DocusignData[]) => void;
+  setDocuments: (
+    documentsOrUpdater:
+      | DocusignData[]
+      | ((prev: DocusignData[]) => DocusignData[])
+  ) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setConnectUrl: (url: string | null) => void;
+  setToken: (token: string | null) => void;
   setConnectionStatus: (status: {
     isConnected: boolean;
     expiresAt: string | null;
@@ -61,6 +68,7 @@ const initialState = {
     expiresAt: null,
     lastRefresh: null,
   },
+  token: null,
 };
 
 export const useDocuSignStore = create<DocuSignStore>((set, get) => ({
@@ -117,11 +125,38 @@ export const useDocuSignStore = create<DocuSignStore>((set, get) => ({
     }
   },
 
+  refreshDocuments: async () => {
+    const state = get();
+    if (!state.token) {
+      throw new Error("No token available");
+    }
+
+    try {
+      set({ loading: true, error: null });
+      const response = await docusignActions.getDocuments(state.token);
+      if (response.success && response.data) {
+        set({ documents: response.data });
+      }
+    } catch (error) {
+      set({ error: "Failed to refresh documents" });
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
   // Setters
-  setDocuments: (documents) => set({ documents }),
+  setDocuments: (documentsOrUpdater) =>
+    set((state) => ({
+      documents:
+        typeof documentsOrUpdater === "function"
+          ? documentsOrUpdater(state.documents)
+          : documentsOrUpdater,
+    })),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
   setConnectUrl: (url) => set({ connectUrl: url }),
+  setToken: (token) => set({ token }),
   setConnectionStatus: (status) => set({ connectionStatus: status }),
 
   // CRUD Operations
@@ -144,7 +179,7 @@ export const useDocuSignStore = create<DocuSignStore>((set, get) => ({
       documents: state.documents.filter((doc) => doc.uuid !== uuid),
       documentStatuses: Object.fromEntries(
         Object.entries(state.documentStatuses).filter(
-          ([_, status]) => status.envelope_id !== uuid
+          ([_, status]) => status.details.envelopeId !== uuid
         )
       ),
     })),
@@ -167,10 +202,3 @@ export const useDocuSignStore = create<DocuSignStore>((set, get) => ({
   clearError: () => set({ error: null }),
   reset: () => set(initialState),
 }));
-
-// Selectors
-export const selectDocuments = (state: DocuSignStore) => state.documents;
-export const selectLoading = (state: DocuSignStore) => state.loading;
-export const selectError = (state: DocuSignStore) => state.error;
-export const selectConnectionStatus = (state: DocuSignStore) =>
-  state.connectionStatus;

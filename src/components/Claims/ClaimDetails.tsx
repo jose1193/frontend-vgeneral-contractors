@@ -59,6 +59,37 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
     }).format(numAmount);
   };
 
+  const getMortgageCompanyInfo = () => {
+    // First try to get from affidavit.mortgage_company
+    if (claim.affidavit?.mortgage_company) {
+      return {
+        name: claim.affidavit.mortgage_company.mortgage_company_name,
+        phone: claim.affidavit.mortgage_company.phone,
+        email: claim.affidavit.mortgage_company.email,
+        address: claim.affidavit.mortgage_company.address,
+        website: claim.affidavit.mortgage_company.website,
+      };
+    }
+    // Fallback to mortgage_companies
+    if (claim.mortgage_companies) {
+      return {
+        name: claim.mortgage_companies.mortgage_company_name,
+        phone: claim.mortgage_companies.phone,
+        email: claim.mortgage_companies.email,
+        address: claim.mortgage_companies.address,
+        website: claim.mortgage_companies.website,
+      };
+    }
+    // Final fallback to affidavit direct properties
+    return {
+      name: claim.affidavit?.mortgage_company_name,
+      phone: claim.affidavit?.mortgage_company_phone,
+      email: null,
+      address: null,
+      website: null,
+    };
+  };
+
   const renderAffidavitInfo = (
     label: string,
     value: string | number | boolean | null | undefined
@@ -114,6 +145,8 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
       {index < (claim.customers?.length || 0) - 1 && <Divider sx={{ my: 1 }} />}
     </Box>
   );
+
+  const mortgageInfo = getMortgageCompanyInfo();
 
   return (
     <Paper elevation={3} sx={{ p: 5, mb: 7 }}>
@@ -283,9 +316,6 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
             <span style={{ fontWeight: "bold" }}>{claim.policy_number}</span>
           </Typography>
           <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Insurance Adjuster: <span style={{ fontWeight: "bold" }}></span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
             Public Company:{" "}
             <span style={{ fontWeight: "bold" }}>
               {claim.public_company_assignment || "N/A"}
@@ -307,15 +337,37 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
           >
             Affidavit
           </Typography>
-          {renderAffidavitInfo(
-            "Mortgage Company Name",
-            claim.mortgage_companies?.mortgage_company_name ||
-              claim.affidavit?.mortgage_company_name
+          <Typography variant="subtitle2" sx={{ color: "black" }}>
+            Mortgage Company Name:{" "}
+            <span style={{ fontWeight: "bold" }}>
+              {mortgageInfo.name || "N/A"}
+            </span>
+          </Typography>
+          <Typography variant="subtitle2" sx={{ color: "black" }}>
+            Mortgage Company Phone:{" "}
+            <span style={{ fontWeight: "bold" }}>
+              {mortgageInfo.phone
+                ? formatPhoneNumber(mortgageInfo.phone)
+                : "N/A"}
+            </span>
+          </Typography>
+          {mortgageInfo.email && (
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Mortgage Company Email:{" "}
+              <span style={{ fontWeight: "bold" }}>{mortgageInfo.email}</span>
+            </Typography>
           )}
-          {renderAffidavitInfo(
-            "Mortgage Company Phone",
-            claim.mortgage_companies?.phone ||
-              claim.affidavit?.mortgage_company_phone
+          {mortgageInfo.address && (
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Mortgage Company Address:{" "}
+              <span style={{ fontWeight: "bold" }}>{mortgageInfo.address}</span>
+            </Typography>
+          )}
+          {mortgageInfo.website && (
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Mortgage Company Website:{" "}
+              <span style={{ fontWeight: "bold" }}>{mortgageInfo.website}</span>
+            </Typography>
           )}
           {renderAffidavitInfo(
             "Mortgage Loan Number",
@@ -349,6 +401,36 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
                 : "N/A"}
             </span>
           </Typography>
+          {claim.alliance_companies && (
+            <>
+              <Typography variant="subtitle2" sx={{ color: "black" }}>
+                Phone:{" "}
+                <span style={{ fontWeight: "bold" }}>
+                  {formatPhoneNumber(claim.alliance_companies.phone)}
+                </span>
+              </Typography>
+              <Typography variant="subtitle2" sx={{ color: "black" }}>
+                Email:{" "}
+                <span style={{ fontWeight: "bold" }}>
+                  {claim.alliance_companies.email}
+                </span>
+              </Typography>
+              <Typography variant="subtitle2" sx={{ color: "black" }}>
+                Address:{" "}
+                <span style={{ fontWeight: "bold" }}>
+                  {claim.alliance_companies.address}
+                </span>
+              </Typography>
+              {claim.alliance_companies.website && (
+                <Typography variant="subtitle2" sx={{ color: "black" }}>
+                  Website:{" "}
+                  <span style={{ fontWeight: "bold" }}>
+                    {claim.alliance_companies.website}
+                  </span>
+                </Typography>
+              )}
+            </>
+          )}
         </Grid>
       </Grid>
     </Paper>

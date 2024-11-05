@@ -78,6 +78,20 @@ export const signDocument = async (
     token
   );
 
+export const toSignDocumentSignature = async (
+  token: string,
+  data: DocusignSignDTO
+): Promise<DocusignSignResponse> =>
+  fetchWithCSRF(
+    "/api/docusign/sign-signature",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    },
+    token
+  );
+
 export const checkDocumentStatus = async (
   token: string,
   data: DocusignCheckStatusDTO
@@ -91,6 +105,27 @@ export const checkDocumentStatus = async (
     },
     token
   );
+
+export const checkMultipleDocumentStatus = async (
+  token: string,
+  envelopeIds: string[]
+): Promise<Record<string, DocusignStatus>> => {
+  try {
+    const promises = envelopeIds.map((envelopeId) =>
+      checkDocumentStatus(token, { envelope_id: envelopeId })
+    );
+
+    const results = await Promise.all(promises);
+
+    return envelopeIds.reduce((acc, envelopeId, index) => {
+      acc[envelopeId] = results[index];
+      return acc;
+    }, {} as Record<string, DocusignStatus>);
+  } catch (error) {
+    console.error("Error checking multiple document statuses:", error);
+    throw error;
+  }
+};
 
 export const refreshToken = async (token: string): Promise<DocusignResponse> =>
   fetchWithCSRF("/api/docusign/refresh-token", { method: "POST" }, token);

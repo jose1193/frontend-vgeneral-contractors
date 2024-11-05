@@ -8,6 +8,7 @@ import { CauseOfLossData } from "./cause-of-loss";
 import { UserData } from "./user";
 import { ClaimAgreementData } from "./claim-agreement";
 import { MortgageCompanyData } from "./mortgage-company";
+import { DocusignData } from "./docusign";
 
 export interface TechnicalAssignment {
   id: number;
@@ -52,6 +53,7 @@ export interface ClaimsData {
   requested_services: ServiceRequestData[];
 
   affidavit: {
+    mortgage_company: MortgageCompanyData;
     mortgage_company_name?: string | null;
     mortgage_company_phone?: string | null;
     mortgage_company_id?: number | null;
@@ -65,6 +67,7 @@ export interface ClaimsData {
   customers: CustomerData[] | null;
   property: PropertyData;
   claim_agreements: ClaimAgreementData[];
+  claims_docusign: DocusignData[];
   created_at?: string;
   updated_at?: string;
   deleted_at?: string;

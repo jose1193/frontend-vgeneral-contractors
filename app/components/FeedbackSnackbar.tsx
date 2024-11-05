@@ -4,7 +4,7 @@ import { Snackbar, Alert } from "@mui/material";
 interface FeedbackSnackbarProps {
   open: boolean;
   message: string;
-  severity: "success" | "error";
+  severity: "success" | "error" | "info" | "warning";
   onClose: () => void;
 }
 

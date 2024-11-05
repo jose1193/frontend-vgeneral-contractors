@@ -1,10 +1,15 @@
 // app/types/docusign.ts
 // Interfaz principal para los datos de DocuSign
+import { ClaimsData } from "./claims";
+import { UserData } from "./user";
 export interface DocusignData {
   id?: number;
   uuid?: string | null;
   envelope_id?: string | null;
+  claims: ClaimsData;
   claim_uuid?: string | null;
+  claim_id?: number | null;
+  generated_by: UserData;
   code?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
@@ -12,11 +17,45 @@ export interface DocusignData {
 
 // Para monitorear el estado de firma
 export interface DocusignStatus {
-  status: string;
-  signed: boolean;
-  email?: string;
-  signed_at?: string | null;
   envelope_id: string;
+  status: string;
+  details: {
+    status: string;
+    envelopeId: string;
+    emailSubject: string;
+    sentDateTime: string;
+    initialSentDateTime: string;
+    sent_at: string;
+    lastModifiedDateTime: string;
+    status_changed_at: string;
+    expireDateTime: string;
+    documentsUri: string;
+    recipientsUri: string;
+    attachmentsUri: string;
+    envelopeUri: string;
+    signingLocation: string;
+    customFieldsUri: string;
+    notificationUri: string;
+    enableWetSign: string;
+    allowMarkup: string;
+    allowReassign: string;
+    documentsCombinedUri: string;
+    certificateUri: string;
+    templatesUri: string;
+    expireEnabled: string;
+    expireAfter: string;
+    sender: {
+      userName: string;
+      userId: string;
+      accountId: string;
+      email: string;
+      ipAddress?: string;
+    };
+  };
+}
+
+export interface DocumentWithStatus extends DocusignData {
+  docusign_status?: DocusignStatus;
 }
 
 // Para el proceso inicial de conexión
@@ -31,7 +70,6 @@ export interface DocusignConnect {
 // DTOs para las diferentes operaciones
 export interface DocusignSignDTO {
   claim_uuid: string;
-  code: string;
 }
 
 export interface DocusignCallbackDTO {
