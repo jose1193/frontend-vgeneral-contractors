@@ -69,3 +69,17 @@ export const handleLastNameChange = (
     setFieldValue("username", newUsername);
   }
 };
+
+export const capitalizeForm = (value: string | null): string => {
+  if (!value) return "";
+  return value
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
+export const upperCaseForm = (value: string | null): string => {
+  if (!value) return "";
+  return value.toUpperCase();
+};

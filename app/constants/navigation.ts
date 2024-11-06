@@ -31,6 +31,7 @@ import {
   AdminPanelSettings as AdminPanelSettingsIcon,
   Lock as LockIcon,
   Warning as WarningIcon,
+  GridView as GridViewIcon,
   ErrorOutline as ErrorOutlineIcon,
   DriveFileRenameOutline as DriveFileRenameOutlineIcon,
 } from "@mui/icons-material";
@@ -226,6 +227,11 @@ export const PAGES: PageItem[] = [
         name: "Cause Of Losses",
         href: ROUTES.DASHBOARD.CONFIG.CAUSE_OF_LOSSES,
         icon: ErrorOutlineIcon,
+      },
+      {
+        name: "Zones",
+        href: ROUTES.DASHBOARD.CONFIG.ZONES,
+        icon: GridViewIcon,
       },
       {
         name: "VG Company",

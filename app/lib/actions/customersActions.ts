@@ -1,4 +1,4 @@
-import { CustomerData } from "../../types/customer"; // Asegúrate de que esto apunta al archivo correcto
+import { CustomerData } from "../../types/customer";
 import { fetchWithCSRF } from "../api";
 
 export const getDataFetch = (token: string) =>

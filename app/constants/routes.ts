@@ -67,6 +67,7 @@ export const ROUTES = {
       TYPE_DAMAGES: "/dashboard/type-damages",
       CAUSE_OF_LOSSES: "/dashboard/cause-of-losses",
       COMPANY_SIGNATURE: "/dashboard/company-signature",
+      ZONES: "/dashboard/zones",
     },
   },
 
