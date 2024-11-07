@@ -30,21 +30,35 @@ export const useUsers = (token: string) => {
     fetchUsers();
   }, [fetchUsers]);
 
-  const createUser = async (userData: UserData) => {
+  const createUser = async (userData: UserData): Promise<UserData> => {
     try {
       const newUser = await usersActions.createUser(token, userData);
-      setUsers([...users, newUser]);
-    } catch (err) {
-      setError("Failed to create user");
+      if (!newUser || !newUser.uuid) {
+        throw new Error("Invalid response from server");
+      }
+
+      setUsers((prevUsers) => [...prevUsers, newUser]);
+      return newUser;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create user";
+      setError(errorMessage);
+      throw error;
     }
   };
 
   const updateUser = async (uuid: string, userData: UserData) => {
     try {
       const updatedUser = await usersActions.updateUser(token, uuid, userData);
-      setUsers(users.map((user) => (user.uuid === uuid ? updatedUser : user)));
+      setUsers(
+        users.map((user) =>
+          user.uuid === uuid ? { ...updatedUser, uuid } : user
+        )
+      );
+      return updatedUser;
     } catch (err) {
       setError("Failed to update user");
+      throw err;
     }
   };
 

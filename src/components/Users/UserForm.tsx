@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { UserData } from "../../../app/types/user";
-import PhoneInputField from "../../../app/components/PhoneInputField";
+import PhoneInputUserForm from "../../../app/components/PhoneInputUserForm";
 import EmailField from "../../../app/components/EmailInputField";
 import UsernameField from "../../../app/components/UsernameInputField";
 import { checkRolesAvailable } from "../../../app/lib/api";
@@ -47,10 +47,15 @@ interface Role {
 
 interface UsersFormProps {
   initialData?: UserData;
-  onSubmit: (data: UserData) => Promise<void>;
+  onSubmit: (data: UserData) => Promise<string>;
+  uuid?: string | null;
 }
 
-const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
+const UsersForm: React.FC<UsersFormProps> = ({
+  initialData,
+  onSubmit,
+  uuid,
+}) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mapCoordinates, setMapCoordinates] = useState({ lat: 0, lng: 0 });
@@ -71,7 +76,10 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
   });
 
   const methods = useForm<UserData>({
-    defaultValues: initialData || {},
+    defaultValues: {
+      ...initialData,
+      uuid: uuid || null,
+    },
     resolver: yupResolver(validationSchema),
     mode: "onChange",
   });
@@ -279,7 +287,7 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <PhoneInputField name="phone" label="Phone" />
+            <PhoneInputUserForm name="phone" label="Phone" required={false} />
           </Grid>
 
           <Grid item xs={12} sm={6}>
@@ -320,6 +328,9 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
                   InputProps={{
                     readOnly: true,
                   }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                   sx={{
                     "& .MuiInputBase-input.Mui-readOnly": {
                       backgroundColor: "#f0f0f0",
@@ -342,6 +353,9 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
                   label="State"
                   InputProps={{
                     readOnly: true,
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
                   }}
                   sx={{
                     "& .MuiInputBase-input.Mui-readOnly": {
@@ -366,6 +380,9 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
                   InputProps={{
                     readOnly: true,
                   }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                   sx={{
                     "& .MuiInputBase-input.Mui-readOnly": {
                       backgroundColor: "#f0f0f0",
@@ -389,6 +406,9 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
                   InputProps={{
                     readOnly: true,
                   }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                   sx={{
                     "& .MuiInputBase-input.Mui-readOnly": {
                       backgroundColor: "#f0f0f0",
@@ -398,7 +418,6 @@ const UsersForm: React.FC<UsersFormProps> = ({ initialData, onSubmit }) => {
               )}
             />
           </Grid>
-
           <Grid item xs={12} sm={6}>
             <Controller
               name="user_role"

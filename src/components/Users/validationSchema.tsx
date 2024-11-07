@@ -5,10 +5,12 @@ export const validationSchema = Yup.object().shape({
     .required("Name is required")
     .matches(/^[A-Za-z\s]+$/, "Name can only contain letters")
     .max(50, "Name can't be longer than 50 characters"),
+
   last_name: Yup.string()
     .nullable()
     .matches(/^[A-Za-z\s]+$/, "Last name can only contain letters")
     .max(50, "Last name can't be longer than 50 characters"),
+
   username: Yup.string()
     .required("Username is required")
     .matches(
@@ -16,51 +18,69 @@ export const validationSchema = Yup.object().shape({
       "Username can only contain letters, numbers, and underscores"
     )
     .max(30, "Username can't be longer than 30 characters"),
+
   email: Yup.string()
     .required("Email is required")
     .email("Invalid email address")
     .matches(/^[a-zA-Z0-9._%+-]+@gmail\.com$/, "Email must be a Gmail address")
     .max(255, "Email can't be longer than 255 characters"),
+
   phone: Yup.string()
-    .nullable("Phone is required")
-    .matches(
-      /^\+1\d{10}$/,
-      "Phone number must be in US format +1 (XXX)-XXX-XXXX"
-    ),
-  zip_code: Yup.string()
     .nullable()
-    .max(10, "Zip code can't be longer than 10 characters"),
+    .transform((value) => (value === "" ? null : value)),
+
+  // Address-related fields
   address: Yup.string()
     .nullable()
+    .transform((value) => (value === "" ? null : value))
     .matches(
       /^[A-Za-zÀ-ÿ0-9\s.,#-]*$/,
       "Address can contain letters, numbers, spaces and basic punctuation"
     )
     .max(255, "Address can't be longer than 255 characters"),
+
   address_2: Yup.string()
     .nullable()
+    .transform((value) => (value === "" ? null : value))
     .max(255, "Address 2 can't be longer than 255 characters"),
+
   city: Yup.string()
     .nullable()
-    .matches(/^[A-Za-z\s]+$/, "City can only contain letters")
+    .transform((value) => (value === "" ? null : value))
+    .matches(/^[A-Za-z\s]*$/, "City can only contain letters")
     .max(30, "City can't be longer than 30 characters"),
+
   state: Yup.string()
     .nullable()
-    .matches(/^[A-Za-z\s]+$/, "State can only contain letters")
+    .transform((value) => (value === "" ? null : value))
+    .matches(/^[A-Za-z\s]*$/, "State can only contain letters")
     .max(30, "State can't be longer than 30 characters"),
+
   country: Yup.string()
     .nullable()
-    .matches(/^[A-Za-z\s]+$/, "Country can only contain letters")
+    .transform((value) => (value === "" ? null : value))
+    .matches(/^[A-Za-z\s]*$/, "Country can only contain letters")
     .max(30, "Country can't be longer than 30 characters"),
+
+  zip_code: Yup.string()
+    .nullable()
+    .transform((value) => (value === "" ? null : value))
+    .max(10, "Zip code can't be longer than 10 characters"),
+
   latitude: Yup.number()
     .nullable()
+    .transform((value) => (isNaN(value) ? null : value))
     .min(-90, "Latitude must be at least -90")
     .max(90, "Latitude must be at most 90"),
+
   longitude: Yup.number()
     .nullable()
+    .transform((value) => (isNaN(value) ? null : value))
     .min(-180, "Longitude must be at least -180")
     .max(180, "Longitude must be at most 180"),
+
   user_role: Yup.string().required("User role is required"),
+
   uuid: Yup.string().nullable(),
   profile_photo_path: Yup.string().nullable(),
   created_at: Yup.string().nullable(),

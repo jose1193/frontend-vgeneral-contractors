@@ -1,5 +1,3 @@
-// src/app/users/[uuid]/page.tsx
-
 "use client";
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -8,7 +6,6 @@ import { UserData } from "../../../types/user";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import dynamic from "next/dynamic";
-
 import TypographyHeading from "../../../components/TypographyHeading";
 import { PERMISSIONS } from "../../../../src/config/permissions";
 import {
@@ -22,7 +19,6 @@ import {
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 
-// Dynamic import of GoogleMapComponent
 const GoogleMapComponent = dynamic(
   () => import("../../../../src/components/GoogleMap"),
   {
@@ -34,7 +30,49 @@ const GoogleMapComponent = dynamic(
 interface DetailRowProps {
   label: string;
   value: string | number | null | undefined;
+  type?: "phone" | "default";
 }
+
+const formatPhoneNumber = (
+  phone: string | number | null | undefined
+): string => {
+  if (!phone) return "N/A";
+
+  // Convert to string and remove all non-digits
+  const cleaned = phone.toString().replace(/\D/g, "");
+
+  // Check if it's a US number (10 digits or 11 digits starting with 1)
+  const isUSNumber =
+    cleaned.length === 10 || (cleaned.length === 11 && cleaned.startsWith("1"));
+
+  if (isUSNumber) {
+    // If it starts with 1, remove it
+    const digits = cleaned.startsWith("1") ? cleaned.slice(1) : cleaned;
+    // Format as (XXX) - XXX-XXXX
+    const areaCode = digits.slice(0, 3);
+    const firstPart = digits.slice(3, 6);
+    const secondPart = digits.slice(6, 10);
+    return `(${areaCode}) - ${firstPart}-${secondPart}`;
+  } else {
+    // For international numbers, just add + prefix
+    return `+${cleaned}`;
+  }
+};
+
+const DetailRow: React.FC<DetailRowProps> = ({
+  label,
+  value,
+  type = "default",
+}) => (
+  <Box display="flex" alignItems="center" my={1}>
+    <Typography variant="body1" component="span" mr={1}>
+      {label}:
+    </Typography>
+    <Typography variant="body1" component="span" fontWeight="bold">
+      {type === "phone" ? formatPhoneNumber(value) : value?.toString() ?? "N/A"}
+    </Typography>
+  </Box>
+);
 
 const UserPage = () => {
   const { uuid } = useParams();
@@ -72,17 +110,6 @@ const UserPage = () => {
     fetchUser();
   }, [uuid, session?.accessToken]);
 
-  const DetailRow: React.FC<DetailRowProps> = ({ label, value }) => (
-    <Box display="flex" alignItems="center" my={1}>
-      <Typography variant="body1" component="span" mr={1}>
-        {label}:
-      </Typography>
-      <Typography variant="body1" component="span" fontWeight="bold">
-        {value?.toString() ?? "N/A"}
-      </Typography>
-    </Box>
-  );
-
   if (loading)
     return (
       <Box
@@ -102,12 +129,11 @@ const UserPage = () => {
       sx={{
         flexGrow: 1,
         overflow: "hidden",
-
         mb: 10,
         p: { xs: 1, lg: 2 },
       }}
     >
-      <TypographyHeading> User Details</TypographyHeading>
+      <TypographyHeading>User Details</TypographyHeading>
       <Paper
         elevation={3}
         style={{
@@ -149,12 +175,13 @@ const UserPage = () => {
         <DetailRow label="Role" value={user.user_role} />
         <DetailRow label="Email" value={user.email} />
         <DetailRow label="Username" value={user.username} />
+        <DetailRow label="Cell Phone" value={user.phone} type="phone" />
         <DetailRow label="Zip Code" value={user.zip_code} />
         <DetailRow label="Address" value={user.address} />
         <DetailRow label="City" value={user.city} />
         <DetailRow label="Country" value={user.country} />
         <DetailRow label="Register Date" value={user.created_at} />
-        <DetailRow label="Delete Date" value={user.deleted_at} />
+        <DetailRow label="Suspend Date" value={user.deleted_at} />
       </Paper>
       {mapCoordinates ? (
         <Paper
@@ -188,8 +215,9 @@ const UserPage = () => {
     </Box>
   );
 };
+
 const protectionConfig = {
-  permissions: [PERMISSIONS.MANAGE_DOCUMENTS],
+  permissions: [PERMISSIONS.MANAGE_CONFIG],
 };
 
 export default withRoleProtection(UserPage, protectionConfig);

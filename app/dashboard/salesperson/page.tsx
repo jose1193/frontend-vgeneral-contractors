@@ -193,7 +193,7 @@ export default function VendorDashboard() {
 
   return (
     <Suspense>
-      <Box sx={{ flexGrow: 1, p: 5, ml: -8 }}>
+      <Box sx={{ flexGrow: 1, p: { md: 2, lg: 2 } }}>
         <Grid container spacing={3}>
           {/* Welcome Section with Animated Gradient */}
           <Grid item xs={12}>
