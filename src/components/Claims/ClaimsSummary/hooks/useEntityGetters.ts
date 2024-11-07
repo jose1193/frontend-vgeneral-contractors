@@ -26,11 +26,17 @@ export const useEntityGetters = (
   const getMortgageCompanyName = useCallback(
     () =>
       getEntityName(
-        data.mortgage_company_id,
+        data.affidavit?.mortgage_company_id,
         stores.mortgageCompanies,
         "mortgage_company_name"
-      ),
-    [data.mortgage_company_id, stores.mortgageCompanies]
+      ) ||
+      data.affidavit?.mortgage_company_name ||
+      "N/A",
+    [
+      data.affidavit?.mortgage_company_id,
+      data.affidavit?.mortgage_company_name,
+      stores.mortgageCompanies,
+    ]
   );
 
   const getPublicCompanyName = useCallback(

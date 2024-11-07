@@ -27,12 +27,35 @@ export const CustomerPropertySection: React.FC<
   const capitalize = (str: string): string => {
     return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : "";
   };
-
+  const Label = ({ children }: { children: React.ReactNode }) => (
+    <Typography
+      component="span"
+      sx={{
+        color: "text.secondary",
+        fontSize: "0.900rem",
+        fontWeight: "500",
+      }}
+    >
+      {children}
+    </Typography>
+  );
+  const Value = ({ children }: { children: React.ReactNode }) => (
+    <Typography
+      component="span"
+      sx={{
+        fontWeight: 600,
+        ml: 1,
+      }}
+    >
+      {children}
+    </Typography>
+  );
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
         <Typography>
-          <strong>Property:</strong> {propertyInfo.address}
+          <Label>Property Address:</Label>
+          <Value>{propertyInfo.address}</Value>
         </Typography>
       </Grid>
       <Grid item xs={12}>

@@ -1,4 +1,3 @@
-// components/sections/AffidavitSection.tsx
 import React from "react";
 import { Typography, Grid } from "@mui/material";
 import { ClaimsData } from "../../../../../app/types/claims";
@@ -23,41 +22,69 @@ export const AffidavitSection: React.FC<AffidavitSectionProps> = ({
     }).format(number);
   };
 
+  const Label = ({ children }: { children: React.ReactNode }) => (
+    <Typography
+      component="span"
+      sx={{
+        color: "text.secondary",
+        fontSize: "0.900rem",
+        fontWeight: "500",
+      }}
+    >
+      {children}
+    </Typography>
+  );
+
+  const Value = ({ children }: { children: React.ReactNode }) => (
+    <Typography
+      component="span"
+      sx={{
+        fontWeight: 600,
+        ml: 1,
+      }}
+    >
+      {children}
+    </Typography>
+  );
+
   return (
     <Grid container spacing={3}>
       <Grid item xs={12} sm={6}>
         <Typography>
-          <strong>Mortgage Company:</strong> {getters.getMortgageCompanyName()}
+          <Label>Mortgage Company:</Label>
+          <Value>{getters.getMortgageCompanyName()}</Value>
         </Typography>
       </Grid>
       <Grid item xs={12} sm={6}>
         <Typography>
-          <strong>Mortgage Loan Number:</strong>{" "}
-          {data.affidavit?.mortgage_loan_number || "N/A"}
+          <Label>Mortgage Loan Number:</Label>
+          <Value>{data.affidavit?.mortgage_loan_number || "N/A"}</Value>
         </Typography>
       </Grid>
       <Grid item xs={12} sm={6}>
         <Typography>
-          <strong>Amount Paid:</strong>{" "}
-          {formatCurrency(data.affidavit?.amount_paid)}
+          <Label>Amount Paid:</Label>
+          <Value>{formatCurrency(data.affidavit?.amount_paid)}</Value>
         </Typography>
       </Grid>
       <Grid item xs={12}>
         <Typography>
-          <strong>Affidavit Description:</strong>{" "}
-          {data.affidavit?.description || "N/A"}
+          <Label>Affidavit Description:</Label>
+          <Value>{data.affidavit?.description || "N/A"}</Value>
         </Typography>
       </Grid>
       <Grid item xs={12} sm={6}>
         <Typography>
-          <strong>Never Had Prior Loss:</strong>{" "}
-          {data.affidavit?.never_had_prior_loss ? "Yes" : "No"}
+          <Label>Never Had Prior Loss:</Label>
+          <Value>{data.affidavit?.never_had_prior_loss ? "Yes" : "No"}</Value>
         </Typography>
       </Grid>
       <Grid item xs={12} sm={6}>
         <Typography>
-          <strong>Has Never Had Prior Loss:</strong>{" "}
-          {data.affidavit?.has_never_had_prior_loss ? "Yes" : "No"}
+          <Label>Has Never Had Prior Loss:</Label>
+          <Value>
+            {data.affidavit?.has_never_had_prior_loss ? "Yes" : "No"}
+          </Value>
         </Typography>
       </Grid>
     </Grid>
