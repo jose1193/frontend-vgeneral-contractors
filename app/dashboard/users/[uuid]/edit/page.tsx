@@ -105,6 +105,12 @@ const EditUserPage = () => {
   }
 
   if (error) {
+    console.log("Error encontrado:", error);
+    console.log("Estado actual:", {
+      userUuid,
+      loading,
+      user,
+    });
     return (
       <Box sx={{ p: 3 }}>
         <Button
@@ -160,9 +166,6 @@ const EditUserPage = () => {
             gap: 2,
           }}
         >
-          <Button startIcon={<ArrowBackIcon />} onClick={handleBack}>
-            Back to Profile
-          </Button>
           <TypographyHeading>Edit User</TypographyHeading>
         </Box>
 
