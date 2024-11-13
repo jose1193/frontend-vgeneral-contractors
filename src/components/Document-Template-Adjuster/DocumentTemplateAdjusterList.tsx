@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { DocumentTemplateData } from "../../../app/types/document-template";
+import { DocumentTemplateAdjusterData } from "../../../app/types/document-template-adjuster";
 import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
 import {
   Box,
@@ -26,21 +26,21 @@ import { useTheme } from "@mui/material/styles";
 import useFormSnackbar from "../../hooks/useFormSnackbar";
 import { useListPermissions } from "../../hooks/useListPermissions";
 import { PERMISSIONS } from "../../config/permissions";
-
-interface DocumentTemplateListProps {
-  documentTemplates: DocumentTemplateData[];
+import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
+interface DocumentTemplateAdjusterListProps {
+  documentTemplateAdjusters: DocumentTemplateAdjusterData[];
   onDelete: (uuid: string) => Promise<void>;
 }
 
 export default function Component({
-  documentTemplates,
+  documentTemplateAdjusters,
   onDelete,
-}: DocumentTemplateListProps) {
+}: DocumentTemplateAdjusterListProps) {
   const theme = useTheme();
   const { canModifyList, can } = useListPermissions();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] =
-    useState<DocumentTemplateData | null>(null);
+    useState<DocumentTemplateAdjusterData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
 
@@ -50,15 +50,15 @@ export default function Component({
   };
 
   const handleDeleteClick = (row: any) => {
-    const template = documentTemplates.find((t) => t.uuid === row.id);
+    const template = documentTemplateAdjusters.find((t) => t.uuid === row.id);
     if (template) {
       setTemplateToDelete(template);
       setDeleteDialogOpen(true);
     }
   };
 
-  const handleDownload = (template_path: string) => {
-    window.open(template_path, "_blank");
+  const handleDownload = (template_path_adjuster: string) => {
+    window.open(template_path_adjuster, "_blank");
   };
 
   const handleDeleteConfirm = async () => {
@@ -69,13 +69,13 @@ export default function Component({
         setDeleteDialogOpen(false);
         setSnackbar({
           open: true,
-          message: "Document template deleted successfully",
+          message: "Document template adjuster deleted successfully",
           severity: "success",
         });
       } catch (error) {
         setSnackbar({
           open: true,
-          message: "Failed to delete document template",
+          message: "Failed to delete document template adjuster",
           severity: "error",
         });
       } finally {
@@ -86,13 +86,6 @@ export default function Component({
 
   const columns: GridColDef[] = [
     {
-      field: "name",
-      headerName: "Template Name",
-      flex: 2,
-      headerAlign: "center",
-      align: "center",
-    },
-    {
       field: "description",
       headerName: "Description",
       flex: 2,
@@ -102,6 +95,13 @@ export default function Component({
     {
       field: "type",
       headerName: "Document Type",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+    },
+    {
+      field: "adjuster",
+      headerName: "Public Adjuster",
       flex: 1,
       headerAlign: "center",
       align: "center",
@@ -137,7 +137,7 @@ export default function Component({
           {can(PERMISSIONS.MANAGE_DOCUMENTS) && (
             <Button
               component={Link}
-              href={`/dashboard/document-templates/${params.row.id}`}
+              href={`/dashboard/document-template-adjusters/${params.row.id}`}
               size="small"
               variant="contained"
               sx={{
@@ -154,7 +154,7 @@ export default function Component({
           {canModifyList(listConfig) && (
             <Button
               component={Link}
-              href={`/dashboard/document-templates/${params.row.id}/edit`}
+              href={`/dashboard/document-template-adjusters/${params.row.id}/edit`}
               size="small"
               variant="contained"
               color="warning"
@@ -168,7 +168,7 @@ export default function Component({
             size="small"
             variant="contained"
             color="success"
-            onClick={() => handleDownload(params.row.template_path)}
+            onClick={() => handleDownload(params.row.template_path_adjuster)}
             sx={{ minWidth: "unset", padding: "8px 12px" }}
           >
             <DownloadIcon fontSize="small" />
@@ -190,11 +190,11 @@ export default function Component({
     },
   ];
 
-  const rows = documentTemplates.map((template) => ({
+  const rows = documentTemplateAdjusters.map((template) => ({
     id: template.uuid,
-    name: template.template_name,
-    description: template.template_description,
-    type: template.template_type,
+    description: template.template_description_adjuster,
+    type: template.template_type_adjuster,
+    adjuster: template.adjuster,
     lastModified: template.updated_at
       ? new Intl.DateTimeFormat("en-US", {
           year: "numeric",
@@ -205,7 +205,7 @@ export default function Component({
           hour12: true,
         }).format(new Date(template.updated_at))
       : "Date not available",
-    template_path: template.template_path,
+    template_path_adjuster: template.template_path_adjuster,
   }));
 
   return (
@@ -215,12 +215,12 @@ export default function Component({
         flexGrow: 1,
         p: { xs: 1, sm: 2, md: 2, lg: 2 },
         maxWidth: {
-          xs: "420px", // Por defecto en móviles
-          sm: "540px", // ~576px
-          md: "720px", // ~768px
-          lg: "1120px", // ~1024px+
+          xs: "420px",
+          sm: "540px",
+          md: "720px",
+          lg: "1120px",
         },
-        mx: "auto", // Para centrar el contenedor
+        mx: "auto",
       }}
     >
       <Grid container spacing={2}>
@@ -282,7 +282,7 @@ export default function Component({
               fontWeight: "bold",
             }}
           >
-            Are you sure you want to delete this document template?
+            Are you sure you want to delete this document template adjuster?
           </Typography>
           <Typography
             variant="body1"
@@ -292,9 +292,9 @@ export default function Component({
               mb: 2,
             }}
           >
-            Template Name:
+            Description:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {templateToDelete?.template_name}
+              {templateToDelete?.template_description_adjuster}
             </span>
           </Typography>
           <Typography
@@ -306,7 +306,7 @@ export default function Component({
           >
             Document Type:
             <span style={{ fontWeight: "bold", marginLeft: 10 }}>
-              {templateToDelete?.template_type}
+              {templateToDelete?.template_type_adjuster}
             </span>
           </Typography>
         </DialogContent>
@@ -330,20 +330,12 @@ export default function Component({
         </DialogActions>
       </Dialog>
 
-      <Snackbar
+      <FeedbackSnackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        message={snackbar.message}
+        severity={snackbar.severity}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      />
     </Box>
   );
 }

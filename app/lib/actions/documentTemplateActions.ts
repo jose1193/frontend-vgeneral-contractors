@@ -48,7 +48,7 @@ export const updateTemplate = (
   return fetchWithCSRF(
     `/api/document-template/update/${uuid}`,
     {
-      method: "PUT",
+      method: "POST",
       body: formData,
     },
     token

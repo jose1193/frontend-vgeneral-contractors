@@ -58,6 +58,7 @@ export const ROUTES = {
     DOCUMENTS: {
       VG_COMPANY: "/dashboard/document-templates",
       ALLIANCE_COMPANY: "/dashboard/document-template-alliances",
+      PUBLIC_ADJUSTER: "/dashboard/document-template-adjusters",
     },
 
     CONFIG: {

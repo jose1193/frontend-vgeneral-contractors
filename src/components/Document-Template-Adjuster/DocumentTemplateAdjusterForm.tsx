@@ -9,52 +9,58 @@ import {
   Box,
   CircularProgress,
   Grid,
-  Snackbar,
-  Alert,
   MenuItem,
 } from "@mui/material";
 import {
-  DocumentTemplateFormData,
-  TEMPLATE_TYPES,
-  TemplateType,
-} from "../../../app/types/document-template";
-import { documentTemplateValidation } from "../Validations/documentTemplateValidation";
-import useFormSnackbar from "../../hooks/useFormSnackbar";
+  DocumentTemplateAdjusterData,
+  TEMPLATE_TYPES_ADJUSTER,
+} from "../../../app/types/document-template-adjuster";
+import SelectPublicAdjusterDocument from "../SelectPublicAdjusterDocument";
 import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
+import { documentTemplateAdjusterValidation } from "../Validations/documentTemplateAdjusterValidation";
 import dynamic from "next/dynamic";
-interface DocumentTemplateFormProps {
-  initialData?: Partial<DocumentTemplateFormData>;
-  onSubmit: (data: DocumentTemplateFormData) => Promise<void>;
-}
 
 const FileUpload = dynamic(() => import("./FileUpload"), {
   loading: () => <CircularProgress />,
   ssr: false,
 });
 
-const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
+interface DocumentTemplateFormProps {
+  initialData?: Partial<DocumentTemplateAdjusterData>;
+  onSubmit: (data: DocumentTemplateAdjusterData) => Promise<void>;
+}
+
+export default function DocumentTemplateAdjusterForm({
   initialData,
   onSubmit,
-}) => {
+}: DocumentTemplateFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [existingFilePath, setExistingFilePath] = useState<string | null>(
-    typeof initialData?.template_path === "string"
-      ? initialData.template_path
+    typeof initialData?.template_path_adjuster === "string"
+      ? initialData.template_path_adjuster
       : null
   );
+  const [feedbackState, setFeedbackState] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error" | "info" | "warning";
+  }>({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
-  const methods = useForm<DocumentTemplateFormData>({
+  const methods = useForm<DocumentTemplateAdjusterData>({
     defaultValues: {
-      template_name: "",
-      template_description: null,
-      template_type: TEMPLATE_TYPES[0],
-      template_path: initialData?.template_path,
+      template_description_adjuster: null,
+      template_type_adjuster: TEMPLATE_TYPES_ADJUSTER[0],
+      template_path_adjuster: initialData?.template_path_adjuster || null,
+      public_adjuster_id: null,
+      uuid: null,
       ...initialData,
     },
-    resolver: yupResolver(documentTemplateValidation),
-    mode: "onChange",
+    resolver: yupResolver(documentTemplateAdjusterValidation),
   });
 
   const {
@@ -66,7 +72,7 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
 
   const handleFileSelect = (file: File | null) => {
     setSelectedFile(file);
-    setValue("template_path", file as File, {
+    setValue("template_path_adjuster", file as File, {
       shouldValidate: true,
       shouldDirty: true,
     });
@@ -76,10 +82,13 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
     }
   };
 
-  const onSubmitHandler = async (data: DocumentTemplateFormData) => {
-    // Solo validamos archivo requerido en creación nueva
+  const handleFeedbackClose = () => {
+    setFeedbackState((prev) => ({ ...prev, open: false }));
+  };
+
+  const onSubmitHandler = async (data: DocumentTemplateAdjusterData) => {
     if (!selectedFile && !existingFilePath && !initialData) {
-      setSnackbar({
+      setFeedbackState({
         open: true,
         message: "Please select a file",
         severity: "error",
@@ -89,16 +98,14 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      // Si hay un nuevo archivo seleccionado, usamos ese
-      // Si no, y es una actualización, mantenemos el archivo existente
-      const fileToSubmit = selectedFile || initialData?.template_path || null;
+      const fileToSubmit = selectedFile || data.template_path_adjuster;
 
       await onSubmit({
         ...data,
-        template_path: fileToSubmit,
+        template_path_adjuster: fileToSubmit,
       });
 
-      setSnackbar({
+      setFeedbackState({
         open: true,
         message: `Document template ${
           initialData ? "updated" : "created"
@@ -106,7 +113,7 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
         severity: "success",
       });
     } catch (error) {
-      setSnackbar({
+      setFeedbackState({
         open: true,
         message:
           error instanceof Error ? error.message : "An unknown error occurred",
@@ -124,24 +131,7 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Controller
-                name="template_name"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Template Name"
-                    variant="outlined"
-                    fullWidth
-                    error={!!errors.template_name}
-                    helperText={errors.template_name?.message}
-                  />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Controller
-                name="template_description"
+                name="template_description_adjuster"
                 control={control}
                 render={({ field }) => (
                   <TextField
@@ -151,8 +141,8 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
                     fullWidth
                     multiline
                     rows={3}
-                    error={!!errors.template_description}
-                    helperText={errors.template_description?.message}
+                    error={!!errors.template_description_adjuster}
+                    helperText={errors.template_description_adjuster?.message}
                   />
                 )}
               />
@@ -160,7 +150,7 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
 
             <Grid item xs={12} sm={6}>
               <Controller
-                name="template_type"
+                name="template_type_adjuster"
                 control={control}
                 render={({ field }) => (
                   <TextField
@@ -169,16 +159,10 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
                     label="Template Type"
                     variant="outlined"
                     fullWidth
-                    error={!!errors.template_type}
-                    helperText={
-                      errors.template_type?.message ||
-                      "Please select a template type"
-                    }
+                    error={!!errors.template_type_adjuster}
+                    helperText={errors.template_type_adjuster?.message}
                   >
-                    <MenuItem value="" disabled>
-                      Select a type
-                    </MenuItem>
-                    {TEMPLATE_TYPES.map((type) => (
+                    {TEMPLATE_TYPES_ADJUSTER.map((type) => (
                       <MenuItem key={type} value={type}>
                         {type.charAt(0).toUpperCase() + type.slice(1)}
                       </MenuItem>
@@ -188,17 +172,27 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
               />
             </Grid>
 
+            <Grid item xs={12} sm={6}>
+              <SelectPublicAdjusterDocument
+                control={control}
+                adjuster={initialData?.adjuster}
+              />
+            </Grid>
+
             <Grid item xs={12}>
               <Controller
-                name="template_path"
+                name="template_path_adjuster"
                 control={control}
                 render={({ field: { value, onChange, ...field } }) => (
                   <Box>
                     <FileUpload
                       {...field}
                       onFileSelect={handleFileSelect}
-                      error={errors.template_path?.message}
+                      error={errors.template_path_adjuster?.message}
                       selectedFile={selectedFile}
+                      initialFile={
+                        typeof value === "string" ? value : undefined
+                      }
                       onChange={onChange}
                     />
                     {existingFilePath && !selectedFile && (
@@ -247,13 +241,11 @@ const DocumentTemplateForm: React.FC<DocumentTemplateFormProps> = ({
       </form>
 
       <FeedbackSnackbar
-        open={snackbar.open}
-        message={snackbar.message}
-        severity={snackbar.severity}
-        onClose={handleSnackbarClose}
+        open={feedbackState.open}
+        message={feedbackState.message}
+        severity={feedbackState.severity}
+        onClose={handleFeedbackClose}
       />
     </FormProvider>
   );
-};
-
-export default DocumentTemplateForm;
+}

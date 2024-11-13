@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
@@ -16,30 +16,31 @@ import {
 import {
   DocumentTemplateAllianceData,
   TEMPLATE_TYPES_ALLIANCE,
-  TemplateTypeAlliance,
 } from "../../../app/types/document-template-alliance";
-import { documentTemplateValidation } from "../Validations/documentTemplateValidation";
+import { documentTemplateAllianceValidation } from "../Validations/documentTemplateAllianceValidation";
 import useFormSnackbar from "../../hooks/useFormSnackbar";
-
 import dynamic from "next/dynamic";
+import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
 
 const SelectAllianceCompanyId = dynamic(
-  () => import("../SelectAllianceCompanyId"),
+  () => import("../SelectAlliancesCompanyId"),
   {
     loading: () => <CircularProgress />,
     ssr: false,
   }
 );
 
-interface DocumentTemplateFormProps {
-  initialData?: Partial<DocumentTemplateAllianceData>;
-  onSubmit: (data: DocumentTemplateAllianceData) => Promise<void>;
-}
-
 const FileUpload = dynamic(() => import("./FileUpload"), {
   loading: () => <CircularProgress />,
   ssr: false,
 });
+
+interface DocumentTemplateFormProps {
+  initialData?: Partial<DocumentTemplateAllianceData> & {
+    template_path_alliance?: string | File | null;
+  };
+  onSubmit: (data: DocumentTemplateAllianceData) => Promise<void>;
+}
 
 export default function DocumentTemplateAllianceForm({
   initialData,
@@ -47,20 +48,40 @@ export default function DocumentTemplateAllianceForm({
 }: DocumentTemplateFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { snackbar, setSnackbar, handleSnackbarClose } = useFormSnackbar();
-  const [selectedFile, setSelectedFile] = useState<File | null>(
-    initialData?.template_path_alliance || null
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [existingFilePath, setExistingFilePath] = useState<string | null>(
+    typeof initialData?.template_path_alliance === "string"
+      ? initialData.template_path_alliance
+      : null
   );
-
+  // Mejor console.log para debugging
+  useEffect(() => {
+    console.log("Initial Data Full:", {
+      id: initialData?.id,
+      alliance_company_id: initialData?.alliance_company_id,
+      alliance_company_name: initialData?.alliance_company_name,
+      alliance_companies: initialData?.alliance_companies,
+      template_path_alliance: initialData?.template_path_alliance,
+      signature_path_id: initialData?.signature_path_id,
+    });
+  }, [initialData]);
   const methods = useForm<DocumentTemplateAllianceData>({
     defaultValues: {
-      template_name_alliance: "",
-      template_description_alliance: null,
-      template_type_alliance: TEMPLATE_TYPES_ALLIANCE[0],
-      template_path_alliance: initialData?.template_path_alliance,
-      ...initialData,
+      template_name_alliance: initialData?.template_name_alliance || "",
+      template_description_alliance:
+        initialData?.template_description_alliance || null,
+      template_type_alliance:
+        initialData?.template_type_alliance || TEMPLATE_TYPES_ALLIANCE[0],
+      template_path_alliance: null,
+      template_path_alliance_url:
+        typeof initialData?.template_path_alliance === "string"
+          ? initialData.template_path_alliance
+          : undefined,
+      alliance_company_id: initialData?.alliance_company_id || undefined,
+      signature_path_id: initialData?.signature_path_id || null,
     },
-    //resolver: yupResolver(documentTemplateValidation),
-    //mode: "onChange",
+    resolver: yupResolver(documentTemplateAllianceValidation),
+    mode: "onChange",
   });
 
   const {
@@ -68,20 +89,30 @@ export default function DocumentTemplateAllianceForm({
     formState: { errors },
     control,
     setValue,
+    watch,
   } = methods;
+
+  const watchedAllianceCompanyId = watch("alliance_company_id");
+  useEffect(() => {
+    console.log("Current alliance_company_id:", watchedAllianceCompanyId);
+  }, [watchedAllianceCompanyId]);
 
   const handleFileSelect = (file: File | null) => {
     setSelectedFile(file);
-    setValue("template_path_alliance", file as File, {
+    setValue("template_path_alliance", file, {
       shouldValidate: true,
       shouldDirty: true,
     });
+    // Clear existing file path if new file is selected
+    if (file) {
+      setExistingFilePath(null);
+      setValue("template_path_alliance_url", undefined);
+    }
   };
 
-  // En la función onSubmitHandler
   const onSubmitHandler = async (data: DocumentTemplateAllianceData) => {
-    // Solo validamos archivo requerido en creación nueva
-    if (!selectedFile && !initialData?.template_path_alliance && !initialData) {
+    // Validate file requirement for new templates
+    if (!selectedFile && !existingFilePath && !initialData) {
       setSnackbar({
         open: true,
         message: "Please select a file",
@@ -90,17 +121,27 @@ export default function DocumentTemplateAllianceForm({
       return;
     }
 
+    // Validate alliance company selection
+    if (!data.alliance_company_id) {
+      setSnackbar({
+        open: true,
+        message: "Please select an alliance company",
+        severity: "error",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Si hay un nuevo archivo seleccionado, usamos ese
-      // Si no, y es una actualización, mantenemos el archivo existente
-      const fileToSubmit =
-        selectedFile || initialData?.template_path_alliance || null;
-
-      await onSubmit({
+      const submissionData: DocumentTemplateAllianceData = {
         ...data,
-        template_path_alliance: fileToSubmit,
-      });
+        template_path_alliance: selectedFile,
+        template_path_alliance_url: !selectedFile
+          ? existingFilePath || undefined
+          : undefined,
+      };
+
+      await onSubmit(submissionData);
 
       setSnackbar({
         open: true,
@@ -126,6 +167,7 @@ export default function DocumentTemplateAllianceForm({
       <form onSubmit={handleSubmit(onSubmitHandler)}>
         <Box sx={{ flexGrow: 1 }}>
           <Grid container spacing={2}>
+            {/* Template Name Field */}
             <Grid item xs={12}>
               <Controller
                 name="template_name_alliance"
@@ -143,6 +185,7 @@ export default function DocumentTemplateAllianceForm({
               />
             </Grid>
 
+            {/* Description Field */}
             <Grid item xs={12}>
               <Controller
                 name="template_description_alliance"
@@ -162,6 +205,7 @@ export default function DocumentTemplateAllianceForm({
               />
             </Grid>
 
+            {/* Template Type Field */}
             <Grid item xs={12} sm={6}>
               <Controller
                 name="template_type_alliance"
@@ -174,10 +218,7 @@ export default function DocumentTemplateAllianceForm({
                     variant="outlined"
                     fullWidth
                     error={!!errors.template_type_alliance}
-                    helperText={
-                      errors.template_type_alliance?.message ||
-                      "Please select a template type"
-                    }
+                    helperText={errors.template_type_alliance?.message || ""}
                   >
                     <MenuItem value="" disabled>
                       Select a type
@@ -191,29 +232,53 @@ export default function DocumentTemplateAllianceForm({
                 )}
               />
             </Grid>
+
+            {/* Alliance Company Selection */}
             <Grid item xs={12} sm={6}>
               <SelectAllianceCompanyId
                 control={control}
-                initialAlliances={initialData?.alliance_companies || []}
+                initialCompanyId={initialData?.alliance_company_id}
               />
             </Grid>
+
+            {/* File Upload */}
             <Grid item xs={12}>
               <Controller
                 name="template_path_alliance"
                 control={control}
                 render={({ field: { value, onChange, ...field } }) => (
-                  <FileUpload
-                    {...field}
-                    onFileSelect={handleFileSelect}
-                    error={errors.template_path_alliance?.message}
-                    selectedFile={selectedFile}
-                    onChange={onChange}
-                  />
+                  <Box>
+                    <FileUpload
+                      {...field}
+                      onFileSelect={handleFileSelect}
+                      error={errors.template_path_alliance?.message}
+                      selectedFile={selectedFile}
+                      onChange={onChange}
+                    />
+                    {existingFilePath && !selectedFile && (
+                      <Box
+                        sx={{
+                          mt: 1,
+                          color: "success.main",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          fontWeight: 500,
+                        }}
+                      >
+                        Current file:
+                        <span style={{ wordBreak: "break-all" }}>
+                          {existingFilePath.split("/").pop()}
+                        </span>
+                      </Box>
+                    )}
+                  </Box>
                 )}
               />
             </Grid>
           </Grid>
 
+          {/* Submit Button */}
           <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
             <Button
               type="submit"
@@ -236,20 +301,13 @@ export default function DocumentTemplateAllianceForm({
         </Box>
       </form>
 
-      <Snackbar
+      {/* Snackbar for notifications */}
+      <FeedbackSnackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        message={snackbar.message}
+        severity={snackbar.severity}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      />
     </FormProvider>
   );
 }

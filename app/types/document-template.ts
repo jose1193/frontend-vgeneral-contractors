@@ -3,6 +3,7 @@ export const TEMPLATE_TYPES = [
   "Agreement",
   "Agreement Full",
   "Sample",
+  "W-9",
   "letter",
   "other",
 ] as const;

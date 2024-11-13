@@ -46,7 +46,7 @@ export default function DocumentTemplateAllianceList({
 
   const listConfig = {
     permission: PERMISSIONS.MANAGE_DOCUMENTS,
-    restrictedRoles: ["Salesperson"],
+    restrictedRoles: ["Public Adjuster", "Salesperson", "Technical Services"],
   };
 
   const handleDeleteClick = (row: any) => {

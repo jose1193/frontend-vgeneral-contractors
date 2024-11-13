@@ -26,15 +26,23 @@ export const documentTemplateValidation = yup.object().shape({
   template_path: yup
     .mixed()
     .test("fileValidation", "Invalid file", function (value) {
-      const isUpdate = this.parent.id !== undefined;
+      // Si hay initialData o template_path existente, es una actualización
+      const isUpdate =
+        this.parent.id !== undefined || typeof value === "string";
 
-      // For updates: file is optional
+      // Para actualizaciones
       if (isUpdate) {
-        // If no new file is selected, validation passes
-        if (!value || value === null) {
+        // Si es una URL o string (path existente), es válido
+        if (typeof value === "string") {
           return true;
         }
-        // If a new file is selected, validate it
+
+        // Si no hay nuevo archivo, es válido
+        if (!value) {
+          return true;
+        }
+
+        // Si hay un nuevo archivo, validar formato y tamaño
         if (value instanceof File) {
           if (value.size > MAX_FILE_SIZE) {
             return this.createError({
@@ -46,11 +54,10 @@ export const documentTemplateValidation = yup.object().shape({
           }
           return true;
         }
-        return true;
       }
 
-      // For new templates: file is required
-      if (!value || value === null) {
+      // Para nuevas creaciones
+      if (!value) {
         return this.createError({ message: "Template file is required" });
       }
 

@@ -55,7 +55,7 @@ const DocumentTemplateAlliancePage = () => {
     };
 
     await updateDocumentTemplateAlliance(uuid as string, updatedData);
-    router.push("/dashboard/document-templates-alliance"); // Redirige a la página de plantillas de alianza
+    router.push("/dashboard/document-template-alliances"); 
   };
 
   if (loading) {

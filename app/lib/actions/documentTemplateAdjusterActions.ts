@@ -1,23 +1,23 @@
-import { DocumentTemplateAllianceData } from "../../types/document-template-alliance";
+import { DocumentTemplateAdjusterData } from "../../types/document-template-adjuster";
 import { fetchWithCSRF } from "../api";
 
-export const getTemplatesAllianceFetch = (token: string) =>
-  fetchWithCSRF("/api/document-template-alliance", { method: "GET" }, token);
+export const getTemplatesAdjusterFetch = (token: string) =>
+  fetchWithCSRF("/api/document-template-adjuster", { method: "GET" }, token);
 
-export const getData = (
+export const getDataAdjuster = (
   token: string,
   uuid: string
-): Promise<DocumentTemplateAllianceData> =>
+): Promise<DocumentTemplateAdjusterData> =>
   fetchWithCSRF(
-    `/api/document-template-alliance/${uuid}`,
+    `/api/document-template-adjuster/${uuid}`,
     { method: "GET" },
     token
   );
 
-export const createAllianceTemplate = (
+export const createTemplateAdjuster = (
   token: string,
-  templateData: DocumentTemplateAllianceData
-): Promise<DocumentTemplateAllianceData> => {
+  templateData: DocumentTemplateAdjusterData
+): Promise<DocumentTemplateAdjusterData> => {
   const formData = new FormData();
 
   Object.entries(templateData).forEach(([key, value]) => {
@@ -27,7 +27,7 @@ export const createAllianceTemplate = (
   });
 
   return fetchWithCSRF(
-    "/api/document-template-alliance/store",
+    "/api/document-template-adjuster/store",
     {
       method: "POST",
       body: formData,
@@ -36,11 +36,11 @@ export const createAllianceTemplate = (
   );
 };
 
-export const updateAllianceTemplate = (
+export const updateTemplateAdjuster = (
   token: string,
   uuid: string,
-  templateData: DocumentTemplateAllianceData
-): Promise<DocumentTemplateAllianceData> => {
+  templateData: DocumentTemplateAdjusterData
+): Promise<DocumentTemplateAdjusterData> => {
   const formData = new FormData();
 
   Object.entries(templateData).forEach(([key, value]) => {
@@ -50,7 +50,7 @@ export const updateAllianceTemplate = (
   });
 
   return fetchWithCSRF(
-    `/api/document-template-alliance/update/${uuid}`,
+    `/api/document-template-adjuster/update/${uuid}`,
     {
       method: "POST",
       body: formData,
@@ -59,12 +59,12 @@ export const updateAllianceTemplate = (
   );
 };
 
-export const deleteAllianceTemplate = (
+export const deleteTemplateAdjuster = (
   token: string,
   uuid: string
 ): Promise<void> =>
   fetchWithCSRF(
-    `/api/document-template-alliance/delete/${uuid}`,
+    `/api/document-template-adjuster/delete/${uuid}`,
     { method: "DELETE" },
     token
   );

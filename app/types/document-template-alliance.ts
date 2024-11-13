@@ -24,9 +24,10 @@ export interface DocumentTemplateAllianceData {
   template_description_alliance: string | null;
   template_type_alliance: TemplateTypeAlliance;
   template_path_alliance: File | null;
+  template_path_alliance_url?: string;
   uploaded_by?: number;
   alliance_company_id: number;
-  alliance_companies?: AllianceCompanyData[];
+  alliance_companies?: AllianceCompanyData;
   alliance_company_name?: string;
   signature_path_id: number | null;
   created_at?: string;

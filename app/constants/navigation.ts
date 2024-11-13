@@ -34,6 +34,7 @@ import {
   GridView as GridViewIcon,
   ErrorOutline as ErrorOutlineIcon,
   DriveFileRenameOutline as DriveFileRenameOutlineIcon,
+  AssignmentInd as AssignmentIndIcon,
 } from "@mui/icons-material";
 import { PageItem } from "../types/navigation";
 import { ROUTES } from "./routes";
@@ -195,6 +196,11 @@ export const PAGES: PageItem[] = [
         name: "Alliance Company",
         href: ROUTES.DASHBOARD.DOCUMENTS.ALLIANCE_COMPANY,
         icon: ReceiptLongIcon,
+      },
+      {
+        name: "Public Adjuster",
+        href: ROUTES.DASHBOARD.DOCUMENTS.PUBLIC_ADJUSTER,
+        icon: AssignmentIndIcon,
       },
     ],
   },
