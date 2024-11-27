@@ -71,6 +71,20 @@ export const useDocuSignConnection = (token: string) => {
     }
   }, [token, setLoading, setError]);
 
+  const disconnect = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      await docusignActions.disconnectDocusign(token);
+      await checkConnectionStatus();
+    } catch (err) {
+      setError("Failed to disconnect from DocuSign");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [token, setLoading, setError, checkConnectionStatus]);
+
   const refreshToken = useCallback(async () => {
     try {
       setLoading(true);
@@ -148,7 +162,6 @@ export const useDocuSignConnection = (token: string) => {
     async (data: DocusignImportDTO): Promise<DocusignImportResponse> => {
       try {
         setLoading(true);
-        // Crear FormData para enviar el archivo
         const formData = new FormData();
         formData.append("claim_uuid", data.claim_uuid);
         formData.append("document", data.document);
@@ -234,6 +247,7 @@ export const useDocuSignConnection = (token: string) => {
     loading,
     error,
     connect,
+    disconnect,
     refreshToken,
     signDocument,
     toSignature,

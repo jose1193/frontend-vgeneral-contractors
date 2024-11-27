@@ -4,11 +4,14 @@ import DocusignDetailsTab from "./DocusignDetailsTab";
 import DocusignFormTab from "./DocusignFormTab";
 import { useDocuSignConnection } from "../../hooks/useDocuSign";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
 import { useDocuSignStore } from "../../../app/zustand/useDocuSignStore";
+import { Typography } from "@mui/material";
 
 interface DocusignTabProps {
   claim: ClaimsData;
+  userRole?: string;
 }
 
 interface SnackbarState {
@@ -17,7 +20,8 @@ interface SnackbarState {
   severity: "success" | "error" | "info" | "warning";
 }
 
-const DocusignTab: React.FC<DocusignTabProps> = ({ claim }) => {
+const DocusignTab: React.FC<DocusignTabProps> = ({ claim, userRole }) => {
+  const router = useRouter();
   const { data: session } = useSession();
   const token = session?.accessToken as string;
 
@@ -41,10 +45,15 @@ const DocusignTab: React.FC<DocusignTabProps> = ({ claim }) => {
   });
 
   useEffect(() => {
+    if (!userRole || !["Super Admin", "Admin", "Manager"].includes(userRole)) {
+      router.push("/dashboard");
+      return;
+    }
+
     if (token) {
       setToken(token);
     }
-  }, [token, setToken]);
+  }, [token, setToken, userRole, router]);
 
   useEffect(() => {
     if (claim.claims_docusign) {
@@ -76,7 +85,6 @@ const DocusignTab: React.FC<DocusignTabProps> = ({ claim }) => {
         severity: "success",
       });
 
-      // Get the latest document's envelope ID
       const latestDoc = claim.claims_docusign?.[0];
       const envelopeId = latestDoc?.envelope_id;
 
@@ -85,7 +93,6 @@ const DocusignTab: React.FC<DocusignTabProps> = ({ claim }) => {
         return;
       }
 
-      // Set up polling to check document status
       const pollInterval = setInterval(async () => {
         try {
           const status = await checkDocumentStatus({
@@ -105,9 +112,8 @@ const DocusignTab: React.FC<DocusignTabProps> = ({ claim }) => {
           console.error("Error polling for updates:", error);
           clearInterval(pollInterval);
         }
-      }, 5000); // Poll every 5 seconds
+      }, 5000);
 
-      // Clean up polling after 2 minutes
       setTimeout(() => {
         clearInterval(pollInterval);
       }, 120000);
@@ -126,26 +132,24 @@ const DocusignTab: React.FC<DocusignTabProps> = ({ claim }) => {
     claims_docusign: documents,
   };
 
-  if (showDetails) {
+  if (!userRole || !["Super Admin", "Admin", "Manager"].includes(userRole)) {
     return (
-      <>
-        <DocusignDetailsTab claim={claimWithUpdatedDocs} />
-        <FeedbackSnackbar
-          open={snackbar.open}
-          message={snackbar.message}
-          severity={snackbar.severity}
-          onClose={handleCloseSnackbar}
-        />
-      </>
+      <Typography color="error">
+        You don not have permission to access this feature.
+      </Typography>
     );
   }
 
   return (
     <>
-      <DocusignFormTab
-        claim={claimWithUpdatedDocs}
-        onDocumentSigned={handleDocumentSigned}
-      />
+      {showDetails ? (
+        <DocusignDetailsTab claim={claimWithUpdatedDocs} />
+      ) : (
+        <DocusignFormTab
+          claim={claimWithUpdatedDocs}
+          onDocumentSigned={handleDocumentSigned}
+        />
+      )}
       <FeedbackSnackbar
         open={snackbar.open}
         message={snackbar.message}

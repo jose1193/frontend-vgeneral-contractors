@@ -115,3 +115,7 @@ export interface DocusignImportResponse {
     message?: string;
   };
 }
+export interface DocusignDisconnectResponse {
+  success: boolean;
+  message: string;
+}

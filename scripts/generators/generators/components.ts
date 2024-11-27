@@ -11,7 +11,7 @@ import {
 
 export async function generateComponents(config: GeneratorConfig) {
   const { name, fields, baseDir } = config;
-  const componentDir = path.join(baseDir, "components", name);
+  const componentDir = path.join(baseDir, "src/components", name);
 
   await ensureDirectoryExists(componentDir);
 
@@ -28,9 +28,9 @@ import {
   CircularProgress,
   Grid,
 } from "@mui/material";
-import FeedbackSnackbar from "@/app/components/FeedbackSnackbar";
-import { ${name}Data } from "@/types/${toKebabCase(name)}";
-import { ${name}Validation } from "@/lib/validations/${toKebabCase(
+import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
+import { ${name}Data } from "../../../app/types/${toKebabCase(name)}";
+import { ${name}Validation } from "../Validations/${toKebabCase(
     name
   )}Validation";
 
@@ -149,7 +149,7 @@ export default ${name}Form;`;
   const listContent = `"use client";
 
 import React, { useState } from "react";
-import { ${name}Data } from "@/types/${toKebabCase(name)}";
+import { ${name}Data } from "../../../app/types/${toKebabCase(name)}";
 import {
   DataGrid,
   GridColDef,
@@ -173,7 +173,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RestoreIcon from "@mui/icons-material/Restore";
 import { useRouter } from "next/navigation";
-import FeedbackSnackbar from "@/app/components/FeedbackSnackbar";
+import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
 
 interface ${name}ListProps {
   items: ${name}Data[];
@@ -297,14 +297,14 @@ const ${name}List: React.FC<${name}ListProps> = ({
       getActions: (params) => [
         <GridActionsCellItem
           key="view"
-          icon={<VisibilityIcon />}
+          icon={<VisibilityIcon sx={{ color: "#3b82f6" }} />}
           label="View"
           onClick={() => handleView(params.row.uuid)}
           showInMenu
         />,
         <GridActionsCellItem
           key="edit"
-          icon={<EditIcon />}
+          icon={<EditIcon sx={{ color: "#10b981" }} />}
           label="Edit"
           onClick={() => handleEdit(params.row.uuid)}
           showInMenu
@@ -313,7 +313,7 @@ const ${name}List: React.FC<${name}ListProps> = ({
           ? [
               <GridActionsCellItem
                 key="delete"
-                icon={<DeleteIcon />}
+                icon={<DeleteIcon sx={{ color: "#ef4444" }} />}
                 label="Delete"
                 onClick={() => handleDeleteClick(params.row)}
                 showInMenu
@@ -324,7 +324,7 @@ const ${name}List: React.FC<${name}ListProps> = ({
           ? [
               <GridActionsCellItem
                 key="restore"
-                icon={<RestoreIcon />}
+                icon={<RestoreIcon sx={{ color: "#f59e0b" }} />}
                 label="Restore"
                 onClick={() => handleRestoreClick(params.row)}
                 showInMenu

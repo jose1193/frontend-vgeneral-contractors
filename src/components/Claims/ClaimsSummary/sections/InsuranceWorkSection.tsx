@@ -76,41 +76,14 @@ export const InsuranceWorkSection: React.FC<InsuranceWorkSectionProps> = ({
           <Value>{getters.getServiceNames()}</Value>
         </Typography>
       </Grid>
-      <Grid item xs={12} sm={6}>
-        <Typography>
-          <Label>Work Date:</Label>
-          <Value>{data.work_date || "N/A"}</Value>
-        </Typography>
-      </Grid>
+
       <Grid item xs={12} sm={6}>
         <Typography>
           <Label>Number of Floors:</Label>
           <Value>{data.number_of_floors || "N/A"}</Value>
         </Typography>
       </Grid>
-      <Grid item xs={12}>
-        <Typography>
-          <Label>Technical Assignments:</Label>
-          <Value>
-            {data.technical_assignments && data.technical_assignments.length > 0
-              ? data.technical_assignments.map(
-                  (assignment: TechnicalAssignment, index: number) => (
-                    <Typography
-                      key={assignment.id}
-                      sx={{
-                        display: "block",
-                        ml: 2,
-                        mt: 0.5,
-                      }}
-                    >
-                      {index + 1}. {assignment.technical_user_name}
-                    </Typography>
-                  )
-                )
-              : "N/A"}
-          </Value>
-        </Typography>
-      </Grid>
+
       <Grid item xs={12}>
         <Typography>
           <Label>Scope of Work:</Label>

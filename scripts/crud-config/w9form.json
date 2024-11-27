@@ -1,40 +1,132 @@
 {
   "name": "W9Form",
   "fields": [
-    { "name": "name", "type": "string", "required": false },
-    { "name": "business_name", "type": "string", "required": false },
+    {
+      "name": "name",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "business_name",
+      "type": "string",
+      "required": false
+    },
     {
       "name": "is_individual_sole_proprietor",
       "type": "boolean",
       "required": false
     },
-    { "name": "is_corporation", "type": "boolean", "required": false },
-    { "name": "is_partnership", "type": "boolean", "required": false },
+    {
+      "name": "is_corporation",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "is_partnership",
+      "type": "boolean",
+      "required": false
+    },
     {
       "name": "is_limited_liability_company",
       "type": "boolean",
       "required": false
     },
-    { "name": "is_exempt_payee", "type": "boolean", "required": false },
-    { "name": "is_other", "type": "boolean", "required": false },
-    { "name": "llc_tax_classification", "type": "string", "required": false },
-    { "name": "address", "type": "string", "required": false },
-    { "name": "address_2", "type": "string", "required": false },
-    { "name": "city", "type": "string", "required": false },
-    { "name": "state", "type": "string", "required": false },
-    { "name": "zip_code", "type": "string", "required": false },
-    { "name": "requester_name_address", "type": "string", "required": false },
-    { "name": "account_numbers", "type": "string", "required": false },
-    { "name": "social_security_number", "type": "string", "required": false },
+    {
+      "name": "is_exempt_payee",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "is_other",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "llc_tax_classification",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "address",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "address_2",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "city",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "state",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "zip_code",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "country",
+      "type": "string",
+      "required": true,
+      "default": "United States"
+    },
+    {
+      "name": "latitude",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "longitude",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "requester_name_address",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "account_numbers",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "social_security_number",
+      "type": "string",
+      "required": true
+    },
     {
       "name": "employer_identification_number",
       "type": "string",
       "required": false
     },
-    { "name": "certification_signed", "type": "boolean", "required": false },
-    { "name": "signature_date", "type": "string", "required": false },
-    { "name": "status", "type": "string", "required": true },
-    { "name": "notes", "type": "string", "required": false },
-    { "name": "document_path", "type": "string", "required": false }
+    {
+      "name": "certification_signed",
+      "type": "boolean",
+      "required": false
+    },
+    {
+      "name": "signature_date",
+      "type": "date",
+      "required": false
+    },
+    {
+      "name": "status",
+      "type": "string",
+      "required": true,
+      "enum": ["draft", "pending", "completed", "rejected"]
+    },
+    {
+      "name": "notes",
+      "type": "string",
+      "required": false
+    }
   ]
 }

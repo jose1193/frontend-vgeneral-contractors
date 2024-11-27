@@ -35,8 +35,13 @@ import {
   ErrorOutline as ErrorOutlineIcon,
   DriveFileRenameOutline as DriveFileRenameOutlineIcon,
   AssignmentInd as AssignmentIndIcon,
+  Description as DescriptionIcon,
+  ArticleOutlined as ArticleOutlinedIcon,
+  PersonOutline as PersonOutlineIcon,
+  RequestPage as RequestPageIcon,
 } from "@mui/icons-material";
 import { PageItem } from "../types/navigation";
+
 import { ROUTES } from "./routes";
 import { PERMISSIONS } from "@/config/permissions";
 
@@ -62,7 +67,7 @@ export const PAGES: PageItem[] = [
   {
     name: "Claims",
     icon: PostAddIcon,
-    permission: PERMISSIONS.MANAGE_CLAIMS,
+    permission: PERMISSIONS.MANAGE_DOCUMENTS,
     subItems: [
       {
         name: "New Claim",
@@ -73,6 +78,33 @@ export const PAGES: PageItem[] = [
         name: "List",
         href: ROUTES.DASHBOARD.CLAIMS.LIST,
         icon: AssignmentIcon,
+      },
+    ],
+  },
+  {
+    name: "Agreements",
+    icon: DescriptionIcon,
+    permission: PERMISSIONS.MANAGE_CONFIG,
+    subItems: [
+      {
+        name: "Agreements",
+        href: ROUTES.DASHBOARD.AGREEMENTS.ROOT,
+        icon: ArticleOutlinedIcon,
+      },
+      {
+        name: "Agreements Full",
+        href: ROUTES.DASHBOARD.AGREEMENTS.FULL,
+        icon: AssignmentIcon,
+      },
+      {
+        name: "Public Adjuster",
+        href: ROUTES.DASHBOARD.AGREEMENTS.ADJUSTER,
+        icon: PersonOutlineIcon,
+      },
+      {
+        name: "Agreement Alliance",
+        href: ROUTES.DASHBOARD.AGREEMENTS.ALLIANCE,
+        icon: HandshakeIcon,
       },
     ],
   },
@@ -203,6 +235,12 @@ export const PAGES: PageItem[] = [
         icon: AssignmentIndIcon,
       },
     ],
+  },
+  {
+    name: "W9Form",
+    href: ROUTES.DASHBOARD.W9FORMS,
+    permission: PERMISSIONS.MANAGE_CONFIG,
+    icon: RequestPageIcon,
   },
   {
     name: "Config",

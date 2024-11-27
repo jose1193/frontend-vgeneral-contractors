@@ -25,6 +25,7 @@ interface ClaimTabsProps {
     agreementData: ClaimAgreementData
   ) => Promise<void>;
   onDeleteAgreement: (uuid: string) => Promise<void>;
+  userRole?: string;
 }
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
@@ -77,6 +78,7 @@ const ClaimTabs: React.FC<ClaimTabsProps> = ({
   onCreateAgreement,
   onUpdateAgreement,
   onDeleteAgreement,
+  userRole,
 }) => {
   const [activeTab, setActiveTab] = useState(0);
 
@@ -94,6 +96,9 @@ const ClaimTabs: React.FC<ClaimTabsProps> = ({
     setActiveTab(newValue);
   };
 
+  const isDocusignAllowed =
+    userRole && ["Super Admin", "Admin", "Manager"].includes(userRole);
+
   const tabs = [
     {
       label: "Agreement",
@@ -108,12 +113,15 @@ const ClaimTabs: React.FC<ClaimTabsProps> = ({
         />
       ),
     },
-    {
-      label: "Agreement Full Docusign",
-      icon: <AssignmentIndIcon />,
-      content: <DocusignTab claim={claim} />,
-    },
-
+    ...(isDocusignAllowed
+      ? [
+          {
+            label: "Agreement Full Docusign",
+            icon: <AssignmentIndIcon />,
+            content: <DocusignTab claim={claim} userRole={userRole} />,
+          },
+        ]
+      : []),
     { label: "Notes", icon: <DescriptionIcon /> },
     { label: "Invoices", icon: <ReceiptIcon /> },
     { label: "Estimates", icon: <CalculateIcon /> },

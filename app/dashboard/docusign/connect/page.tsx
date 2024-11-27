@@ -11,6 +11,11 @@ import {
   Paper,
   Typography,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { useSession } from "next-auth/react";
 import {
@@ -28,6 +33,7 @@ const DocuSignConnectPage = () => {
   const token = session?.accessToken as string;
   const [hasCheckedInitialStatus, setHasCheckedInitialStatus] = useState(false);
   const [iconPulse, setIconPulse] = useState(false);
+  const [openDisconnectDialog, setOpenDisconnectDialog] = useState(false);
 
   const {
     connectToDocusign,
@@ -37,6 +43,7 @@ const DocuSignConnectPage = () => {
     loading,
     error,
     setError,
+    disconnectFromDocusign,
   } = useDocuSignStore();
 
   // Helper functions
@@ -159,8 +166,25 @@ const DocuSignConnectPage = () => {
       },
     },
   };
-
   // Event handlers
+  const handleOpenDisconnectDialog = () => setOpenDisconnectDialog(true);
+  const handleCloseDisconnectDialog = () => setOpenDisconnectDialog(false);
+
+  const handleDisconnect = async () => {
+    try {
+      await disconnectFromDocusign(token);
+      handleCloseDisconnectDialog();
+      await checkConnectionStatus(token);
+    } catch (error) {
+      console.error("Error disconnecting from DocuSign:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to disconnect from DocuSign"
+      );
+    }
+  };
+
   const handleConnect = async () => {
     try {
       const result = await connectToDocusign(token);
@@ -212,14 +236,13 @@ const DocuSignConnectPage = () => {
     initializeConnection();
   }, [token, checkConnectionStatus, setError]);
 
-  // Extraemos el estado de conexión a una variable para usarla en el efecto
   const currentConnectionStatus = getConnectionStatus();
 
   useEffect(() => {
     setIconPulse(true);
     const timer = setTimeout(() => setIconPulse(false), 1000);
     return () => clearTimeout(timer);
-  }, [connectionStatus.isConnected, currentConnectionStatus]); // Ahora usamos la variable
+  }, [connectionStatus.isConnected, currentConnectionStatus]);
 
   if (!hasCheckedInitialStatus) {
     return (
@@ -273,33 +296,99 @@ const DocuSignConnectPage = () => {
               {connectionStatus.isConnected && (
                 <>
                   {getConnectionStatus() === "active" && (
-                    <Alert severity="success" icon={<CheckCircleOutline />}>
-                      <AlertTitle>Connected to DocuSign</AlertTitle>
-                      <Box sx={{ mt: 1 }}>
-                        {connectionStatus.expiresAt && (
-                          <Typography variant="body2">
-                            Expires:{" "}
-                            <Typography
-                              component="span"
-                              variant="body2"
-                              sx={{ fontWeight: "bold" }}
-                            >
+                    <>
+                      <Alert severity="success" icon={<CheckCircleOutline />}>
+                        <AlertTitle>Connected to DocuSign</AlertTitle>
+                        <Box sx={{ mt: 1 }}>
+                          {connectionStatus.expiresAt && (
+                            <Typography variant="body2">
+                              Expires:{" "}
+                              <Typography
+                                component="span"
+                                variant="body2"
+                                sx={{ fontWeight: "bold" }}
+                              >
+                                {new Date(
+                                  connectionStatus.expiresAt
+                                ).toLocaleString()}
+                              </Typography>
+                            </Typography>
+                          )}
+                          {connectionStatus.lastRefresh && (
+                            <Typography variant="body2">
+                              Last Refresh:{" "}
                               {new Date(
-                                connectionStatus.expiresAt
+                                connectionStatus.lastRefresh
                               ).toLocaleString()}
                             </Typography>
-                          </Typography>
-                        )}
-                        {connectionStatus.lastRefresh && (
-                          <Typography variant="body2">
-                            Last Refresh:{" "}
-                            {new Date(
-                              connectionStatus.lastRefresh
-                            ).toLocaleString()}
-                          </Typography>
-                        )}
+                          )}
+                        </Box>
+                      </Alert>
+
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          mt: 2,
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={handleOpenDisconnectDialog}
+                          startIcon={<LinkOff />}
+                          sx={getResponsiveStyles.button}
+                        >
+                          Disconnect from DocuSign
+                        </Button>
                       </Box>
-                    </Alert>
+
+                      <Dialog
+                        open={openDisconnectDialog}
+                        onClose={handleCloseDisconnectDialog}
+                        aria-labelledby="disconnect-dialog-title"
+                        aria-describedby="disconnect-dialog-description"
+                      >
+                        <DialogTitle
+                          sx={{
+                            backgroundColor: "#ef4444",
+                            mb: 5,
+                            textAlign: "center",
+                            color: "#fff",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Disconnect from DocuSign?
+                        </DialogTitle>
+                        <DialogContent>
+                          <DialogContentText id="disconnect-dialog-description">
+                            Are you sure you want to disconnect from DocuSign?
+                            This action will remove your current connection and
+                            you will need to set it up again to use DocuSign
+                            features.
+                          </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button
+                            onClick={handleCloseDisconnectDialog}
+                            color="primary"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleDisconnect}
+                            color="error"
+                            variant="contained"
+                            disabled={loading}
+                            startIcon={
+                              loading && <CircularProgress size={20} />
+                            }
+                          >
+                            {loading ? "Disconnecting..." : "Disconnect"}
+                          </Button>
+                        </DialogActions>
+                      </Dialog>
+                    </>
                   )}
 
                   {getConnectionStatus() === "expiring-soon" && (

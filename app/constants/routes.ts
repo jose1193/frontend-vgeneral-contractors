@@ -12,6 +12,12 @@ export const ROUTES = {
       CREATE: "/dashboard/claims/create",
       LIST: "/dashboard/claims",
     },
+    AGREEMENTS: {
+      ROOT: "/dashboard/claim-agreements",
+      FULL: "/dashboard/claim-agreement-fulls",
+      ADJUSTER: "/dashboard/claim-public-adjusters",
+      ALLIANCE: "/dashboard/claim-agreement-alliances",
+    },
 
     DOCUSIGN: {
       ROOT: "/dashboard/docusign",
@@ -60,7 +66,7 @@ export const ROUTES = {
       ALLIANCE_COMPANY: "/dashboard/document-template-alliances",
       PUBLIC_ADJUSTER: "/dashboard/document-template-adjusters",
     },
-
+    W9FORMS: "/dashboard/w9forms",
     CONFIG: {
       USERS: "/dashboard/users",
       ROLES: "/dashboard/roles",

@@ -1,4 +1,3 @@
-// scripts/generators/generators/validation.ts
 import { promises as fs } from "fs";
 import path from "path";
 import { GeneratorConfig } from "../types";
@@ -6,6 +5,8 @@ import { toKebabCase, ensureDirectoryExists } from "../utils";
 
 export async function generateValidation(config: GeneratorConfig) {
   const { name, fields, baseDir } = config;
+  const dir = path.join(baseDir, "src/Validations");
+  await ensureDirectoryExists(dir);
 
   const validationContent = `import * as yup from "yup";
 
@@ -38,11 +39,8 @@ export const ${name}Validation = yup.object().shape({
     .join(",\n  ")}
 });
 
-export type ${name}ValidationSchema = yup.InferType<typeof ${name}Validation>;
-`;
+export type ${name}ValidationSchema = yup.InferType<typeof ${name}Validation>;`;
 
-  const dir = path.join(baseDir, "lib/validations");
-  await ensureDirectoryExists(dir);
   await fs.writeFile(
     path.join(dir, `${toKebabCase(name)}Validation.ts`),
     validationContent

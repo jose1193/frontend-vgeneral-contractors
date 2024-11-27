@@ -23,6 +23,7 @@ interface DocuSignStore {
 
   // Actions
   connectToDocusign: (token: string) => Promise<DocusignConnect>;
+  disconnectFromDocusign: (token: string) => Promise<void>;
   refreshToken: (token: string) => Promise<void>;
   checkConnectionStatus: (token: string) => Promise<void>;
   refreshDocuments: () => Promise<void>;
@@ -86,6 +87,19 @@ export const useDocuSignStore = create<DocuSignStore>((set, get) => ({
       throw new Error("No URL received from DocuSign");
     } catch (error) {
       set({ error: "Failed to connect to DocuSign" });
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  disconnectFromDocusign: async (token: string) => {
+    try {
+      set({ loading: true, error: null });
+      await docusignActions.disconnectDocusign(token);
+      await get().checkConnectionStatus(token);
+    } catch (error) {
+      set({ error: "Failed to disconnect from DocuSign" });
       throw error;
     } finally {
       set({ loading: false });

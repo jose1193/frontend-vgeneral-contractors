@@ -149,3 +149,14 @@ export const deleteDocument = async (
   uuid: string
 ): Promise<void> =>
   fetchWithCSRF(`/api/docusign/delete/${uuid}`, { method: "DELETE" }, token);
+
+export const disconnectDocusign = async (
+  token: string
+): Promise<{ message: string }> =>
+  fetchWithCSRF(
+    "/api/docusign/disconnect",
+    {
+      method: "POST",
+    },
+    token
+  );

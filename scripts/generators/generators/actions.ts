@@ -1,4 +1,3 @@
-// scripts/generators/generators/actions.ts
 import { promises as fs } from "fs";
 import path from "path";
 import { GeneratorConfig } from "../types";
@@ -6,21 +5,29 @@ import { toKebabCase, ensureDirectoryExists } from "../utils";
 
 export async function generateActions(config: GeneratorConfig) {
   const { name, baseDir } = config;
+  const dir = path.join(baseDir, "app/lib/actions");
+  await ensureDirectoryExists(dir);
 
-  const content = `import { 
-  ${name}Data, 
+  // Convertir el nombre para el archivo (ejemplo: claimAgreementFullActions.ts)
+  const fileName = `${name.charAt(0).toLowerCase()}${name.slice(1)}Actions.ts`;
+
+  const content = `import {
+  ${name}Data,
   ${name}CreateDTO,
   ${name}UpdateDTO,
-  ${name}Response,
+  ${name}GetResponse,
   ${name}ListResponse,
-  ${name}DeleteResponse
-} from '@/types/${toKebabCase(name)}';
+  ${name}DeleteResponse,
+  ${name}CreateResponse,
+  ${name}UpdateResponse,
+  ${name}RestoreResponse
+} from '../../../app/types/${toKebabCase(name)}';
 import { fetchWithCSRF } from '../api';
 
 export const getDataFetch = (token: string): Promise<${name}ListResponse> =>
   fetchWithCSRF('/api/${toKebabCase(name)}', { method: 'GET' }, token);
 
-export const getData = (token: string, uuid: string): Promise<${name}Response> =>
+export const getData = (token: string, uuid: string): Promise<${name}GetResponse> =>
   fetchWithCSRF(\`/api/${toKebabCase(
     name
   )}/\${uuid}\`, { method: 'GET' }, token);
@@ -28,7 +35,7 @@ export const getData = (token: string, uuid: string): Promise<${name}Response> =
 export const createData = (
   token: string,
   data: ${name}CreateDTO
-): Promise<${name}Response> =>
+): Promise<${name}CreateResponse> =>
   fetchWithCSRF(
     '/api/${toKebabCase(name)}/store',
     {
@@ -43,7 +50,7 @@ export const updateData = (
   token: string,
   uuid: string,
   data: ${name}UpdateDTO
-): Promise<${name}Response> =>
+): Promise<${name}UpdateResponse> =>
   fetchWithCSRF(
     \`/api/${toKebabCase(name)}/update/\${uuid}\`,
     {
@@ -59,12 +66,10 @@ export const deleteData = (token: string, uuid: string): Promise<${name}DeleteRe
     name
   )}/delete/\${uuid}\`, { method: 'DELETE' }, token);
 
-export const restoreData = (token: string, uuid: string): Promise<${name}Response> =>
+export const restoreData = (token: string, uuid: string): Promise<${name}RestoreResponse> =>
   fetchWithCSRF(\`/api/${toKebabCase(
     name
   )}/restore/\${uuid}\`, { method: 'PUT' }, token);`;
 
-  const dir = path.join(baseDir, "lib/actions");
-  await ensureDirectoryExists(dir);
-  await fs.writeFile(path.join(dir, `${toKebabCase(name)}Actions.ts`), content);
+  await fs.writeFile(path.join(dir, fileName), content);
 }

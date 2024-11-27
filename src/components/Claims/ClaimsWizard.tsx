@@ -27,6 +27,7 @@ import ClaimsSummary from "./ClaimsSummary";
 import TypographyTitle from "../../../app/components/TypographyTitle";
 import TypographyStepLabel from "../../../app/components/TypographyStepLabel";
 import CustomButton from "../../../app/components/CustomButton";
+import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
 interface ClaimsWizardProps {
   initialData?: ClaimsData;
   onSubmit: (data: ClaimsData) => Promise<string | undefined>;
@@ -40,6 +41,7 @@ interface StepProps {
   initialData?: ClaimsData;
   setShowAddressClaimForm: React.Dispatch<React.SetStateAction<boolean>>;
   showAddressClaimForm: boolean;
+  setStep: (step: number, isEditing?: boolean) => void;
 }
 
 const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
@@ -49,6 +51,7 @@ const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
   const [step, setStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddressClaimForm, setShowAddressClaimForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -86,8 +89,22 @@ const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
     },
   ];
 
-  const nextStep = () =>
-    setStep((prevStep) => Math.min(prevStep + 1, steps.length - 1));
+  const handleSetStep = (newStep: number, editing: boolean = false) => {
+    setIsEditing(editing);
+    setStep(newStep);
+  };
+
+  const nextStep = () => {
+    if (isEditing) {
+      // Si estamos editando, volver al último paso (Review & Submit)
+      setStep(steps.length - 1);
+      setIsEditing(false);
+    } else {
+      // Comportamiento normal de next
+      setStep((prevStep) => Math.min(prevStep + 1, steps.length - 1));
+    }
+  };
+
   const prevStep = () => setStep((prevStep) => Math.max(prevStep - 1, 0));
 
   const handleSnackbarClose = () => setSnackbar({ ...snackbar, open: false });
@@ -126,7 +143,6 @@ const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
             sx={{
               flexGrow: 5,
               overflow: "hidden",
-
               mb: 10,
               p: { xs: 3, sm: 3, md: 2, lg: 4 },
             }}
@@ -153,6 +169,7 @@ const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
               initialData,
               setShowAddressClaimForm,
               showAddressClaimForm,
+              setStep: handleSetStep,
             })}
             <Box
               sx={{
@@ -186,7 +203,7 @@ const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
                     hoverColor="#fff"
                     endIcon={<ArrowForwardIcon />}
                   >
-                    Next
+                    {isEditing ? "Back to Review" : "Next"}
                   </CustomButton>
                 )}
                 {isLastStep && (
@@ -213,20 +230,12 @@ const ClaimsWizard: React.FC<ClaimsWizardProps> = ({
           </Box>
         </form>
       </LocalizationProvider>
-      <Snackbar
+      <FeedbackSnackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        message={snackbar.message}
+        severity={snackbar.severity}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      />
     </FormProvider>
   );
 };

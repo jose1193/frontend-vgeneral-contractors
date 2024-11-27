@@ -1,4 +1,3 @@
-// scripts/generators/generators/store.ts
 import { promises as fs } from "fs";
 import path from "path";
 import { GeneratorConfig } from "../types";
@@ -6,9 +5,11 @@ import { toKebabCase, ensureDirectoryExists } from "../utils";
 
 export async function generateStore(config: GeneratorConfig) {
   const { name, baseDir } = config;
+  const dir = path.join(baseDir, "src/stores");
+  await ensureDirectoryExists(dir);
 
   const content = `import { create } from 'zustand';
-import { ${name}Data } from '@/types/${toKebabCase(name)}';
+import { ${name}Data } from '../../app/types/${toKebabCase(name)}';
 
 interface ${name}Store {
   // Estado
@@ -46,8 +47,8 @@ export const use${name}Store = create<${name}Store>((set, get) => ({
 
   addItem: (item) =>
     set((state) => ({
-      items: [item, ...state.items].sort((a, b) => 
-        a.name?.localeCompare(b.name || '') || 0
+      items: [item, ...state.items].sort((a, b) =>
+         a.name?.localeCompare(b.name || '') || 0
       ),
     })),
 
@@ -95,7 +96,5 @@ export const selectActiveItems = (state: ${name}Store) =>
 export const selectDeletedItems = (state: ${name}Store) =>
   state.items.filter((item) => item.deleted_at);`;
 
-  const dir = path.join(baseDir, "stores");
-  await ensureDirectoryExists(dir);
   await fs.writeFile(path.join(dir, `${toKebabCase(name)}Store.ts`), content);
 }
