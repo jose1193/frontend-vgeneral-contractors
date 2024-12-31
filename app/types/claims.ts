@@ -63,7 +63,11 @@ export interface ClaimsData {
     never_had_prior_loss: boolean | null;
     has_never_had_prior_loss: boolean | null;
   };
-
+  scope_sheet: {
+    uuid?: string | null;
+    scope_sheet_description?: string | null;
+    generated_by: UserData;
+  };
   customers: CustomerData[] | null;
   property: PropertyData;
   claim_agreements: ClaimAgreementData[];

@@ -109,6 +109,12 @@ export const PAGES: PageItem[] = [
     ],
   },
   {
+    name: "Scope Sheets",
+    href: ROUTES.DASHBOARD.SCOPE_SHEETS,
+    icon: ReceiptLongIcon,
+    permission: PERMISSIONS.MANAGE_CUSTOMERS,
+  },
+  {
     name: "DocuSign",
     icon: AssignmentTurnedInIcon,
     permission: PERMISSIONS.MANAGE_CONFIG,

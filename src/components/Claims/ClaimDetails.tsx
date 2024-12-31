@@ -4,12 +4,14 @@ import { ClaimsData } from "../../../app/types/claims";
 import { CustomerData } from "../../../app/types/customer";
 import { PropertyData } from "../../../app/types/property";
 import usePhoneFormatter from "../../hooks/usePhoneFormatter ";
+import ClaimHeader from "./ClaimHeader";
 
 interface ClaimDetailsProps {
   claim: ClaimsData | null;
+  token: string;
 }
 
-const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
+const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim, token }) => {
   const formatPhoneNumber = usePhoneFormatter();
 
   if (!claim) {
@@ -22,7 +24,6 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
     );
   }
 
-  // Helper functions
   const causeOfLossString =
     Array.isArray(claim.cause_of_loss_id) && claim.cause_of_loss_id.length > 0
       ? claim.cause_of_loss_id.map((cause) => cause.cause_loss_name).join(", ")
@@ -60,7 +61,6 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
   };
 
   const getMortgageCompanyInfo = () => {
-    // First try to get from affidavit.mortgage_company
     if (claim.affidavit?.mortgage_company) {
       return {
         name: claim.affidavit.mortgage_company.mortgage_company_name,
@@ -70,7 +70,6 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
         website: claim.affidavit.mortgage_company.website,
       };
     }
-    // Fallback to mortgage_companies
     if (claim.mortgage_companies) {
       return {
         name: claim.mortgage_companies.mortgage_company_name,
@@ -80,7 +79,6 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
         website: claim.mortgage_companies.website,
       };
     }
-    // Final fallback to affidavit direct properties
     return {
       name: claim.affidavit?.mortgage_company_name,
       phone: claim.affidavit?.mortgage_company_phone,
@@ -149,291 +147,297 @@ const ClaimDetails: React.FC<ClaimDetailsProps> = ({ claim }) => {
   const mortgageInfo = getMortgageCompanyInfo();
 
   return (
-    <Paper elevation={3} sx={{ p: 5, mb: 7 }}>
-      {/* Header section */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12}>
-          <Box display="flex" alignItems="center">
-            <Typography
-              variant="h6"
-              sx={{ color: "#662401", fontWeight: "bold", mb: 2, flexGrow: 1 }}
-            >
-              🏷️ Claim Internal ID -
-              <span
-                style={{ color: "black", fontWeight: "bold", marginLeft: 4 }}
+    <>
+      <ClaimHeader claim={claim} token={token} />
+      <Paper elevation={3} sx={{ p: 5, mb: 7 }}>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12}>
+            <Box display="flex" alignItems="center">
+              <Typography
+                variant="h6"
+                sx={{
+                  color: "#662401",
+                  fontWeight: "bold",
+                  mb: 2,
+                  flexGrow: 1,
+                }}
               >
-                {claim.claim_internal_id}
+                🏷️ Claim Internal ID -
+                <span
+                  style={{ color: "black", fontWeight: "bold", marginLeft: 4 }}
+                >
+                  {claim.claim_internal_id}
+                </span>
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{ color: "#662401", fontWeight: "bold", mr: 2 }}
+              >
+                Status:
+              </Typography>
+              {claim.claim_status && (
+                <Chip
+                  label={claim.claim_status.claim_status_name}
+                  sx={{
+                    backgroundColor:
+                      claim.claim_status.background_color || "#e0e0e0",
+                    color: "#ffffff",
+                    fontWeight: "bold",
+                  }}
+                />
+              )}
+            </Box>
+            <Typography variant="body1" sx={{ color: "black" }}>
+              Date:{" "}
+              <span style={{ color: "black", fontWeight: "bold" }}>
+                {claim.created_at}
               </span>
             </Typography>
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <Typography variant="h6" gutterBottom sx={{ color: "#662401" }}>
+              Property and Signatories
+            </Typography>
+            {Array.isArray(claim.customers) && claim.customers.length > 0 ? (
+              claim.customers.map((customer, index) =>
+                renderCustomerInfo(customer, index)
+              )
+            ) : (
+              <Typography variant="body2" sx={{ color: "black" }}>
+                No signatory information available.
+              </Typography>
+            )}
+            <Typography variant="subtitle2" sx={{ mt: 2, color: "black" }}>
+              Property Address:{" "}
+              <span style={{ fontWeight: "bold" }}>
+                {renderPropertyAddress(claim.property)}
+              </span>
+            </Typography>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Typography variant="h6" gutterBottom sx={{ color: "#662401" }}>
+              Claim Details
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Claim Number:{" "}
+              <span style={{ fontWeight: "bold" }}>{claim.claim_number}</span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Cause of Loss:
+              <span style={{ fontWeight: "bold" }}> {causeOfLossString}</span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Date of Loss:{" "}
+              <span style={{ fontWeight: "bold" }}>{claim.date_of_loss}</span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Description of Loss:
+              <span style={{ fontWeight: "bold" }}>
+                {" "}
+                {claim.description_of_loss}
+              </span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Type of Damage:
+              <span style={{ fontWeight: "bold" }}> {claim.type_damage}</span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Damage Description:
+              <span style={{ fontWeight: "bold" }}>
+                {" "}
+                {claim.damage_description}
+              </span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Number of Floors:{" "}
+              <span style={{ fontWeight: "bold" }}>
+                {claim.number_of_floors}
+              </span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Referred By:{" "}
+              <span style={{ fontWeight: "bold" }}>{claim.user_ref_by}</span>
+            </Typography>
+
             <Typography
               variant="h6"
-              sx={{ color: "#662401", fontWeight: "bold", mr: 2 }}
+              gutterBottom
+              sx={{ mt: 3, color: "#662401" }}
             >
-              Status:
+              Work Details
             </Typography>
-            {claim.claim_status && (
-              <Chip
-                label={claim.claim_status.claim_status_name}
-                sx={{
-                  backgroundColor:
-                    claim.claim_status.background_color || "#e0e0e0",
-                  color: "#ffffff",
-                  fontWeight: "bold",
-                }}
-              />
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Work Date:
+              <span style={{ fontWeight: "bold", marginLeft: 5 }}>
+                {claim.work_date || "N/A"}
+              </span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Technicians Assignment:
+              <span style={{ fontWeight: "bold", marginLeft: 5 }}>
+                {Array.isArray(claim?.technical_assignments)
+                  ? claim.technical_assignments
+                      .map((assignment) => assignment.technical_user_name)
+                      .join(", ")
+                  : "No technicians assigned"}
+              </span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Scope of Work:
+              <span style={{ fontWeight: "bold", marginLeft: 5 }}>
+                {claim.scope_of_work || "N/A"}
+              </span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Requested Services:
+              <span style={{ fontWeight: "bold", marginLeft: 5 }}>
+                {requestedServicesString}
+              </span>
+            </Typography>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Typography variant="h6" gutterBottom sx={{ color: "#662401" }}>
+              Insurance and Company Details
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Insurance Company:
+              <span style={{ fontWeight: "bold", marginLeft: 5 }}>
+                {claim.insurance_company_assignment || "N/A"}
+              </span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Policy Number:{" "}
+              <span style={{ fontWeight: "bold" }}>{claim.policy_number}</span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Public Company:{" "}
+              <span style={{ fontWeight: "bold" }}>
+                {claim.public_company_assignment || "N/A"}
+              </span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Public Adjuster:{" "}
+              <span style={{ fontWeight: "bold" }}>
+                {claim.public_adjuster_assignment
+                  ? `${claim.public_adjuster_assignment.name} ${claim.public_adjuster_assignment.last_name}`
+                  : "N/A"}
+              </span>
+            </Typography>
+
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ mt: 3, color: "#662401" }}
+            >
+              Affidavit
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Mortgage Company Name:{" "}
+              <span style={{ fontWeight: "bold" }}>
+                {mortgageInfo.name || "N/A"}
+              </span>
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Mortgage Company Phone:{" "}
+              <span style={{ fontWeight: "bold" }}>
+                {mortgageInfo.phone
+                  ? formatPhoneNumber(mortgageInfo.phone)
+                  : "N/A"}
+              </span>
+            </Typography>
+            {mortgageInfo.email && (
+              <Typography variant="subtitle2" sx={{ color: "black" }}>
+                Mortgage Company Email:{" "}
+                <span style={{ fontWeight: "bold" }}>{mortgageInfo.email}</span>
+              </Typography>
             )}
-          </Box>
-          <Typography variant="body1" sx={{ color: "black" }}>
-            Date:{" "}
-            <span style={{ color: "black", fontWeight: "bold" }}>
-              {claim.created_at}
-            </span>
-          </Typography>
-        </Grid>
-      </Grid>
-
-      {/* Main content section */}
-      <Grid container spacing={3}>
-        {/* Column 1: Property and Customers */}
-        <Grid item xs={12} md={4}>
-          <Typography variant="h6" gutterBottom sx={{ color: "#662401" }}>
-            Property and Signatories
-          </Typography>
-          {Array.isArray(claim.customers) && claim.customers.length > 0 ? (
-            claim.customers.map((customer, index) =>
-              renderCustomerInfo(customer, index)
-            )
-          ) : (
-            <Typography variant="body2" sx={{ color: "black" }}>
-              No signatory information available.
-            </Typography>
-          )}
-          <Typography variant="subtitle2" sx={{ mt: 2, color: "black" }}>
-            Property Address:{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {renderPropertyAddress(claim.property)}
-            </span>
-          </Typography>
-        </Grid>
-
-        {/* Column 2: Claim Details and Work Details */}
-        <Grid item xs={12} md={4}>
-          <Typography variant="h6" gutterBottom sx={{ color: "#662401" }}>
-            Claim Details
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Claim Number:{" "}
-            <span style={{ fontWeight: "bold" }}>{claim.claim_number}</span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Cause of Loss:
-            <span style={{ fontWeight: "bold" }}> {causeOfLossString}</span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Date of Loss:{" "}
-            <span style={{ fontWeight: "bold" }}>{claim.date_of_loss}</span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Description of Loss:
-            <span style={{ fontWeight: "bold" }}>
-              {" "}
-              {claim.description_of_loss}
-            </span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Type of Damage:
-            <span style={{ fontWeight: "bold" }}> {claim.type_damage}</span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Damage Description:
-            <span style={{ fontWeight: "bold" }}>
-              {" "}
-              {claim.damage_description}
-            </span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Number of Floors:{" "}
-            <span style={{ fontWeight: "bold" }}>{claim.number_of_floors}</span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Referred By:{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {" "}
-              <span style={{ fontWeight: "bold" }}> {claim.user_ref_by}</span>
-            </span>
-          </Typography>
-
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ mt: 3, color: "#662401" }}
-          >
-            Work Details
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Work Date:
-            <span style={{ fontWeight: "bold", marginLeft: 5 }}>
-              {claim.work_date || "N/A"}
-            </span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Technicians Assignment:
-            <span style={{ fontWeight: "bold", marginLeft: 5 }}>
-              {Array.isArray(claim?.technical_assignments)
-                ? claim.technical_assignments
-                    .map((assignment) => assignment.technical_user_name)
-                    .join(", ")
-                : "No technicians assigned"}
-            </span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Scope of Work:
-            <span style={{ fontWeight: "bold", marginLeft: 5 }}>
-              {claim.scope_of_work || "N/A"}
-            </span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Requested Services:
-            <span style={{ fontWeight: "bold", marginLeft: 5 }}>
-              {requestedServicesString}
-            </span>
-          </Typography>
-        </Grid>
-
-        {/* Column 3: Insurance and Company Details */}
-        <Grid item xs={12} md={4}>
-          <Typography variant="h6" gutterBottom sx={{ color: "#662401" }}>
-            Insurance and Company Details
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Insurance Company:
-            <span style={{ fontWeight: "bold", marginLeft: 5 }}>
-              {claim.insurance_company_assignment || "N/A"}
-            </span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Policy Number:{" "}
-            <span style={{ fontWeight: "bold" }}>{claim.policy_number}</span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Public Company:{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {claim.public_company_assignment || "N/A"}
-            </span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Public Adjuster:{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {claim.public_adjuster_assignment
-                ? `${claim.public_adjuster_assignment.name} ${claim.public_adjuster_assignment.last_name}`
-                : "N/A"}
-            </span>
-          </Typography>
-
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ mt: 3, color: "#662401" }}
-          >
-            Affidavit
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Mortgage Company Name:{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {mortgageInfo.name || "N/A"}
-            </span>
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Mortgage Company Phone:{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {mortgageInfo.phone
-                ? formatPhoneNumber(mortgageInfo.phone)
-                : "N/A"}
-            </span>
-          </Typography>
-          {mortgageInfo.email && (
-            <Typography variant="subtitle2" sx={{ color: "black" }}>
-              Mortgage Company Email:{" "}
-              <span style={{ fontWeight: "bold" }}>{mortgageInfo.email}</span>
-            </Typography>
-          )}
-          {mortgageInfo.address && (
-            <Typography variant="subtitle2" sx={{ color: "black" }}>
-              Mortgage Company Address:{" "}
-              <span style={{ fontWeight: "bold" }}>{mortgageInfo.address}</span>
-            </Typography>
-          )}
-          {mortgageInfo.website && (
-            <Typography variant="subtitle2" sx={{ color: "black" }}>
-              Mortgage Company Website:{" "}
-              <span style={{ fontWeight: "bold" }}>{mortgageInfo.website}</span>
-            </Typography>
-          )}
-          {renderAffidavitInfo(
-            "Mortgage Loan Number",
-            claim.affidavit?.mortgage_loan_number
-          )}
-          {renderAffidavitInfo(
-            "Amount Paid",
-            formatAmount(claim.affidavit?.amount_paid)
-          )}
-          {renderAffidavitInfo("Description", claim.affidavit?.description)}
-          {renderAffidavitInfo(
-            "Prior Loss",
-            claim.affidavit?.never_had_prior_loss === true ||
-              claim.affidavit?.has_never_had_prior_loss === true
-              ? "None"
-              : "Yes"
-          )}
-
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ mt: 3, color: "#662401" }}
-          >
-            Alliance Company
-          </Typography>
-          <Typography variant="subtitle2" sx={{ color: "black" }}>
-            Alliance Company:{" "}
-            <span style={{ fontWeight: "bold" }}>
-              {claim.alliance_companies
-                ? claim.alliance_companies.alliance_company_name
-                : "N/A"}
-            </span>
-          </Typography>
-          {claim.alliance_companies && (
-            <>
+            {mortgageInfo.address && (
               <Typography variant="subtitle2" sx={{ color: "black" }}>
-                Phone:{" "}
+                Mortgage Company Address:{" "}
                 <span style={{ fontWeight: "bold" }}>
-                  {formatPhoneNumber(claim.alliance_companies.phone)}
+                  {mortgageInfo.address}
                 </span>
               </Typography>
+            )}
+            {mortgageInfo.website && (
               <Typography variant="subtitle2" sx={{ color: "black" }}>
-                Email:{" "}
+                Mortgage Company Website:{" "}
                 <span style={{ fontWeight: "bold" }}>
-                  {claim.alliance_companies.email}
+                  {mortgageInfo.website}
                 </span>
               </Typography>
-              <Typography variant="subtitle2" sx={{ color: "black" }}>
-                Address:{" "}
-                <span style={{ fontWeight: "bold" }}>
-                  {claim.alliance_companies.address}
-                </span>
-              </Typography>
-              {claim.alliance_companies.website && (
+            )}
+            {renderAffidavitInfo(
+              "Mortgage Loan Number",
+              claim.affidavit?.mortgage_loan_number
+            )}
+            {renderAffidavitInfo(
+              "Amount Paid",
+              formatAmount(claim.affidavit?.amount_paid)
+            )}
+            {renderAffidavitInfo("Description", claim.affidavit?.description)}
+            {renderAffidavitInfo(
+              "Prior Loss",
+              claim.affidavit?.never_had_prior_loss === true ||
+                claim.affidavit?.has_never_had_prior_loss === true
+                ? "None"
+                : "Yes"
+            )}
+
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ mt: 3, color: "#662401" }}
+            >
+              Alliance Company
+            </Typography>
+            <Typography variant="subtitle2" sx={{ color: "black" }}>
+              Alliance Company:{" "}
+              <span style={{ fontWeight: "bold" }}>
+                {claim.alliance_companies
+                  ? claim.alliance_companies.alliance_company_name
+                  : "N/A"}
+              </span>
+            </Typography>
+            {claim.alliance_companies && (
+              <>
                 <Typography variant="subtitle2" sx={{ color: "black" }}>
-                  Website:{" "}
+                  Phone:{" "}
                   <span style={{ fontWeight: "bold" }}>
-                    {claim.alliance_companies.website}
+                    {formatPhoneNumber(claim.alliance_companies.phone)}
                   </span>
                 </Typography>
-              )}
-            </>
-          )}
+                <Typography variant="subtitle2" sx={{ color: "black" }}>
+                  Email:{" "}
+                  <span style={{ fontWeight: "bold" }}>
+                    {claim.alliance_companies.email}
+                  </span>
+                </Typography>
+                <Typography variant="subtitle2" sx={{ color: "black" }}>
+                  Address:{" "}
+                  <span style={{ fontWeight: "bold" }}>
+                    {claim.alliance_companies.address}
+                  </span>
+                </Typography>
+                {claim.alliance_companies.website && (
+                  <Typography variant="subtitle2" sx={{ color: "black" }}>
+                    Website:{" "}
+                    <span style={{ fontWeight: "bold" }}>
+                      {claim.alliance_companies.website}
+                    </span>
+                  </Typography>
+                )}
+              </>
+            )}
+          </Grid>
         </Grid>
-      </Grid>
-    </Paper>
+      </Paper>
+    </>
   );
 };
 

@@ -1,33 +1,12 @@
 "use client";
 
 import React, { Suspense } from "react";
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Grid,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Tabs,
-  Tab,
-  Paper,
-} from "@mui/material";
-import { Home, ArrowBack } from "@mui/icons-material";
-import EditIcon from "@mui/icons-material/Edit";
-import DescriptionIcon from "@mui/icons-material/Description";
-import ShareIcon from "@mui/icons-material/Share";
-import ClaimDetails from "../../../../src/components/Claims/ClaimDetails";
+import { Box, Typography } from "@mui/material";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import ClaimDetails from "../../../../src/components/Claims/ClaimDetails";
 import InvoiceTable from "../../../../src/components/Claims/InvoiceTable";
-import ClaimHeader from "../../../../src/components/Claims/ClaimHeader";
 import ClaimTabs from "../../../../src/components/Claims/ClaimTabs";
-
 import { useClaimProfile } from "../../../../src/hooks/useClaimProfile";
 import { withRoleProtection } from "../../../../src/components/withRoleProtection";
 import { PERMISSIONS } from "../../../../src/config/permissions";
@@ -55,19 +34,27 @@ const ClaimProfile: React.FC = () => {
     );
   }
 
+  if (!token) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography color="error">
+          Error: Authentication token is missing
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Suspense>
       <Box
         sx={{
           flexGrow: 1,
           overflow: "hidden",
-
           mb: 10,
           p: { xs: 1, lg: 2 },
         }}
       >
-        <ClaimHeader claim={claim} />
-        <ClaimDetails claim={claim} />
+        <ClaimDetails claim={claim} token={token} />
         <ClaimTabs
           claim={claim}
           claimAgreements={claimAgreements}
@@ -75,14 +62,13 @@ const ClaimProfile: React.FC = () => {
           onUpdateAgreement={updateClaimAgreement}
           onDeleteAgreement={deleteClaimAgreement}
         />
-
         <InvoiceTable claim={claim} />
       </Box>
     </Suspense>
   );
 };
 
-// Configuración de protección basada en permisos
+// Permission-based protection configuration
 const protectionConfig = {
   permissions: [PERMISSIONS.MANAGE_CLAIMS],
 };

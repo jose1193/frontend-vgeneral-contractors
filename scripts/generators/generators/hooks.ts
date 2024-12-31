@@ -14,15 +14,18 @@ import type {
   ${name}Data, 
   ${name}CreateDTO, 
   ${name}UpdateDTO,
-  ${name}GetResponse,
-  ${name}ListResponse,
   ${name}CreateResponse,
   ${name}UpdateResponse,
   ${name}RestoreResponse
 } from '../../../app/types/${toKebabCase(name)}';
-import * as ${toKebabCase(
-    name
-  )}Actions from '../../../app/lib/actions/${toKebabCase(name)}Actions';
+import * as ${toKebabCase(name)}Actions from '../../../app/lib/actions/${toKebabCase(name)}Actions';
+
+export class ${name}Error extends Error {
+  constructor(message: string, public originalError?: unknown) {
+    super(message);
+    this.name = "${name}Error";
+  }
+}
 
 export const use${name} = (token: string) => {
   const [items, setItems] = useState<${name}Data[]>([]);
@@ -30,55 +33,53 @@ export const use${name} = (token: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const setErrorMessage = (error: unknown, defaultMessage: string) => {
+    const errorMessage = error instanceof Error ? error.message : defaultMessage;
+    setError(errorMessage);
+    console.error(defaultMessage, error);
+  };
+
   const fetchItems = useCallback(async () => {
     if (!token) return;
 
     try {
       setLoading(true);
-      const response: ${name}ListResponse = await ${toKebabCase(
-    name
-  )}Actions.getDataFetch(token);
+      setError(null);
+      const response = await ${toKebabCase(name)}Actions.getDataFetch(token);
 
       if (response.success && Array.isArray(response.data)) {
         setItems(response.data);
-        setError(null);
       } else {
-        setItems([]);
-        setError(response.message || 'Invalid data format received');
+        setErrorMessage(
+          new Error(response.message || 'Invalid data format received'),
+          'Failed to fetch items'
+        );
       }
     } catch (error) {
-      console.error('Error fetching items:', error);
-      setItems([]);
-      setError(error instanceof Error ? error.message : 'Failed to fetch items');
+      setErrorMessage(error, 'Failed to fetch items');
     } finally {
       setLoading(false);
     }
   }, [token]);
 
   const getItem = useCallback(async (uuid: string) => {
-    if (!token) return;
+    if (!token) return null;
 
     try {
       setLoading(true);
-      const response: ${name}GetResponse = await ${toKebabCase(
-    name
-  )}Actions.getData(token, uuid);
+      setError(null);
+      const response: ${name}Data = await ${toKebabCase(name)}Actions.getData(token, uuid);
 
-      if (response.success && response.data) {
-        setCurrentItem(response.data);
-        setError(null);
-        return response.data;
+      if (response && response.uuid) {
+        setCurrentItem(response);
+        return response;
       } else {
-        setCurrentItem(null);
-        setError(response.message || 'No item found');
-        throw new Error('No item found');
+        setErrorMessage(new Error('No item found'), 'Failed to fetch item');
+        return null;
       }
     } catch (error) {
-      console.error('Error fetching item:', error);
-      setCurrentItem(null);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch item';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setErrorMessage(error, 'Failed to fetch item');
+      return null;
     } finally {
       setLoading(false);
     }
@@ -86,69 +87,55 @@ export const use${name} = (token: string) => {
 
   const createItem = useCallback(async (data: ${name}CreateDTO) => {
     try {
-      const newItem: ${name}CreateResponse = await ${toKebabCase(
-    name
-  )}Actions.createData(token, data);
+      setError(null);
+      const newItem = await ${toKebabCase(name)}Actions.createData(token, data);
       await fetchItems();
       return newItem;
     } catch (error) {
-      console.error('Error creating item:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create item';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setErrorMessage(error, 'Failed to create item');
+      return null;
     }
   }, [token, fetchItems]);
 
   const updateItem = useCallback(async (uuid: string, data: ${name}UpdateDTO) => {
     try {
-      const updatedItem: ${name}UpdateResponse = await ${toKebabCase(
-    name
-  )}Actions.updateData(token, uuid, data);
-      setCurrentItem(updatedItem);
-      await fetchItems();
+      setError(null);
+      const updatedItem = await ${toKebabCase(name)}Actions.updateData(token, uuid, data);
+      if (updatedItem) {
+        setCurrentItem(updatedItem);
+        await fetchItems();
+      }
       return updatedItem;
     } catch (error) {
-      console.error('Error updating item:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update item';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setErrorMessage(error, 'Failed to update item');
+      return null;
     }
   }, [token, fetchItems]);
 
   const deleteItem = useCallback(async (uuid: string) => {
     try {
-      const response = await ${toKebabCase(
-        name
-      )}Actions.deleteData(token, uuid);
-
-      if (response.success) {
-        await fetchItems();
-      } else {
-        throw new Error(response.message || 'Failed to delete item');
-      }
+      setError(null);
+      const response = await ${toKebabCase(name)}Actions.deleteData(token, uuid);
+      return response.success;
     } catch (error) {
-      console.error('Error deleting item:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete item';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setErrorMessage(error, 'Failed to delete item');
+      return false;
     }
-  }, [token, fetchItems]);
+  }, [token]);
 
   const restoreItem = useCallback(async (uuid: string) => {
     try {
-      const restoredItem: ${name}RestoreResponse = await ${toKebabCase(
-    name
-  )}Actions.restoreData(token, uuid);
-      setCurrentItem(restoredItem);
-      await fetchItems();
+      setError(null);
+      const restoredItem = await ${toKebabCase(name)}Actions.restoreData(token, uuid);
+      if (restoredItem) {
+        setCurrentItem(restoredItem);
+      }
       return restoredItem;
     } catch (error) {
-      console.error('Error restoring item:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to restore item';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      setErrorMessage(error, 'Failed to restore item');
+      return null;
     }
-  }, [token, fetchItems]);
+  }, [token]);
 
   useEffect(() => {
     if (token) {
@@ -171,111 +158,139 @@ export const use${name} = (token: string) => {
 };`;
 
   // useSyncItem hook
-  const useSyncContent = `import { useEffect } from 'react';
+  const useSyncContent = `import { useEffect, useCallback } from 'react';
 import { use${name} } from './use${name}';
 import { use${name}Store } from '@/stores/${toKebabCase(name)}Store';
 import type { 
   ${name}Data, 
-  ${name}CreateDTO,
-  ${name}UpdateDTO 
+  ${name}CreateDTO, 
+  ${name}UpdateDTO,
+  ${name}CreateResponse,
+  ${name}UpdateResponse,
+  ${name}RestoreResponse
 } from '../../../app/types/${toKebabCase(name)}';
 
-export const use${name}Sync = (token: string) => {
+interface Use${name}SyncReturn {
+  loading: boolean;
+  error: string | null;
+  items: ${name}Data[];
+  handleCreate: (data: ${name}CreateDTO) => Promise<${name}CreateResponse>;
+  handleUpdate: (uuid: string, data: ${name}UpdateDTO) => Promise<${name}UpdateResponse>;
+  handleDelete: (uuid: string) => Promise<void>;
+  handleRestore: (uuid: string) => Promise<void>;
+  getFilteredItems: () => ${name}Data[];
+  refreshItems: () => Promise<void>;
+}
+
+export const use${name}Sync = (token: string): Use${name}SyncReturn => {
+  const store = use${name}Store();
   const {
     items: apiItems,
     loading,
     error,
     createItem,
-    updateItem,
-    deleteItem,
-    restoreItem,
+    updateItem: apiUpdateItem,
+    deleteItem: apiDeleteItem,
+    restoreItem: apiRestoreItem,
     fetchItems,
   } = use${name}(token);
 
-  const {
-    setItems,
-    setLoading,
-    setError,
-    addItem,
-    updateItem: updateStoreItem,
-    deleteItem: deleteStoreItem,
-    restoreItem: restoreStoreItem,
-  } = use${name}Store();
-
   useEffect(() => {
-    if (apiItems && apiItems.length > 0) {
-      setItems(apiItems);
+    const shouldSync = !store.items.length && apiItems && Array.isArray(apiItems) && apiItems.length > 0;
+    if (shouldSync) {
+      store.setItems(apiItems);
     }
-  }, [apiItems, setItems]);
+  }, [apiItems]);
 
   useEffect(() => {
-    setLoading(loading);
-  }, [loading, setLoading]);
+    store.setLoading(loading);
+  }, [loading]);
 
   useEffect(() => {
-    setError(error);
-  }, [error, setError]);
+    if (error) {
+      store.setError(typeof error === 'string' ? error : 'An error occurred');
+    }
+  }, [error]);
 
-  const handleCreate = async (data: ${name}CreateDTO) => {
+  const handleCreate = useCallback(async (data: ${name}CreateDTO): Promise<${name}CreateResponse> => {
     try {
       const newItem = await createItem(data);
-      if (newItem) {
-        await fetchItems();
+      if (!newItem) {
+        throw new Error('Failed to create item');
       }
+      store.addItem(newItem);
+      return newItem;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error creating item';
-      setError(message);
+      const message = error instanceof Error ? error.message : "Error creating item";
+      store.setError(message);
       throw error;
     }
-  };
+  }, [createItem, store]);
 
-  const handleUpdate = async (uuid: string, data: ${name}UpdateDTO) => {
+  const handleUpdate = useCallback(async (
+    uuid: string,
+    data: ${name}UpdateDTO
+  ): Promise<${name}UpdateResponse> => {
     try {
-      const updatedItem = await updateItem(uuid, data);
-      if (updatedItem) {
-        await fetchItems();
+      const updatedItem = await apiUpdateItem(uuid, data);
+      if (!updatedItem) {
+        throw new Error('Failed to update item');
       }
+      store.updateItem(uuid, updatedItem);
+      return updatedItem;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error updating item';
-      setError(message);
+      const message = error instanceof Error ? error.message : "Error updating item";
+      store.setError(message);
       throw error;
     }
-  };
+  }, [apiUpdateItem, store]);
 
-  const handleDelete = async (uuid: string) => {
-    try {
-      await deleteItem(uuid);
-      await fetchItems();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error deleting item';
-      setError(message);
-      throw error;
-    }
-  };
+  const handleDelete = useCallback(async (uuid: string): Promise<void> => {
+    if (!uuid) return;
 
-  const handleRestore = async (uuid: string) => {
+    // Optimistic update
+    store.updateItemStatus(uuid, true);
+    
     try {
-      const restoredItem = await restoreItem(uuid);
-      if (restoredItem) {
-        await fetchItems();
-      }
+      await apiDeleteItem(uuid);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error restoring item';
-      setError(message);
+      // Revert on error
+      store.updateItemStatus(uuid, false);
+      const message = error instanceof Error ? error.message : "Error deleting item";
+      store.setError(message);
       throw error;
     }
-  };
+  }, [apiDeleteItem, store]);
+
+  const handleRestore = useCallback(async (uuid: string): Promise<void> => {
+    if (!uuid) return;
+
+    // Optimistic update
+    store.updateItemStatus(uuid, false);
+    
+    try {
+      await apiRestoreItem(uuid);
+    } catch (error) {
+      // Revert on error
+      store.updateItemStatus(uuid, true);
+      const message = error instanceof Error ? error.message : "Error restoring item";
+      store.setError(message);
+      throw error;
+    }
+  }, [apiRestoreItem, store]);
 
   return {
     loading,
     error,
+    items: store.items,
     handleCreate,
     handleUpdate,
     handleDelete,
     handleRestore,
+    getFilteredItems: store.getFilteredItems,
     refreshItems: fetchItems,
   };
-}`;
+};`;
 
   await fs.writeFile(path.join(dir, `use${name}.ts`), useItemContent);
   await fs.writeFile(path.join(dir, `use${name}Sync.ts`), useSyncContent);

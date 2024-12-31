@@ -1,45 +1,35 @@
-import { promises as fs } from "fs";
-import path from "path";
-import { GeneratorConfig } from "../types";
-import { toKebabCase, ensureDirectoryExists } from "../utils";
+// scopeSheetStore.ts
+import { create } from "zustand";
+import { ScopeSheetData } from "../../app/types/scope-sheet";
 
-export async function generateStore(config: GeneratorConfig) {
-  const { name, baseDir } = config;
-  const dir = path.join(baseDir, "src/stores");
-  await ensureDirectoryExists(dir);
-
-  const content = `import { create } from 'zustand';
-import { ${name}Data } from '../../app/types/${toKebabCase(name)}';
-
-interface ${name}Store {
-  // Estado
-  items: ${name}Data[];
+interface ScopeSheetStore {
+  items: ScopeSheetData[];
   loading: boolean;
   error: string | null;
   searchTerm: string;
 
   // Acciones básicas
-  setItems: (items: ${name}Data[]) => void;
+  setItems: (items: ScopeSheetData[]) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setSearchTerm: (term: string) => void;
 
   // Acciones CRUD
-  addItem: (item: ${name}Data) => void;
-  updateItem: (uuid: string, item: Partial<${name}Data>) => void;
+  addItem: (item: ScopeSheetData) => void;
+  updateItem: (uuid: string, item: Partial<ScopeSheetData>) => void;
   deleteItem: (uuid: string) => void;
   restoreItem: (uuid: string) => void;
   updateItemStatus: (uuid: string, isDeleted: boolean) => void;
 
   // Selectores
-  getFilteredItems: () => ${name}Data[];
+  getFilteredItems: () => ScopeSheetData[];
 }
 
-export const use${name}Store = create<${name}Store>((set, get) => ({
+export const useScopeSheetStore = create<ScopeSheetStore>((set, get) => ({
   items: [],
   loading: false,
   error: null,
-  searchTerm: '',
+  searchTerm: "",
 
   setItems: (items) => set({ items }),
   setLoading: (loading) => set({ loading }),
@@ -49,7 +39,7 @@ export const use${name}Store = create<${name}Store>((set, get) => ({
   addItem: (item) =>
     set((state) => ({
       items: [item, ...state.items].sort((a, b) =>
-        (a.${name.toLowerCase()}_description || '').localeCompare(b.${name.toLowerCase()}_description || '')
+        (a.scope_sheet_description || '').localeCompare(b.scope_sheet_description || '')
       ),
     })),
 
@@ -98,7 +88,7 @@ export const use${name}Store = create<${name}Store>((set, get) => ({
     
     return items.filter((item) => {
       const searchableFields = [
-        item.${name.toLowerCase()}_description,
+        item.scope_sheet_description,
         item.claim_id,
         item.uuid,
         item.generated_by,
@@ -113,12 +103,8 @@ export const use${name}Store = create<${name}Store>((set, get) => ({
 }));
 
 // Selectores auxiliares
-export const selectActiveItems = (store: ${name}Store) =>
+export const selectActiveItems = (store: ScopeSheetStore) =>
   store.items.filter((item) => !item.deleted_at);
 
-export const selectDeletedItems = (store: ${name}Store) =>
+export const selectDeletedItems = (store: ScopeSheetStore) =>
   store.items.filter((item) => item.deleted_at);
-`;
-
-  await fs.writeFile(path.join(dir, `${toKebabCase(name)}Store.ts`), content);
-}

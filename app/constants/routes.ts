@@ -6,7 +6,7 @@ export const ROUTES = {
     HOME: "/dashboard",
     PROFILE: "/dashboard/profile",
     CUSTOMERS: "/dashboard/customers",
-
+    SCOPE_SHEETS: "/dashboard/scope-sheets",
     CLAIMS: {
       ROOT: "/dashboard/claims",
       CREATE: "/dashboard/claims/create",

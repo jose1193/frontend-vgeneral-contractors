@@ -59,11 +59,6 @@ export interface ${name}ListResponse {
   message?: string;
 }
 
-export interface ${name}GetResponse {
-  success: boolean;
-  data: ${name}Data;
-  message?: string;
-}
 
 // Response type for delete with only success/message
 export interface ${name}DeleteResponse {
@@ -74,6 +69,7 @@ export interface ${name}DeleteResponse {
 // Create, update and restore return the object directly
 export type ${name}CreateResponse = ${name}Data;
 export type ${name}UpdateResponse = ${name}Data;
+export type ${name}GetResponse = ${name}Data;
 export type ${name}RestoreResponse = ${name}Data;`;
 
   await fs.writeFile(path.join(dir, `${toKebabCase(name)}.ts`), content);

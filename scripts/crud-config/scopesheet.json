@@ -1,0 +1,25 @@
+{
+  "name": "ScopeSheet",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "claim_id",
+      "type": "number",
+      "required": false
+    },
+    {
+      "name": "scope_sheet_description",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "generated_by",
+      "type": "number",
+      "required": false
+    }
+  ]
+}

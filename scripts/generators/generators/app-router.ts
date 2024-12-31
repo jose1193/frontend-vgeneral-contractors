@@ -35,14 +35,14 @@ export default function Loading() {
 }`;
 
   // [uuid]/loading.tsx for detail page
-  const detailLoadingContent = `import DetailsSkeleton from "../../../../../src/components/skeletons/GeneralFormSkeleton";
+  const detailLoadingContent = `import DetailsSkeleton from "../../../../../src/components/skeletons/DetailsSkeleton";
 
 export default function Loading() {
   return <DetailsSkeleton />;
 }`;
 
   // [uuid]/edit/loading.tsx and create/loading.tsx for form pages
-  const formLoadingContent = `import GeneralFormSkeleton from "../../../../src/components/skeletons/GeneralFormSkeleton";
+  const formLoadingContent = `import GeneralFormSkeleton from "../../../../src/components/skeletons/DetailsSkeleton";
 
 export default function Loading() {
   return <GeneralFormSkeleton />;
@@ -52,15 +52,13 @@ export default function Loading() {
   const pageContent = `'use client';
 
 import React, { useEffect, Suspense } from "react";
-import { use${name}Sync } from '../../../src/hooks/${toKebabCase(
-    name
-  )}/use${name}Sync';
-import { use${name}Store } from '@/stores/${toKebabCase(name)}Store';
-import ${name}List from '@/components/${name}/${name}List';
-import { Box, Container, Typography } from '@mui/material';
-import { useSession } from 'next-auth/react';
-import Link from 'next/link';
-import Loading from './loading';
+import { use${name}Sync } from "../../../src/hooks/${toKebabCase(name)}/use${name}Sync";
+import { use${name}Store } from "@/stores/${toKebabCase(name)}Store";
+import ${name}List from "@/components/${name}/${name}List";
+import { Box, Container, Typography } from "@mui/material";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import Loading from "./loading";
 import TypographyHeading from "../../components/TypographyHeading";
 import ButtonCreate from "../../components/ButtonCreate";
 
@@ -68,6 +66,7 @@ export default function ${name}ListPage() {
   const { data: session } = useSession();
   const token = session?.accessToken as string;
 
+  const [initialLoading, setInitialLoading] = React.useState(true);
   const {
     loading,
     error,
@@ -75,8 +74,6 @@ export default function ${name}ListPage() {
     handleRestore: originalHandleRestore,
     refreshItems,
   } = use${name}Sync(token);
-
-  const items = use${name}Store((state) => state.items);
 
   // Wrapper functions to handle void return type
   const handleDelete = async (uuid: string): Promise<void> => {
@@ -88,10 +85,14 @@ export default function ${name}ListPage() {
   };
 
   useEffect(() => {
-    refreshItems();
+    const init = async () => {
+      await refreshItems();
+      setInitialLoading(false);
+    };
+    init();
   }, [refreshItems]);
 
-  if (loading) return <Loading />;
+  if (initialLoading) return <Loading />;
 
   if (error) {
     return (
@@ -107,12 +108,8 @@ export default function ${name}ListPage() {
     <Suspense>
       <Box sx={{ width: "100%", overflow: "hidden" }}>
         <TypographyHeading>${name} Management</TypographyHeading>
-        <Link href={\`/dashboard/${toKebabCase(name)}s/create\`} passHref>
-          <ButtonCreate sx={{ mt: 5 }}>Create New ${name}</ButtonCreate>
-        </Link>
 
         <${name}List
-          items={items}
           onDelete={handleDelete}
           onRestore={handleRestore}
           userRole={session?.user?.user_role}
@@ -121,6 +118,7 @@ export default function ${name}ListPage() {
     </Suspense>
   );
 }`;
+
 
   // [uuid]/page.tsx (detail page)
   const detailPageContent = `'use client';
