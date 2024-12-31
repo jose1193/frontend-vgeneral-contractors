@@ -1,19 +1,21 @@
-import React, { useMemo } from 'react';
-import { Box, Typography, Button, Divider, useTheme, useMediaQuery } from '@mui/material';
+import React, { useMemo, useState } from 'react';
+import { Box, Typography, Button, Divider, useTheme, useMediaQuery, Menu, MenuItem } from '@mui/material';
 import ArticleIcon from '@mui/icons-material/Article';
 import ShareIcon from '@mui/icons-material/Share';
 import EditIcon from '@mui/icons-material/Edit';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import EmailIcon from '@mui/icons-material/Email';
 import type { ScopeSheetData } from '../../../app/types/scope-sheet';
 import { formatPropertyAddress, renderCustomers } from '../../utils/formattersCustomerProperty';
 
 interface HeaderProps {
   scopeSheet: ScopeSheetData;
   onGeneratePDF: () => void;
-  onShare: () => void;
   onEdit: () => void;
 }
 
-const Header = ({ scopeSheet, onGeneratePDF, onShare, onEdit }: HeaderProps) => {
+const Header = ({ scopeSheet, onGeneratePDF, onEdit }: HeaderProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -22,6 +24,39 @@ const Header = ({ scopeSheet, onGeneratePDF, onShare, onEdit }: HeaderProps) => 
   const formattedDate = useMemo(() => 
     scopeSheet.created_at ? new Date(scopeSheet.created_at).toLocaleDateString() : "N/A"
   , [scopeSheet.created_at]);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleShareClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleCopyLink = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    handleClose();
+  };
+
+  const handleWhatsAppShare = () => {
+    const url = window.location.href;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`Check out this scope sheet: ${url}`)}`;
+    window.open(whatsappUrl, '_blank');
+    handleClose();
+  };
+
+  const handleEmailShare = () => {
+    const url = window.location.href;
+    const subject = 'Scope Sheet Details';
+    const body = `Check out this scope sheet: ${url}`;
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+    handleClose();
+  };
 
   return (
     <>
@@ -85,11 +120,33 @@ const Header = ({ scopeSheet, onGeneratePDF, onShare, onEdit }: HeaderProps) => 
               flex: { xs: '1', sm: 'auto' }
             }}
             startIcon={<ShareIcon />}
-            onClick={onShare}
+            onClick={handleShareClick}
             fullWidth={isMobile}
+            aria-controls={open ? 'share-menu' : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? 'true' : undefined}
           >
             Share This Scope
           </Button>
+          <Menu
+            id="share-menu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            MenuListProps={{
+              'aria-labelledby': 'share-button',
+            }}
+          >
+            <MenuItem onClick={handleCopyLink}>
+              <ContentCopyIcon sx={{ mr: 1 }} /> Copy Link
+            </MenuItem>
+            <MenuItem onClick={handleWhatsAppShare}>
+              <WhatsAppIcon sx={{ mr: 1 }} /> Share via WhatsApp
+            </MenuItem>
+            <MenuItem onClick={handleEmailShare}>
+              <EmailIcon sx={{ mr: 1 }} /> Send via Email
+            </MenuItem>
+          </Menu>
           <Button 
             variant="contained" 
             color="warning" 

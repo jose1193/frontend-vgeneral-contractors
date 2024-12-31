@@ -39,10 +39,6 @@ export default function ScopeSheetPage({ params }: { params: { uuid: string } })
     console.log("Generating PDF for scope sheet:", params.uuid);
   };
 
-  const handleShare = () => {
-    console.log("Sharing scope sheet:", params.uuid);
-  };
-
   if (loading && !currentItem) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -73,7 +69,6 @@ export default function ScopeSheetPage({ params }: { params: { uuid: string } })
         <Header
           scopeSheet={currentItem}
           onGeneratePDF={handleGeneratePDF}
-          onShare={handleShare}
           onEdit={() => setEditDialogOpen(true)}
         />
 
