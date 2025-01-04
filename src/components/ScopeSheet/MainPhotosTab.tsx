@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useScopeSheetPresentationSync } from '../../hooks/Scope-Sheet-Presentation/useScopeSheetPresentationSync';
 import { useScopeSheetPresentation } from '../../hooks/Scope-Sheet-Presentation/useScopeSheetPresentation';
 import { ScopeSheetPresentationData } from '../../../app/types/scope-sheet-presentation';
+import { ScopeSheetData } from '../../../app/types/scope-sheet';
 
 interface MainPhotosTabProps {
   selectedFiles: {
@@ -15,12 +16,13 @@ interface MainPhotosTabProps {
   onFileChange: (section: "front_house" | "house_number") => (files: FileList) => void;
   scope_sheet_uuid: string;
   presentations_images?: ScopeSheetPresentationData[];
+  onUpdate: () => Promise<ScopeSheetData | null>;
 }
 
-const MainPhotosTab = ({ selectedFiles, onFileChange, scope_sheet_uuid, presentations_images }: MainPhotosTabProps) => {
+const MainPhotosTab = ({ selectedFiles, onFileChange, scope_sheet_uuid, presentations_images, onUpdate }: MainPhotosTabProps) => {
   const { data: session } = useSession();
   const token = session?.user?.token ?? "";
-  
+
   const {
     handleDelete,
     refreshItems,
@@ -45,34 +47,36 @@ const MainPhotosTab = ({ selectedFiles, onFileChange, scope_sheet_uuid, presenta
     return presentations_images.filter(img => !img.deleted_at);
   }, [presentations_images]);
 
-  const handleFileChange = useCallback((section: "front_house" | "house_number") => async (files: FileList) => {
+  const handleFileChange = useCallback((section: "front_house" | "house_number") => (files: FileList) => {
     const filesArray = Array.from(files);
-    
-    try {
-      await uploadImages(scope_sheet_uuid, filesArray, section);
-      onFileChange(section)(files);
-      await refreshItems();
-      
-      setSnackbar({
-        open: true,
-        message: 'Images uploaded successfully',
-        severity: 'success'
+
+    uploadImages(scope_sheet_uuid, filesArray, section)
+      .then(() => onFileChange(section)(files))
+      .then(() => refreshItems())
+      .then(() => onUpdate())
+      .then(() =>
+        setSnackbar({
+          open: true,
+          message: 'Images uploaded successfully',
+          severity: 'success',
+        })
+      )
+      .catch((error) => {
+        console.error('Error uploading images:', error);
+        setSnackbar({
+          open: true,
+          message: 'Failed to upload images',
+          severity: 'error',
+        });
       });
-    } catch (error) {
-      console.error('Error uploading images:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to upload images',
-        severity: 'error'
-      });
-    }
-  }, [scope_sheet_uuid, onFileChange, refreshItems, uploadImages]);
+  }, [scope_sheet_uuid, onFileChange, refreshItems, uploadImages, onUpdate]);
 
   const handleDeleteImage = useCallback(async (uuid: string) => {
     try {
       await handleDelete(uuid);
       await refreshItems(); // Always refresh to ensure UI is in sync
-      
+      await onUpdate(); // Ensure getItem is awaited
+
       setSnackbar({
         open: true,
         message: 'Image deleted successfully',
@@ -87,7 +91,7 @@ const MainPhotosTab = ({ selectedFiles, onFileChange, scope_sheet_uuid, presenta
       });
       await refreshItems(); // Refresh on error as well
     }
-  }, [handleDelete, refreshItems]);
+  }, [handleDelete, refreshItems, onUpdate]);
 
   const handleSnackbarClose = useCallback(() => {
     setSnackbar(prev => ({ ...prev, open: false }));
@@ -100,7 +104,7 @@ const MainPhotosTab = ({ selectedFiles, onFileChange, scope_sheet_uuid, presenta
   }, []);
 
   const memoizedHomePhotos = useMemo(() => (
-    <HomePhotos 
+    <HomePhotos
       onFileChange={handleFileChange}
       onImageSelect={handleImageSelect}
       onDeleteImage={handleDeleteImage}

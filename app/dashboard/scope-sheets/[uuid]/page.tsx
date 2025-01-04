@@ -5,6 +5,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useScopeSheet } from "@/hooks/ScopeSheet/useScopeSheet";
+import { useScopeSheetPresentationSync } from "@/hooks/Scope-Sheet-Presentation/useScopeSheetPresentationSync";
 import Header from "@/components/ScopeSheet/Header";
 import MainPhotosTab from "@/components/ScopeSheet/MainPhotosTab";
 import EditScopeSheetDialog from "@/components/ScopeSheet/EditScopeSheetDialog";
@@ -21,6 +22,8 @@ export default function ScopeSheetPage({ params }: { params: { uuid: string } })
   const session = useSession();
   const token = session?.data?.user?.token ?? "";
   const { getItem, currentItem, loading, error } = useScopeSheet(token);
+    const { refreshItems } = useScopeSheetPresentationSync(token);
+
 
   useEffect(() => {
     if (params.uuid && token) {
@@ -86,6 +89,7 @@ export default function ScopeSheetPage({ params }: { params: { uuid: string } })
               onFileChange={handleFileChange}
               scope_sheet_uuid={params.uuid}
               presentations_images={currentItem.presentations_images}
+              onUpdate={() => getItem(params.uuid)}
             />
           </CustomTabPanel>
 
@@ -104,8 +108,9 @@ export default function ScopeSheetPage({ params }: { params: { uuid: string } })
         <EditScopeSheetDialog
           open={editDialogOpen}
           onClose={() => setEditDialogOpen(false)}
-          onSuccess={async () => {
+           onSuccess={async () => {
             await getItem(params.uuid);
+            await refreshItems();
             setEditDialogOpen(false);
           }}
           currentItem={currentItem}
