@@ -38,6 +38,7 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
   presentations_images,
   loading,
 }) => {
+  // State declarations
   const [mainImage, setMainImage] = useState<{
     path: string;
     uuid: string;
@@ -51,6 +52,7 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     path: string;
     uuid: string;
   } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const handleDownload = async (imagePath: string) => {
     try {
@@ -69,7 +71,7 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     }
   };
 
-  const filteredFrontHouseImages = useMemo(() => {
+    const filteredFrontHouseImages = useMemo(() => {
     if (!presentations_images) return [];
     return presentations_images
       .filter((img) => img.photo_type === "front_house" && !img.deleted_at)
@@ -93,6 +95,7 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
       : null;
   }, [presentations_images]);
 
+
   useEffect(() => {
     setPresentationImages(filteredFrontHouseImages);
   }, [filteredFrontHouseImages]);
@@ -105,39 +108,37 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     setSelectedImage(imagePath);
   };
 
-  const handleMainImage = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
-      if (files && files.length > 0) {
-        onFileChange("house_number")(files);
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
+  const handleMainImage = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      onFileChange("house_number")(files);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
           setMainImage({ path: result, uuid: "" });
-        };
-        reader.readAsDataURL(files[0]);
-      }
-    },
-    [onFileChange]
-  );
+        }
+      };
+      reader.readAsDataURL(files[0]);
+    }
+  }, [onFileChange]);
 
-  const handlePresentationImages = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
-      if (files && files.length > 0) {
-        onFileChange("front_house")(files);
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          setPresentationImages((prev) =>
-            [...prev, { path: result, uuid: "" }].slice(0, 4)
+  const handlePresentationImages = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      onFileChange("front_house")(files);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          setPresentationImages((prevImages) =>
+            [...prevImages, { path: result, uuid: "" }].slice(0, 4)
           );
-        };
-        reader.readAsDataURL(files[0]);
-      }
-    },
-    [onFileChange]
-  );
+        }
+      };
+      reader.readAsDataURL(files[0]);
+    }
+  }, [onFileChange]);
 
   const handleDeleteClick = (image: { path: string; uuid: string }) => {
     setSelectedImageToDelete(image);
@@ -147,20 +148,38 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
   const handleDeleteConfirm = async () => {
     if (!selectedImageToDelete?.uuid) return;
 
+    setDeleting(true);
     try {
       await onDeleteImage(selectedImageToDelete.uuid);
-      setDeleteDialogOpen(false);
+      
+      // Immediately update local state
+      if (mainImage?.uuid === selectedImageToDelete.uuid) {
+        setMainImage(null);
+      }
+      setPresentationImages(current => 
+        current.filter(img => img.uuid !== selectedImageToDelete.uuid)
+      );
+      
+      // Close preview if the deleted image is currently being previewed
+      if (selectedImage === selectedImageToDelete.path) {
+        setSelectedImage(null);
+      }
+      
     } catch (error) {
       console.error("Failed to delete image:", error);
     } finally {
+       setDeleting(false);
       setSelectedImageToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
 
-  const removePresentationImage = (index: number, uuid: string) => {
+  const removePresentationImage = useCallback((index: number, uuid: string) => {
     const imageToDelete = presentationImages[index];
-    handleDeleteClick(imageToDelete);
-  };
+    if (imageToDelete) {
+      handleDeleteClick(imageToDelete);
+    }
+  }, [presentationImages]);
 
   const removeMainImage = () => {
     if (mainImage) {
@@ -200,15 +219,19 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                         "&:hover .overlay": { opacity: 1 },
                       }}
                     >
-                      <Image
-                        src={presentationImages[index].path}
-                        alt={`Presentation ${index + 1}`}
-                        layout="fill" // Important for the image to fill the container
-                        objectFit="cover" // Maintain aspect ratio and cover the area
-                        style={{
-                          borderRadius: "4px",
-                        }}
-                      />
+                      <Box sx={{ position: 'relative', width: '100%', height: '140px' }}>
+                        <Image
+                          src={presentationImages[index].path}
+                          alt={`Presentation ${index + 1}`}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          style={{
+                            objectFit: 'cover',
+                            borderRadius: "4px",
+                          }}
+                          priority
+                        />
+                      </Box>
                       <Box
                         className="overlay"
                         sx={{
@@ -321,15 +344,18 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                   "&:hover .overlay": { opacity: 1 },
                 }}
               >
-                <Image
-                  src={mainImage.path}
-                  alt="Main"
-                  layout="fill" // Important for the image to fill the container
-                  objectFit="contain" // Maintain aspect ratio and cover the area
-                  style={{
-                    maxHeight: "256px",
-                  }}
-                />
+                <Box sx={{ position: 'relative', width: '100%', height: '256px' }}>
+                  <Image
+                    src={mainImage.path}
+                    alt="Main"
+                    fill
+                    sizes="100vw"
+                    style={{
+                      objectFit: 'contain',
+                    }}
+                    priority
+                  />
+                </Box>
                 <Box
                   className="overlay"
                   sx={{
@@ -406,15 +432,18 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
         <DialogContent sx={{ position: "relative", p: 0, overflow: "hidden" }}>
           {selectedImage && (
             <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
-              <Image
-                src={selectedImage}
-                alt="Preview"
-                layout="fill"
-                objectFit="contain"
-                style={{
-                  maxHeight: "80vh",
-                }}
-              />
+              <Box sx={{ position: 'relative', width: '100%', height: '80vh' }}>
+                <Image
+                  src={selectedImage}
+                  alt="Preview"
+                  fill
+                  sizes="100vw"
+                  style={{
+                    objectFit: 'contain',
+                  }}
+                  priority
+                />
+              </Box>
               <IconButton
                 onClick={() => setSelectedImage(null)}
                 sx={{
@@ -485,13 +514,13 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
             variant="contained"
             onClick={handleDeleteConfirm}
             color="error"
-            disabled={loading}
+            disabled={deleting}
             sx={{
               minWidth: "100px",
               position: "relative",
             }}
           >
-            {loading ? (
+            {deleting ? (
               <Box
                 sx={{
                   display: "flex",
