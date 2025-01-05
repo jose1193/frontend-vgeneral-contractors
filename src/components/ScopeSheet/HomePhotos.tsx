@@ -64,6 +64,7 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
 
   const handleEditClick = (uuid: string, ref: React.RefObject<HTMLInputElement>) => {
     if (ref.current) {
+      ref.current.dataset.uuid = uuid;
       ref.current.click();
     }
   };
@@ -578,8 +579,8 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
         ref={editFrontHouseRef}
         accept="image/*"
         onChange={(e) => {
-          const uuid = presentationImages.find((_, i) => i === 0)?.uuid;
-          if (uuid) handleEditFileChange(uuid)(e);
+          const selectedUuid = editFrontHouseRef.current?.dataset.uuid;
+          if (selectedUuid) handleEditFileChange(selectedUuid)(e);
         }}
       />
       <input
