@@ -282,8 +282,11 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
           <Grid
             container
             spacing={2}
-            justifyContent="center"
-            sx={{ maxWidth: "900px", margin: "0 auto" }}
+            sx={{
+              maxWidth: "900px",
+              margin: "0 auto",
+              justifyContent: { xs: "center", md: "flex-start" },
+            }}
           >
             {[...Array(3)].map((_, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
@@ -434,8 +437,13 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                           onClick={() => handleConfirmUpload(index)}
                           sx={{
                             color: "success.main",
-                            bgcolor: "white",
-                            "&:hover": { bgcolor: "grey.100" },
+                            bgcolor: "rgba(255, 255, 255, 0.8)",
+                            "&:hover": {
+                              bgcolor: "rgba(255, 255, 255, 0.9)",
+                            },
+                            width: 40,
+                            height: 40,
+                            borderRadius: "50%",
                           }}
                         >
                           <CheckCircleIcon />
@@ -444,8 +452,13 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                           onClick={() => handleCancelUpload(index)}
                           sx={{
                             color: "error.main",
-                            bgcolor: "white",
-                            "&:hover": { bgcolor: "grey.100" },
+                            bgcolor: "rgba(255, 255, 255, 0.8)",
+                            "&:hover": {
+                              bgcolor: "rgba(255, 255, 255, 0.9)",
+                            },
+                            width: 40,
+                            height: 40,
+                            borderRadius: "50%",
                           }}
                         >
                           <CancelIcon />
