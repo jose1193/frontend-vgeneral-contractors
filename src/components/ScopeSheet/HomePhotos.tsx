@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -18,8 +18,9 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import DownloadIcon from "@mui/icons-material/Download";
+import EditIcon from "@mui/icons-material/Edit";
 import { ScopeSheetPresentationData } from "../../../app/types/scope-sheet-presentation";
-import Image from "next/image"; // Import Next.js Image
+import Image from "next/image";
 
 interface HomePhotosProps {
   onFileChange: (
@@ -27,17 +28,24 @@ interface HomePhotosProps {
   ) => (files: FileList) => void;
   onImageSelect: (image: string) => void;
   onDeleteImage: (uuid: string) => void;
+  onUpdateImage: (uuid: string, file: File) => void;
   presentations_images?: ScopeSheetPresentationData[];
   loading?: boolean;
+  scope_sheet_uuid: string;
 }
 
 const HomePhotos: React.FC<HomePhotosProps> = ({
   onFileChange,
   onImageSelect,
   onDeleteImage,
+  onUpdateImage,
   presentations_images,
   loading,
+  scope_sheet_uuid,
 }) => {
+  const editFrontHouseRef = useRef<HTMLInputElement>(null);
+  const editHouseNumberRef = useRef<HTMLInputElement>(null);
+  
   // State declarations
   const [mainImage, setMainImage] = useState<{
     path: string;
@@ -53,6 +61,19 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     uuid: string;
   } | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const handleEditClick = (uuid: string, ref: React.RefObject<HTMLInputElement>) => {
+    if (ref.current) {
+      ref.current.click();
+    }
+  };
+
+  const handleEditFileChange = (uuid: string) => async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0 && scope_sheet_uuid) {
+      await onUpdateImage(uuid, files[0]);
+    }
+  };
 
   const handleDownload = async (imagePath: string) => {
     try {
@@ -71,7 +92,7 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     }
   };
 
-    const filteredFrontHouseImages = useMemo(() => {
+  const filteredFrontHouseImages = useMemo(() => {
     if (!presentations_images) return [];
     return presentations_images
       .filter((img) => img.photo_type === "front_house" && !img.deleted_at)
@@ -94,7 +115,6 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
         }
       : null;
   }, [presentations_images]);
-
 
   useEffect(() => {
     setPresentationImages(filteredFrontHouseImages);
@@ -168,7 +188,7 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     } catch (error) {
       console.error("Failed to delete image:", error);
     } finally {
-       setDeleting(false);
+      setDeleting(false);
       setSelectedImageToDelete(null);
       setDeleteDialogOpen(false);
     }
@@ -279,6 +299,13 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                           sx={{ color: "#f44336" }}
                         >
                           <DeleteIcon />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEditClick(presentationImages[index].uuid, editFrontHouseRef)}
+                          sx={{ color: "white" }}
+                        >
+                          <EditIcon />
                         </IconButton>
                       </Box>
                     </Box>
@@ -394,6 +421,13 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                     sx={{ color: "#f44336" }}
                   >
                     <DeleteIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleEditClick(mainImage.uuid, editHouseNumberRef)}
+                    sx={{ color: "white" }}
+                  >
+                    <EditIcon />
                   </IconButton>
                 </Box>
               </Box>
@@ -536,6 +570,27 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Hidden file inputs for editing */}
+      <input
+        type="file"
+        hidden
+        ref={editFrontHouseRef}
+        accept="image/*"
+        onChange={(e) => {
+          const uuid = presentationImages.find((_, i) => i === 0)?.uuid;
+          if (uuid) handleEditFileChange(uuid)(e);
+        }}
+      />
+      <input
+        type="file"
+        hidden
+        ref={editHouseNumberRef}
+        accept="image/*"
+        onChange={(e) => {
+          if (mainImage?.uuid) handleEditFileChange(mainImage.uuid)(e);
+        }}
+      />
     </Box>
   );
 };

@@ -74,11 +74,13 @@ export const uploadPresentationImages = (
 export const updatePresentationData = (
   token: string,
   uuid: string,
+  scope_sheet_uuid: string,
   data: ScopeSheetPresentationUpdateDTO,
   files: File[]
 ): Promise<ScopeSheetPresentationUpdateResponse> => {
   const formData = new FormData();
-
+  formData.append('scope_sheet_uuid', scope_sheet_uuid);
+  
   // Agregar los datos de `ScopeSheetPresentationUpdateDTO` al FormData
   Object.entries(data).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
@@ -87,8 +89,8 @@ export const updatePresentationData = (
   });
 
   // Agregar los archivos al FormData
-  files.forEach((file, index) => {
-    formData.append(`files[${index}]`, file);
+  files.forEach((file) => {
+    formData.append('photo_path[]', file);
   });
 
   return fetchWithCSRF(
@@ -127,4 +129,3 @@ export const reorderPresentationImages = (
     },
     token
   );
-  

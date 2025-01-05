@@ -5,6 +5,7 @@ export interface ScopeSheetPresentationData {
   photo_type?: string;
   photo_order?: number;
   photo_path?: string;
+  scope_sheet_uuid?: string;
   created_at?: string | null;
   updated_at?: string | null;
   deleted_at?: string | null;

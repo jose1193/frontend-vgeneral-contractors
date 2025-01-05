@@ -123,10 +123,10 @@ export const useScopeSheetPresentation = (token: string) => {
   );
 
   const updateItem = useCallback(
-    async (uuid: string, data: ScopeSheetPresentationUpdateDTO, files: File[] = []) => {
+    async (uuid: string, scope_sheet_uuid: string, data: ScopeSheetPresentationUpdateDTO, files: File[] = []) => {
       try {
         setError(null);
-        const updatedItem = await presentationActions.updatePresentationData(token, uuid, data, files);
+        const updatedItem = await presentationActions.updatePresentationData(token, uuid, scope_sheet_uuid, data, files);
         if (updatedItem) {
           setCurrentItem(updatedItem);
           await fetchItems();
@@ -140,7 +140,6 @@ export const useScopeSheetPresentation = (token: string) => {
     },
     [token, fetchItems]
   );
-  
 
   const deleteItem = useCallback(
     async (uuid: string) => {

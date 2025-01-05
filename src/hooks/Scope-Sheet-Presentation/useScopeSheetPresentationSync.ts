@@ -15,7 +15,7 @@ interface UseScopeSheetPresentationSyncReturn {
   error: string | null;
   items: ScopeSheetPresentationData[];
   handleCreate: (data: ScopeSheetPresentationCreateDTO) => Promise<ScopeSheetPresentationCreateResponse>;
-  handleUpdate: (uuid: string, data: ScopeSheetPresentationUpdateDTO) => Promise<ScopeSheetPresentationUpdateResponse>;
+  handleUpdate: (uuid: string, data: ScopeSheetPresentationUpdateDTO & { scope_sheet_uuid: string }, files?: File[]) => Promise<ScopeSheetPresentationUpdateResponse>;
   handleDelete: (uuid: string) => Promise<void>;
   handleReorderImages: (reorderData: { id: number; photo_order: number }[]) => Promise<void>;
   getFilteredItems: () => ScopeSheetPresentationData[];
@@ -69,10 +69,12 @@ export const useScopeSheetPresentationSync = (token: string): UseScopeSheetPrese
 
   const handleUpdate = useCallback(async (
     uuid: string,
-    data: ScopeSheetPresentationUpdateDTO
+    data: ScopeSheetPresentationUpdateDTO & { scope_sheet_uuid: string },
+    files?: File[]
   ): Promise<ScopeSheetPresentationUpdateResponse> => {
     try {
-      const updatedItem = await apiUpdateItem(uuid, data);
+      const { scope_sheet_uuid, ...updateData } = data;
+      const updatedItem = await apiUpdateItem(uuid, scope_sheet_uuid, updateData, files || []);
       if (!updatedItem) {
         throw new Error('Failed to update presentation item');
       }
