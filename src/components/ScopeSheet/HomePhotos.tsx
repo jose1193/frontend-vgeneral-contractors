@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import {
   Card,
   CardContent,
@@ -19,6 +25,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import DownloadIcon from "@mui/icons-material/Download";
 import EditIcon from "@mui/icons-material/Edit";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import { ScopeSheetPresentationData } from "../../../app/types/scope-sheet-presentation";
 import Image from "next/image";
 
@@ -45,7 +53,7 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
 }) => {
   const editFrontHouseRef = useRef<HTMLInputElement>(null);
   const editHouseNumberRef = useRef<HTMLInputElement>(null);
-  
+
   // State declarations
   const [mainImage, setMainImage] = useState<{
     path: string;
@@ -61,20 +69,27 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     uuid: string;
   } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [previewImages, setPreviewImages] = useState<{
+    [key: number]: { file: File; preview: string } | null;
+  }>({});
 
-  const handleEditClick = (uuid: string, ref: React.RefObject<HTMLInputElement>) => {
+  const handleEditClick = (
+    uuid: string,
+    ref: React.RefObject<HTMLInputElement>
+  ) => {
     if (ref.current) {
       ref.current.dataset.uuid = uuid;
       ref.current.click();
     }
   };
 
-  const handleEditFileChange = (uuid: string) => async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0 && scope_sheet_uuid) {
-      await onUpdateImage(uuid, files[0]);
-    }
-  };
+  const handleEditFileChange =
+    (uuid: string) => async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0 && scope_sheet_uuid) {
+        await onUpdateImage(uuid, files[0]);
+      }
+    };
 
   const handleDownload = async (imagePath: string) => {
     try {
@@ -129,37 +144,43 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     setSelectedImage(imagePath);
   };
 
-  const handleMainImage = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      onFileChange("house_number")(files);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (result) {
-          setMainImage({ path: result, uuid: "" });
-        }
-      };
-      reader.readAsDataURL(files[0]);
-    }
-  }, [onFileChange]);
+  const handleMainImage = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        onFileChange("house_number")(files);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = event.target?.result as string;
+          if (result) {
+            setMainImage({ path: result, uuid: "" });
+          }
+        };
+        reader.readAsDataURL(files[0]);
+      }
+    },
+    [onFileChange]
+  );
 
-  const handlePresentationImages = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      onFileChange("front_house")(files);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        if (result) {
-          setPresentationImages((prevImages) =>
-            [...prevImages, { path: result, uuid: "" }].slice(0, 4)
-          );
-        }
-      };
-      reader.readAsDataURL(files[0]);
-    }
-  }, [onFileChange]);
+  const handlePresentationImages = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        onFileChange("front_house")(files);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = event.target?.result as string;
+          if (result) {
+            setPresentationImages((prevImages) =>
+              [...prevImages, { path: result, uuid: "" }].slice(0, 4)
+            );
+          }
+        };
+        reader.readAsDataURL(files[0]);
+      }
+    },
+    [onFileChange]
+  );
 
   const handleDeleteClick = (image: { path: string; uuid: string }) => {
     setSelectedImageToDelete(image);
@@ -172,20 +193,19 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     setDeleting(true);
     try {
       await onDeleteImage(selectedImageToDelete.uuid);
-      
+
       // Immediately update local state
       if (mainImage?.uuid === selectedImageToDelete.uuid) {
         setMainImage(null);
       }
-      setPresentationImages(current => 
-        current.filter(img => img.uuid !== selectedImageToDelete.uuid)
+      setPresentationImages((current) =>
+        current.filter((img) => img.uuid !== selectedImageToDelete.uuid)
       );
-      
+
       // Close preview if the deleted image is currently being previewed
       if (selectedImage === selectedImageToDelete.path) {
         setSelectedImage(null);
       }
-      
     } catch (error) {
       console.error("Failed to delete image:", error);
     } finally {
@@ -195,17 +215,60 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     }
   };
 
-  const removePresentationImage = useCallback((index: number, uuid: string) => {
-    const imageToDelete = presentationImages[index];
-    if (imageToDelete) {
-      handleDeleteClick(imageToDelete);
-    }
-  }, [presentationImages]);
+  const removePresentationImage = useCallback(
+    (index: number, uuid: string) => {
+      const imageToDelete = presentationImages[index];
+      if (imageToDelete) {
+        handleDeleteClick(imageToDelete);
+      }
+    },
+    [presentationImages]
+  );
 
   const removeMainImage = () => {
     if (mainImage) {
       handleDeleteClick(mainImage);
     }
+  };
+
+  const handlePresentationPreview =
+    (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = event.target?.result as string;
+          if (result) {
+            setPreviewImages((prev) => ({
+              ...prev,
+              [index]: { file, preview: result },
+            }));
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+  const handleConfirmUpload = async (index: number) => {
+    const previewImage = previewImages[index];
+    if (previewImage) {
+      const fileList = new DataTransfer();
+      fileList.items.add(previewImage.file);
+      await onFileChange("front_house")(fileList.files);
+      // Clear preview after successful upload
+      setPreviewImages((prev) => ({
+        ...prev,
+        [index]: null,
+      }));
+    }
+  };
+
+  const handleCancelUpload = (index: number) => {
+    setPreviewImages((prev) => ({
+      ...prev,
+      [index]: null,
+    }));
   };
 
   return (
@@ -216,16 +279,21 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
           <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
             Front House Photos
           </Typography>
-          <Grid container spacing={2}>
-            {[...Array(4)].map((_, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid
+            container
+            spacing={2}
+            justifyContent="center"
+            sx={{ maxWidth: "900px", margin: "0 auto" }}
+          >
+            {[...Array(3)].map((_, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
                 <Box
                   sx={{
                     border: "2px dashed",
                     borderColor: "grey.300",
                     borderRadius: 1,
                     p: 2,
-                    height: "160px",
+                    height: "200px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -240,14 +308,20 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                         "&:hover .overlay": { opacity: 1 },
                       }}
                     >
-                      <Box sx={{ position: 'relative', width: '100%', height: '140px' }}>
+                      <Box
+                        sx={{
+                          position: "relative",
+                          width: "100%",
+                          height: "180px",
+                        }}
+                      >
                         <Image
                           src={presentationImages[index].path}
                           alt={`Presentation ${index + 1}`}
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           style={{
-                            objectFit: 'cover',
+                            objectFit: "cover",
                             borderRadius: "4px",
                           }}
                           priority
@@ -289,6 +363,19 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                         >
                           <DownloadIcon />
                         </IconButton>
+
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            handleEditClick(
+                              presentationImages[index].uuid,
+                              editFrontHouseRef
+                            )
+                          }
+                          sx={{ color: "white" }}
+                        >
+                          <EditIcon />
+                        </IconButton>
                         <IconButton
                           size="small"
                           onClick={() =>
@@ -301,12 +388,67 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                         >
                           <DeleteIcon />
                         </IconButton>
+                      </Box>
+                    </Box>
+                  ) : previewImages[index] ? (
+                    <Box
+                      sx={{
+                        position: "relative",
+                        width: "100%",
+                        height: "100%",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          position: "relative",
+                          width: "100%",
+                          height: "180px",
+                        }}
+                      >
+                        <Image
+                          src={previewImages[index].preview}
+                          alt={`Preview ${index + 1}`}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          style={{
+                            objectFit: "cover",
+                            borderRadius: "4px",
+                          }}
+                        />
+                      </Box>
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          bgcolor: "rgba(0, 0, 0, 0.5)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 2,
+                        }}
+                      >
                         <IconButton
-                          size="small"
-                          onClick={() => handleEditClick(presentationImages[index].uuid, editFrontHouseRef)}
-                          sx={{ color: "white" }}
+                          onClick={() => handleConfirmUpload(index)}
+                          sx={{
+                            color: "success.main",
+                            bgcolor: "white",
+                            "&:hover": { bgcolor: "grey.100" },
+                          }}
                         >
-                          <EditIcon />
+                          <CheckCircleIcon />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => handleCancelUpload(index)}
+                          sx={{
+                            color: "error.main",
+                            bgcolor: "white",
+                            "&:hover": { bgcolor: "grey.100" },
+                          }}
+                        >
+                          <CancelIcon />
                         </IconButton>
                       </Box>
                     </Box>
@@ -334,7 +476,7 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                         type="file"
                         hidden
                         accept="image/*"
-                        onChange={handlePresentationImages}
+                        onChange={handlePresentationPreview(index)}
                       />
                     </label>
                   )}
@@ -372,14 +514,16 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                   "&:hover .overlay": { opacity: 1 },
                 }}
               >
-                <Box sx={{ position: 'relative', width: '100%', height: '256px' }}>
+                <Box
+                  sx={{ position: "relative", width: "100%", height: "256px" }}
+                >
                   <Image
                     src={mainImage.path}
                     alt="Main"
                     fill
                     sizes="100vw"
                     style={{
-                      objectFit: 'contain',
+                      objectFit: "contain",
                     }}
                     priority
                   />
@@ -425,7 +569,9 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => handleEditClick(mainImage.uuid, editHouseNumberRef)}
+                    onClick={() =>
+                      handleEditClick(mainImage.uuid, editHouseNumberRef)
+                    }
                     sx={{ color: "white" }}
                   >
                     <EditIcon />
@@ -467,14 +613,14 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
         <DialogContent sx={{ position: "relative", p: 0, overflow: "hidden" }}>
           {selectedImage && (
             <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
-              <Box sx={{ position: 'relative', width: '100%', height: '80vh' }}>
+              <Box sx={{ position: "relative", width: "100%", height: "80vh" }}>
                 <Image
                   src={selectedImage}
                   alt="Preview"
                   fill
                   sizes="100vw"
                   style={{
-                    objectFit: 'contain',
+                    objectFit: "contain",
                   }}
                   priority
                 />

@@ -5,7 +5,10 @@ import HomePhotos from "./HomePhotos";
 import { useSession } from "next-auth/react";
 import { useScopeSheetPresentationSync } from "../../hooks/Scope-Sheet-Presentation/useScopeSheetPresentationSync";
 import { useScopeSheetPresentation } from "../../hooks/Scope-Sheet-Presentation/useScopeSheetPresentation";
-import { ScopeSheetPresentationData, ScopeSheetPresentationUpdateDTO } from "../../../app/types/scope-sheet-presentation";
+import {
+  ScopeSheetPresentationData,
+  ScopeSheetPresentationUpdateDTO,
+} from "../../../app/types/scope-sheet-presentation";
 import { ScopeSheetData } from "../../../app/types/scope-sheet";
 
 interface MainPhotosTabProps {
@@ -13,7 +16,9 @@ interface MainPhotosTabProps {
     front_house: FileList | null;
     house_number: FileList | null;
   };
-  onFileChange: (section: "front_house" | "house_number") => (files: FileList) => void;
+  onFileChange: (
+    section: "front_house" | "house_number"
+  ) => (files: FileList) => void;
   scope_sheet_uuid: string;
   presentations_images?: ScopeSheetPresentationData[];
   onUpdate: () => Promise<ScopeSheetData | null>;
@@ -29,14 +34,8 @@ const MainPhotosTab = ({
   const { data: session } = useSession();
   const token = session?.user?.token ?? "";
 
-  const {
-    handleDelete,
-    refreshItems,
-    loading,
-    error,
-    items,
-    handleUpdate,
-  } = useScopeSheetPresentationSync(token);
+  const { handleDelete, refreshItems, loading, error, items, handleUpdate } =
+    useScopeSheetPresentationSync(token);
 
   const { uploadImages } = useScopeSheetPresentation(token);
 
@@ -110,23 +109,15 @@ const MainPhotosTab = ({
     [handleDelete, refreshItems, onUpdate]
   );
 
-  const handleSnackbarClose = useCallback(
-    () => {
-      setSnackbar((prev) => ({ ...prev, open: false }));
-    },
-    []
-  );
+  const handleSnackbarClose = useCallback(() => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  }, []);
 
-  const [selectedImage, setSelectedImage] = useState<string | null>(
-    null
-  );
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const handleImageSelect = useCallback(
-    (imagePath: string) => {
-      setSelectedImage(imagePath);
-    },
-    []
-  );
+  const handleImageSelect = useCallback((imagePath: string) => {
+    setSelectedImage(imagePath);
+  }, []);
 
   const handleUpdateImage = useCallback(
     async (uuid: string, file: File) => {
@@ -142,12 +133,14 @@ const MainPhotosTab = ({
         if (!imageToUpdate.photo_type) {
           throw new Error("Invalid photo type");
         }
-        
-        const updateData: ScopeSheetPresentationUpdateDTO & { scope_sheet_uuid: string } = {
+
+        const updateData: ScopeSheetPresentationUpdateDTO & {
+          scope_sheet_uuid: string;
+        } = {
           photo_type: imageToUpdate.photo_type,
-          scope_sheet_uuid
+          scope_sheet_uuid,
         };
-        
+
         await handleUpdate(uuid, updateData, [file]);
         await refreshItems();
         await onUpdate();
@@ -167,7 +160,13 @@ const MainPhotosTab = ({
         await refreshItems();
       }
     },
-    [handleUpdate, refreshItems, onUpdate, presentations_images]
+    [
+      handleUpdate,
+      refreshItems,
+      onUpdate,
+      presentations_images,
+      scope_sheet_uuid,
+    ]
   );
 
   const memoizedHomePhotos = useMemo(
