@@ -72,6 +72,13 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
   const [previewImages, setPreviewImages] = useState<{
     [key: number]: { file: File; preview: string } | null;
   }>({});
+  const [editingImage, setEditingImage] = useState<string | null>(null);
+  const [editingMainImage, setEditingMainImage] = useState(false);
+  const [editPreviewImage, setEditPreviewImage] = useState<{
+    uuid: string;
+    preview: string;
+    file: File;
+  } | null>(null);
 
   const handleEditClick = (
     uuid: string,
@@ -86,8 +93,20 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
   const handleEditFileChange =
     (uuid: string) => async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
-      if (files && files.length > 0 && scope_sheet_uuid) {
-        await onUpdateImage(uuid, files[0]);
+      if (files && files.length > 0) {
+        const file = files[0];
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = event.target?.result as string;
+          if (result) {
+            setEditPreviewImage({
+              uuid,
+              preview: result,
+              file: file,
+            });
+          }
+        };
+        reader.readAsDataURL(file);
       }
     };
 
@@ -271,8 +290,27 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     }));
   };
 
+  const handleCancelEdit = () => {
+    setEditPreviewImage(null);
+  };
+
+  const handleCancelMainEdit = () => {
+    setEditingMainImage(false);
+  };
+
+  const handleConfirmEdit = async () => {
+    if (editPreviewImage && scope_sheet_uuid) {
+      try {
+        await onUpdateImage(editPreviewImage.uuid, editPreviewImage.file);
+        setEditPreviewImage(null);
+      } catch (error) {
+        console.error("Error updating image:", error);
+      }
+    }
+  };
+
   return (
-    <Box sx={{ maxWidth: "4xl", mx: "auto", "& > *": { mb: 3 } }}>
+    <Box sx={{ maxWidth: "4xl", mx: 0, "& > *": { mb: 3 } }}>
       {/* Front House Card */}
       <Card>
         <CardContent>
@@ -284,8 +322,8 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
             spacing={2}
             sx={{
               maxWidth: "900px",
-              margin: "0 auto",
-              justifyContent: { xs: "center", md: "flex-start" },
+              margin: "0",
+              justifyContent: "flex-start",
             }}
           >
             {[...Array(3)].map((_, index) => (
@@ -319,7 +357,12 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                         }}
                       >
                         <Image
-                          src={presentationImages[index].path}
+                          src={
+                            editPreviewImage?.uuid ===
+                            presentationImages[index].uuid
+                              ? editPreviewImage.preview
+                              : presentationImages[index].path
+                          }
                           alt={`Presentation ${index + 1}`}
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -348,49 +391,84 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                           borderRadius: 1,
                         }}
                       >
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            handleImagePreview(presentationImages[index].path)
-                          }
-                          sx={{ color: "white" }}
-                        >
-                          <VisibilityIcon />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            handleDownload(presentationImages[index].path)
-                          }
-                          sx={{ color: "white" }}
-                        >
-                          <DownloadIcon />
-                        </IconButton>
-
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            handleEditClick(
-                              presentationImages[index].uuid,
-                              editFrontHouseRef
-                            )
-                          }
-                          sx={{ color: "white" }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            removePresentationImage(
-                              index,
-                              presentationImages[index].uuid
-                            )
-                          }
-                          sx={{ color: "#f44336" }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                        {editPreviewImage?.uuid ===
+                        presentationImages[index].uuid ? (
+                          <>
+                            <IconButton
+                              size="small"
+                              onClick={handleConfirmEdit}
+                              sx={{
+                                color: "success.main",
+                                bgcolor: "rgba(255, 255, 255, 0.8)",
+                                "&:hover": {
+                                  bgcolor: "rgba(255, 255, 255, 0.9)",
+                                },
+                              }}
+                            >
+                              <CheckCircleIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={handleCancelEdit}
+                              sx={{
+                                color: "error.main",
+                                bgcolor: "rgba(255, 255, 255, 0.8)",
+                                "&:hover": {
+                                  bgcolor: "rgba(255, 255, 255, 0.9)",
+                                },
+                              }}
+                            >
+                              <CancelIcon />
+                            </IconButton>
+                          </>
+                        ) : (
+                          <>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleImagePreview(
+                                  presentationImages[index].path
+                                )
+                              }
+                              sx={{ color: "white" }}
+                            >
+                              <VisibilityIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleDownload(presentationImages[index].path)
+                              }
+                              sx={{ color: "white" }}
+                            >
+                              <DownloadIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                handleEditClick(
+                                  presentationImages[index].uuid,
+                                  editFrontHouseRef
+                                )
+                              }
+                              sx={{ color: "white" }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                removePresentationImage(
+                                  index,
+                                  presentationImages[index].uuid
+                                )
+                              }
+                              sx={{ color: "#f44336" }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </>
+                        )}
                       </Box>
                     </Box>
                   ) : previewImages[index] ? (
@@ -573,21 +651,57 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                   >
                     <DownloadIcon />
                   </IconButton>
+                  {editingMainImage ? (
+                    <>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (editHouseNumberRef.current) {
+                            editHouseNumberRef.current.click();
+                          }
+                        }}
+                        sx={{
+                          color: "success.main",
+                          bgcolor: "rgba(255, 255, 255, 0.8)",
+                          "&:hover": {
+                            bgcolor: "rgba(255, 255, 255, 0.9)",
+                          },
+                        }}
+                      >
+                        <CheckCircleIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCancelMainEdit()}
+                        sx={{
+                          color: "error.main",
+                          bgcolor: "rgba(255, 255, 255, 0.8)",
+                          "&:hover": {
+                            bgcolor: "rgba(255, 255, 255, 0.9)",
+                          },
+                        }}
+                      >
+                        <CancelIcon />
+                      </IconButton>
+                    </>
+                  ) : (
+                    <IconButton
+                      size="small"
+                      onClick={() =>
+                        handleEditClick(mainImage.uuid, editHouseNumberRef)
+                      }
+                      sx={{ color: "white" }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  )}
                   <IconButton
                     size="small"
                     onClick={removeMainImage}
                     sx={{ color: "#f44336" }}
                   >
                     <DeleteIcon />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() =>
-                      handleEditClick(mainImage.uuid, editHouseNumberRef)
-                    }
-                    sx={{ color: "white" }}
-                  >
-                    <EditIcon />
                   </IconButton>
                 </Box>
               </Box>
