@@ -1,24 +1,24 @@
+// 1. Store (scope-sheet-presentationStore.ts)
 import { create } from "zustand";
 import { ScopeSheetPresentationData } from "../../app/types/scope-sheet-presentation";
 
 interface ScopeSheetPresentationStore {
-  // State
   items: ScopeSheetPresentationData[];
   loading: boolean;
   error: string | null;
   searchTerm: string;
 
-  // Basic Actions
+  // Basic actions
   setItems: (items: ScopeSheetPresentationData[]) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setSearchTerm: (term: string) => void;
 
-  // CRUD Actions
+  // CRUD actions
   addItem: (item: ScopeSheetPresentationData) => void;
-  updateItem: (uuid: string, item: ScopeSheetPresentationData) => void;
-  deleteItem: (uuid: string) => void;
-  restoreItem: (item: ScopeSheetPresentationData) => void;
+  updateItem: (uuid: string, item: Partial<ScopeSheetPresentationData>) => void;
+  updateItemStatus: (uuid: string, isDeleted: boolean) => void;
+  reorderImages: (reorderedItems: ScopeSheetPresentationData[]) => void;
 
   // Selectors
   getFilteredItems: () => ScopeSheetPresentationData[];
@@ -38,59 +38,60 @@ export const useScopeSheetPresentationStore =
 
     addItem: (item) =>
       set((state) => ({
-        items: [item, ...state.items].sort(
-          (a, b) =>
-            (a.photo_type || "").localeCompare(b.photo_type || "") ||
-            (a.photo_order ?? 0) - (b.photo_order ?? 0)
+        items: [item, ...state.items].sort((a, b) =>
+          (a.photo_type || "").localeCompare(b.photo_type || "")
         ),
       })),
 
     updateItem: (uuid, updatedItem) =>
       set((state) => ({
         items: state.items.map((item) =>
-          item.uuid === uuid ? updatedItem : item
+          item.uuid === uuid ? { ...item, ...updatedItem } : item
         ),
       })),
 
-    deleteItem: (uuid) =>
+    updateItemStatus: (uuid, isDeleted) =>
       set((state) => ({
         items: state.items.map((item) =>
           item.uuid === uuid
-            ? { ...item, deleted_at: new Date().toISOString() }
+            ? {
+                ...item,
+                deleted_at: isDeleted ? new Date().toISOString() : null,
+              }
             : item
         ),
       })),
 
-    restoreItem: (restoredItem) =>
-      set((state) => ({
-        items: state.items.map((item) =>
-          item.uuid === restoredItem.uuid
-            ? { ...restoredItem, deleted_at: null }
-            : item
-        ),
-      })),
+    reorderImages: (reorderedItems) => {
+      set({ items: reorderedItems });
+    },
 
     getFilteredItems: () => {
       const { items, searchTerm } = get();
       if (!searchTerm) return items;
 
+      const searchTermLower = searchTerm.toLowerCase();
+
       return items.filter((item) => {
-        const searchFields = [
+        const searchableFields = [
           item.photo_type,
-          String(item.photo_order),
-          item.photo_path,
-        ].filter(Boolean);
-        return searchFields.some((field) =>
-          field?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+          item.uuid,
+          item.scope_sheet_id,
+        ];
+
+        return searchableFields.some((field) => {
+          if (field === null || field === undefined) return false;
+          return String(field).toLowerCase().includes(searchTermLower);
+        });
       });
     },
   }));
 
+// Auxiliary selectors
 export const selectActivePresentationItems = (
-  state: ScopeSheetPresentationStore
-) => state.items.filter((item) => !item.deleted_at);
+  store: ScopeSheetPresentationStore
+) => store.items.filter((item) => !item.deleted_at);
 
 export const selectDeletedPresentationItems = (
-  state: ScopeSheetPresentationStore
-) => state.items.filter((item) => item.deleted_at);
+  store: ScopeSheetPresentationStore
+) => store.items.filter((item) => item.deleted_at);

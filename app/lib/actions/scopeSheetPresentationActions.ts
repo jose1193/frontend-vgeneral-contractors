@@ -51,12 +51,12 @@ export const uploadPresentationImages = (
   photo_type: string
 ): Promise<ScopeSheetPresentationCreateResponse> => {
   const formData = new FormData();
-  formData.append('scope_sheet_uuid', scope_sheet_uuid);
-  formData.append('photo_type', photo_type);
-  
+  formData.append("scope_sheet_uuid", scope_sheet_uuid);
+  formData.append("photo_type", photo_type);
+
   // Append each file to photo_path array
-  files.forEach(file => {
-    formData.append('photo_path[]', file);
+  files.forEach((file) => {
+    formData.append("photo_path[]", file);
   });
 
   return fetchWithCSRF(
@@ -79,8 +79,8 @@ export const updatePresentationData = (
   files: File[]
 ): Promise<ScopeSheetPresentationUpdateResponse> => {
   const formData = new FormData();
-  formData.append('scope_sheet_uuid', scope_sheet_uuid);
-  
+  formData.append("scope_sheet_uuid", scope_sheet_uuid);
+
   // Agregar los datos de `ScopeSheetPresentationUpdateDTO` al FormData
   Object.entries(data).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
@@ -90,7 +90,7 @@ export const updatePresentationData = (
 
   // Agregar los archivos al FormData
   files.forEach((file) => {
-    formData.append('photo_path[]', file);
+    formData.append("photo_path[]", file);
   });
 
   return fetchWithCSRF(
@@ -102,7 +102,6 @@ export const updatePresentationData = (
     token
   );
 };
-
 
 // DELETE /api/scope-sheet-presentation/delete/{uuid}
 export const deletePresentationData = (
