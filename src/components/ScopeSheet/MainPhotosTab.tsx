@@ -24,18 +24,25 @@ interface MainPhotosTabProps {
   onUpdate: () => Promise<ScopeSheetData | null>;
 }
 
-const MainPhotosTab = ({
+const MainPhotosTab: React.FC<MainPhotosTabProps> = ({
   selectedFiles,
   onFileChange,
   scope_sheet_uuid,
   presentations_images,
   onUpdate,
-}: MainPhotosTabProps) => {
+}) => {
   const { data: session } = useSession();
   const token = session?.user?.token ?? "";
 
-  const { handleDelete, refreshItems, loading, error, items, handleUpdate } =
-    useScopeSheetPresentationSync(token);
+  const {
+    handleDelete,
+    refreshItems,
+    loading,
+    error,
+    items,
+    handleUpdate,
+    handleReorderImages: syncReorderImages,
+  } = useScopeSheetPresentationSync(token);
 
   const { uploadImages } = useScopeSheetPresentation(token);
 
@@ -169,6 +176,49 @@ const MainPhotosTab = ({
     ]
   );
 
+  const handleReorderImages = useCallback(
+    async (frontHouseOrder: string[]): Promise<void> => {
+      try {
+        // Find the house number image
+        const houseNumberImage = presentations_images?.find(
+          (img) => img.photo_type === "house_number" && !img.deleted_at
+        );
+
+        if (!houseNumberImage?.uuid) {
+          throw new Error("House number image is required");
+        }
+
+        // Create complete order with house number first
+        const completeOrder = [houseNumberImage.uuid, ...frontHouseOrder];
+
+        // Call API to update order
+        await syncReorderImages(scope_sheet_uuid, completeOrder);
+        await refreshItems();
+        await onUpdate();
+        setSnackbar({
+          open: true,
+          message: "Images reordered successfully",
+          severity: "success",
+        });
+      } catch (error) {
+        console.error("Error reordering images:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to reorder images",
+          severity: "error",
+        });
+        await refreshItems();
+      }
+    },
+    [
+      scope_sheet_uuid,
+      syncReorderImages,
+      refreshItems,
+      onUpdate,
+      presentations_images,
+    ]
+  );
+
   const memoizedHomePhotos = useMemo(
     () => (
       <HomePhotos
@@ -179,6 +229,7 @@ const MainPhotosTab = ({
         presentations_images={filteredImages}
         loading={loading}
         scope_sheet_uuid={scope_sheet_uuid}
+        onReorderImages={handleReorderImages}
       />
     ),
     [
@@ -189,6 +240,7 @@ const MainPhotosTab = ({
       filteredImages,
       loading,
       scope_sheet_uuid,
+      handleReorderImages,
     ]
   );
 

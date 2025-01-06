@@ -120,7 +120,7 @@ export const reorderPresentationImages = (
   data: { scope_sheet_uuid: string; new_order: string[] }
 ): Promise<ScopeSheetPresentationListResponse> =>
   fetchWithCSRF(
-    `/api/presentation-scope-sheet/reorder-images`,
+    `/api/scope-sheet-presentation/reorder-images`,
     {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

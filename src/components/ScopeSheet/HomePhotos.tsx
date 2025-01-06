@@ -25,10 +25,26 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import DownloadIcon from "@mui/icons-material/Download";
 import EditIcon from "@mui/icons-material/Edit";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
 import { ScopeSheetPresentationData } from "../../../app/types/scope-sheet-presentation";
 import Image from "next/image";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { motion, AnimatePresence } from "framer-motion";
+import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
 
 interface HomePhotosProps {
   onFileChange: (
@@ -40,7 +56,153 @@ interface HomePhotosProps {
   presentations_images?: ScopeSheetPresentationData[];
   loading?: boolean;
   scope_sheet_uuid: string;
+  onReorderImages: (newOrder: string[]) => Promise<void>;
 }
+
+const SortableImage = ({
+  image,
+  index,
+  onPreview,
+  onDownload,
+  onEdit,
+  onDelete,
+}: {
+  image: { path: string; uuid: string };
+  index: number;
+  onPreview: () => void;
+  onDownload: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: image.uuid,
+  });
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 1000 : 1,
+        opacity: isDragging ? 0.5 : 1,
+      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      data-id={image.uuid}
+    >
+      <Box
+        sx={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          "&:hover .overlay": { opacity: 1 },
+        }}
+      >
+        <Box
+          {...attributes}
+          {...listeners}
+          sx={{
+            position: "relative",
+            width: "100%",
+            height: "180px",
+            cursor: isDragging ? "grabbing" : "grab",
+          }}
+        >
+          <Image
+            src={image.path}
+            alt={`Presentation ${index + 1}`}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            style={{
+              objectFit: "cover",
+              borderRadius: "4px",
+            }}
+            priority
+          />
+        </Box>
+
+        <Box
+          className="overlay"
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bgcolor: "rgba(0, 0, 0, 0.5)",
+            opacity: 0,
+            transition: "opacity 0.2s",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+            borderRadius: 1,
+            pointerEvents: "none",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              pointerEvents: "auto",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <IconButton
+              size="small"
+              onClick={onPreview}
+              sx={{
+                color: "white",
+                "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
+              }}
+            >
+              <VisibilityIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={onDownload}
+              sx={{
+                color: "white",
+                "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
+              }}
+            >
+              <DownloadIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={onEdit}
+              sx={{
+                color: "white",
+                "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
+              }}
+            >
+              <EditIcon />
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={onDelete}
+              sx={{
+                color: "#f44336",
+                "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        </Box>
+      </Box>
+    </motion.div>
+  );
+};
 
 const HomePhotos: React.FC<HomePhotosProps> = ({
   onFileChange,
@@ -50,6 +212,7 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
   presentations_images,
   loading,
   scope_sheet_uuid,
+  onReorderImages,
 }) => {
   const editFrontHouseRef = useRef<HTMLInputElement>(null);
   const editHouseNumberRef = useRef<HTMLInputElement>(null);
@@ -72,13 +235,21 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
   const [previewImages, setPreviewImages] = useState<{
     [key: number]: { file: File; preview: string } | null;
   }>({});
-  const [editingImage, setEditingImage] = useState<string | null>(null);
-  const [editingMainImage, setEditingMainImage] = useState(false);
   const [editPreviewImage, setEditPreviewImage] = useState<{
     uuid: string;
     preview: string;
     file: File;
   } | null>(null);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const [editLoading, setEditLoading] = useState(false);
 
   const handleEditClick = (
     uuid: string,
@@ -152,8 +323,17 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
   }, [presentations_images]);
 
   useEffect(() => {
-    setPresentationImages(filteredFrontHouseImages);
-  }, [filteredFrontHouseImages]);
+    if (presentations_images) {
+      const frontHouseImages = presentations_images
+        .filter((img) => img.photo_type === "front_house" && !img.deleted_at)
+        .sort((a, b) => (a.photo_order || 0) - (b.photo_order || 0))
+        .map((img) => ({
+          path: img.photo_path || "",
+          uuid: img.uuid || "",
+        }));
+      setPresentationImages(frontHouseImages);
+    }
+  }, [presentations_images]);
 
   useEffect(() => {
     setMainImage(filteredHouseNumberImage);
@@ -191,7 +371,7 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
           const result = event.target?.result as string;
           if (result) {
             setPresentationImages((prevImages) =>
-              [...prevImages, { path: result, uuid: "" }].slice(0, 4)
+              [...prevImages, { path: result, uuid: "" }].slice(0, 3)
             );
           }
         };
@@ -294,294 +474,154 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     setEditPreviewImage(null);
   };
 
-  const handleCancelMainEdit = () => {
-    setEditingMainImage(false);
-  };
-
   const handleConfirmEdit = async () => {
     if (editPreviewImage && scope_sheet_uuid) {
+      setEditLoading(true);
       try {
         await onUpdateImage(editPreviewImage.uuid, editPreviewImage.file);
         setEditPreviewImage(null);
+        setSnackbar({
+          open: true,
+          message: "Image updated successfully",
+          severity: "success",
+        });
       } catch (error) {
         console.error("Error updating image:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to update image",
+          severity: "error",
+        });
+      } finally {
+        setEditLoading(false);
       }
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor)
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = presentationImages.findIndex(
+      (img) => img.uuid === active.id
+    );
+    const newIndex = presentationImages.findIndex(
+      (img) => img.uuid === over.id
+    );
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Update local state optimistically
+    const newOrder = arrayMove(presentationImages, oldIndex, newIndex);
+    setPresentationImages(newOrder);
+
+    try {
+      // Get UUIDs from the new order
+      const frontHouseUuids = newOrder.map((img) => img.uuid);
+      await onReorderImages(frontHouseUuids);
+    } catch (error) {
+      console.error("Error reordering images:", error);
+      // Revert to original order on error
+      if (presentations_images) {
+        const originalOrder = presentations_images
+          .filter((img) => img.photo_type === "front_house" && !img.deleted_at)
+          .sort((a, b) => (a.photo_order || 0) - (b.photo_order || 0))
+          .map((img) => ({
+            path: img.photo_path || "",
+            uuid: img.uuid || "",
+          }));
+        setPresentationImages(originalOrder);
+      }
+      setSnackbar({
+        open: true,
+        message: "Failed to reorder images",
+        severity: "error",
+      });
     }
   };
 
   return (
     <Box sx={{ maxWidth: "4xl", mx: 0, "& > *": { mb: 3 } }}>
-      {/* Front House Card */}
       <Card>
         <CardContent>
-          <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
+          <Typography variant="h5" sx={{ mb: 4, fontWeight: "bold" }}>
             Front House Photos
           </Typography>
-          <Grid
-            container
-            spacing={2}
-            sx={{
-              maxWidth: "900px",
-              margin: "0",
-              justifyContent: "flex-start",
-            }}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            {[...Array(3)].map((_, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Box
-                  sx={{
-                    border: "2px dashed",
-                    borderColor: "grey.300",
-                    borderRadius: 1,
-                    p: 2,
-                    height: "200px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {presentationImages[index] ? (
-                    <Box
-                      sx={{
-                        position: "relative",
-                        width: "100%",
-                        height: "100%",
-                        "&:hover .overlay": { opacity: 1 },
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          position: "relative",
-                          width: "100%",
-                          height: "180px",
-                        }}
-                      >
-                        <Image
-                          src={
-                            editPreviewImage?.uuid ===
-                            presentationImages[index].uuid
-                              ? editPreviewImage.preview
-                              : presentationImages[index].path
-                          }
-                          alt={`Presentation ${index + 1}`}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          style={{
-                            objectFit: "cover",
-                            borderRadius: "4px",
-                          }}
-                          priority
-                        />
-                      </Box>
-                      <Box
-                        className="overlay"
-                        sx={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          bgcolor: "rgba(0, 0, 0, 0.5)",
-                          opacity: 0,
-                          transition: "opacity 0.2s",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: 1,
-                          borderRadius: 1,
-                        }}
-                      >
-                        {editPreviewImage?.uuid ===
-                        presentationImages[index].uuid ? (
-                          <>
-                            <IconButton
-                              size="small"
-                              onClick={handleConfirmEdit}
-                              sx={{
-                                color: "success.main",
-                                bgcolor: "rgba(255, 255, 255, 0.8)",
-                                "&:hover": {
-                                  bgcolor: "rgba(255, 255, 255, 0.9)",
-                                },
-                              }}
-                            >
-                              <CheckCircleIcon />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={handleCancelEdit}
-                              sx={{
-                                color: "error.main",
-                                bgcolor: "rgba(255, 255, 255, 0.8)",
-                                "&:hover": {
-                                  bgcolor: "rgba(255, 255, 255, 0.9)",
-                                },
-                              }}
-                            >
-                              <CancelIcon />
-                            </IconButton>
-                          </>
-                        ) : (
-                          <>
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleImagePreview(
-                                  presentationImages[index].path
-                                )
-                              }
-                              sx={{ color: "white" }}
-                            >
-                              <VisibilityIcon />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleDownload(presentationImages[index].path)
-                              }
-                              sx={{ color: "white" }}
-                            >
-                              <DownloadIcon />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleEditClick(
-                                  presentationImages[index].uuid,
-                                  editFrontHouseRef
-                                )
-                              }
-                              sx={{ color: "white" }}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                removePresentationImage(
-                                  index,
-                                  presentationImages[index].uuid
-                                )
-                              }
-                              sx={{ color: "#f44336" }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </>
-                        )}
-                      </Box>
-                    </Box>
-                  ) : previewImages[index] ? (
-                    <Box
-                      sx={{
-                        position: "relative",
-                        width: "100%",
-                        height: "100%",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          position: "relative",
-                          width: "100%",
-                          height: "180px",
-                        }}
-                      >
-                        <Image
-                          src={previewImages[index].preview}
-                          alt={`Preview ${index + 1}`}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          style={{
-                            objectFit: "cover",
-                            borderRadius: "4px",
-                          }}
-                        />
-                      </Box>
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          bgcolor: "rgba(0, 0, 0, 0.5)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: 2,
-                        }}
-                      >
-                        <IconButton
-                          onClick={() => handleConfirmUpload(index)}
-                          sx={{
-                            color: "success.main",
-                            bgcolor: "rgba(255, 255, 255, 0.8)",
-                            "&:hover": {
-                              bgcolor: "rgba(255, 255, 255, 0.9)",
-                            },
-                            width: 40,
-                            height: 40,
-                            borderRadius: "50%",
-                          }}
-                        >
-                          <CheckCircleIcon />
-                        </IconButton>
-                        <IconButton
-                          onClick={() => handleCancelUpload(index)}
-                          sx={{
-                            color: "error.main",
-                            bgcolor: "rgba(255, 255, 255, 0.8)",
-                            "&:hover": {
-                              bgcolor: "rgba(255, 255, 255, 0.9)",
-                            },
-                            width: 40,
-                            height: 40,
-                            borderRadius: "50%",
-                          }}
-                        >
-                          <CancelIcon />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  ) : (
-                    <label
-                      style={{
-                        cursor: "pointer",
-                        textAlign: "center",
-                        width: "100%",
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <CameraAltIcon sx={{ fontSize: 32, color: "grey.500" }} />
-                      <Typography
-                        variant="caption"
-                        sx={{ mt: 1, color: "grey.500" }}
-                      >
-                        Photo {index + 1}
-                      </Typography>
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={handlePresentationPreview(index)}
+            <Grid container spacing={2}>
+              <SortableContext
+                items={presentationImages.map((img) => img.uuid)}
+                strategy={rectSortingStrategy}
+              >
+                <AnimatePresence>
+                  {presentationImages.map((image, index) => (
+                    <Grid item xs={12} sm={6} md={4} key={image.uuid}>
+                      <SortableImage
+                        image={image}
+                        index={index}
+                        onPreview={() => handleImagePreview(image.path)}
+                        onDownload={() => handleDownload(image.path)}
+                        onEdit={() =>
+                          handleEditClick(image.uuid, editFrontHouseRef)
+                        }
+                        onDelete={() =>
+                          removePresentationImage(index, image.uuid)
+                        }
                       />
-                    </label>
-                  )}
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
+                    </Grid>
+                  ))}
+                </AnimatePresence>
+              </SortableContext>
+
+              {/* Add Photo Button */}
+              {presentationImages.length < 3 && (
+                <Grid item xs={12} sm={6} md={4}>
+                  <Box
+                    sx={{
+                      height: "180px",
+                      border: "2px dashed",
+                      borderColor: "grey.300",
+                      borderRadius: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexDirection: "column",
+                      cursor: "pointer",
+                    }}
+                    component="label"
+                  >
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handlePresentationImages}
+                    />
+                    <CameraAltIcon sx={{ fontSize: 48, color: "grey.500" }} />
+                    <Typography sx={{ mt: 1, color: "grey.500" }}>
+                      Add photo
+                    </Typography>
+                  </Box>
+                </Grid>
+              )}
+            </Grid>
+          </DndContext>
         </CardContent>
       </Card>
 
       {/* House Number Photos Card */}
       <Card>
         <CardContent>
-          <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
+          <Typography variant="h5" sx={{ mb: 4, fontWeight: "bold" }}>
             House Number Photo
           </Typography>
           <Box
@@ -651,51 +691,15 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                   >
                     <DownloadIcon />
                   </IconButton>
-                  {editingMainImage ? (
-                    <>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (editHouseNumberRef.current) {
-                            editHouseNumberRef.current.click();
-                          }
-                        }}
-                        sx={{
-                          color: "success.main",
-                          bgcolor: "rgba(255, 255, 255, 0.8)",
-                          "&:hover": {
-                            bgcolor: "rgba(255, 255, 255, 0.9)",
-                          },
-                        }}
-                      >
-                        <CheckCircleIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleCancelMainEdit()}
-                        sx={{
-                          color: "error.main",
-                          bgcolor: "rgba(255, 255, 255, 0.8)",
-                          "&:hover": {
-                            bgcolor: "rgba(255, 255, 255, 0.9)",
-                          },
-                        }}
-                      >
-                        <CancelIcon />
-                      </IconButton>
-                    </>
-                  ) : (
-                    <IconButton
-                      size="small"
-                      onClick={() =>
-                        handleEditClick(mainImage.uuid, editHouseNumberRef)
-                      }
-                      sx={{ color: "white" }}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  )}
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      handleEditClick(mainImage.uuid, editHouseNumberRef)
+                    }
+                    sx={{ color: "white" }}
+                  >
+                    <EditIcon />
+                  </IconButton>
                   <IconButton
                     size="small"
                     onClick={removeMainImage}
@@ -723,61 +727,91 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
         </CardContent>
       </Card>
 
-      {/* Preview Dialog */}
+      {/* Edit Preview Dialog */}
       <Dialog
-        open={!!selectedImage}
-        onClose={() => setSelectedImage(null)}
-        maxWidth="lg"
+        open={!!editPreviewImage}
+        onClose={handleCancelEdit}
+        maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
-            bgcolor: "transparent",
-            boxShadow: "none",
-            position: "relative",
-          },
-        }}
       >
-        <DialogContent sx={{ position: "relative", p: 0, overflow: "hidden" }}>
-          {selectedImage && (
-            <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
-              <Box sx={{ position: "relative", width: "100%", height: "80vh" }}>
-                <Image
-                  src={selectedImage}
-                  alt="Preview"
-                  fill
-                  sizes="100vw"
-                  style={{
-                    objectFit: "contain",
-                  }}
-                  priority
-                />
-              </Box>
-              <IconButton
-                onClick={() => setSelectedImage(null)}
-                sx={{
-                  position: "absolute",
-                  top: 16,
-                  right: 16,
-                  color: "white",
-                  bgcolor: "rgba(239, 68, 68, 0.7)",
-                  "&:hover": {
-                    bgcolor: "rgba(239, 68, 68, 0.9)",
-                  },
-                  zIndex: 1300,
-                  padding: "8px",
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
+        <DialogTitle
+          sx={{
+            backgroundColor: "primary.main",
+            color: "white",
+            textAlign: "center",
+            mb: 3,
+            fontWeight: "bold",
+          }}
+        >
+          Edit Image
+        </DialogTitle>
+        <DialogContent>
+          {editPreviewImage && (
+            <Box sx={{ position: "relative", width: "100%", height: "400px" }}>
+              <Image
+                src={editPreviewImage.preview}
+                alt="Edit preview"
+                fill
+                style={{ objectFit: "contain" }}
+              />
             </Box>
           )}
         </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={handleCancelEdit}
+            color="inherit"
+            disabled={editLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmEdit}
+            color="primary"
+            variant="contained"
+            disabled={editLoading}
+            startIcon={editLoading ? <CircularProgress size={20} /> : null}
+          >
+            {editLoading ? "Saving..." : "Save Changes"}
+          </Button>
+        </DialogActions>
       </Dialog>
+
+      {/* Hidden file inputs for editing */}
+      <input
+        type="file"
+        hidden
+        ref={editFrontHouseRef}
+        accept="image/*"
+        onChange={(e) => {
+          const selectedUuid = editFrontHouseRef.current?.dataset.uuid;
+          if (selectedUuid) handleEditFileChange(selectedUuid)(e);
+        }}
+      />
+      <input
+        type="file"
+        hidden
+        ref={editHouseNumberRef}
+        accept="image/*"
+        onChange={(e) => {
+          if (mainImage?.uuid) handleEditFileChange(mainImage.uuid)(e);
+        }}
+      />
+
+      {/* Feedback Snackbar */}
+      <FeedbackSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
       >
         <DialogTitle
           sx={{
@@ -803,15 +837,12 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
             Are you sure you want to delete this image?
           </Typography>
           {selectedImageToDelete && (
-            <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+            <Box sx={{ position: "relative", width: "100%", height: "400px" }}>
               <Image
                 src={selectedImageToDelete.path}
                 alt="To delete"
-                width={200}
-                height={200}
-                style={{
-                  objectFit: "contain",
-                }}
+                fill
+                style={{ objectFit: "contain" }}
               />
             </Box>
           )}
@@ -844,27 +875,6 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Hidden file inputs for editing */}
-      <input
-        type="file"
-        hidden
-        ref={editFrontHouseRef}
-        accept="image/*"
-        onChange={(e) => {
-          const selectedUuid = editFrontHouseRef.current?.dataset.uuid;
-          if (selectedUuid) handleEditFileChange(selectedUuid)(e);
-        }}
-      />
-      <input
-        type="file"
-        hidden
-        ref={editHouseNumberRef}
-        accept="image/*"
-        onChange={(e) => {
-          if (mainImage?.uuid) handleEditFileChange(mainImage.uuid)(e);
-        }}
-      />
     </Box>
   );
 };
