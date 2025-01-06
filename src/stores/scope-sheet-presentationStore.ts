@@ -10,8 +10,8 @@ interface ScopeSheetPresentationStore {
 
   // Basic actions
   setItems: (items: ScopeSheetPresentationData[]) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
+  setLoading: (isLoading: boolean) => void;
+  setError: (errorMessage: string | null) => void;
   setSearchTerm: (term: string) => void;
 
   // CRUD actions
@@ -31,10 +31,10 @@ export const useScopeSheetPresentationStore =
     error: null,
     searchTerm: "",
 
-    setItems: (items) => set({ items }),
-    setLoading: (loading) => set({ loading }),
-    setError: (error) => set({ error }),
-    setSearchTerm: (term) => set({ searchTerm: term }),
+    setItems: (items) => set(() => ({ items })),
+    setLoading: (isLoading) => set(() => ({ loading: isLoading })),
+    setError: (errorMessage) => set(() => ({ error: errorMessage })),
+    setSearchTerm: (term) => set(() => ({ searchTerm: term })),
 
     addItem: (item) =>
       set((state) => ({
@@ -62,16 +62,13 @@ export const useScopeSheetPresentationStore =
         ),
       })),
 
-    reorderImages: (reorderedItems) => {
-      set({ items: reorderedItems });
-    },
+    reorderImages: (reorderedItems) => set(() => ({ items: reorderedItems })),
 
     getFilteredItems: () => {
       const { items, searchTerm } = get();
       if (!searchTerm) return items;
 
       const searchTermLower = searchTerm.toLowerCase();
-
       return items.filter((item) => {
         const searchableFields = [
           item.photo_type,

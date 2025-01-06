@@ -114,13 +114,13 @@ export const deletePresentationData = (
     token
   );
 
-// PUT /api/scope-sheet-presentation/reorder-images
+// New reorder endpoint
 export const reorderPresentationImages = (
   token: string,
-  data: { id: number; photo_order: number }[]
+  data: { scope_sheet_uuid: string; new_order: string[] }
 ): Promise<ScopeSheetPresentationListResponse> =>
   fetchWithCSRF(
-    `/api/scope-sheet-presentation/reorder-images`,
+    `/api/presentation-scope-sheet/reorder-images`,
     {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

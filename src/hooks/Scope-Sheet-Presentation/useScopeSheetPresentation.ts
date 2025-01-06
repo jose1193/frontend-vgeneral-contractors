@@ -21,7 +21,8 @@ export class ScopeSheetPresentationError extends Error {
 
 export const useScopeSheetPresentation = (token: string) => {
   const [items, setItems] = useState<ScopeSheetPresentationData[]>([]);
-  const [currentItem, setCurrentItem] = useState<ScopeSheetPresentationData | null>(null);
+  const [currentItem, setCurrentItem] =
+    useState<ScopeSheetPresentationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +39,9 @@ export const useScopeSheetPresentation = (token: string) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await presentationActions.getPresentationListFetch(token);
+      const response = await presentationActions.getPresentationListFetch(
+        token
+      );
 
       if (response.success && Array.isArray(response.data)) {
         setItems(response.data);
@@ -62,13 +65,19 @@ export const useScopeSheetPresentation = (token: string) => {
       try {
         setLoading(true);
         setError(null);
-        const response = await presentationActions.getPresentationData(token, uuid);
+        const response = await presentationActions.getPresentationData(
+          token,
+          uuid
+        );
 
         if (response.success && response.data) {
           setCurrentItem(response.data);
           return response.data;
         } else {
-          setErrorMessage(new Error("No presentation item found"), "Failed to fetch presentation item");
+          setErrorMessage(
+            new Error("No presentation item found"),
+            "Failed to fetch presentation item"
+          );
           return null;
         }
       } catch (error) {
@@ -85,7 +94,10 @@ export const useScopeSheetPresentation = (token: string) => {
     async (data: ScopeSheetPresentationCreateDTO) => {
       try {
         setError(null);
-        const newItem = await presentationActions.createPresentationData(token, data);
+        const newItem = await presentationActions.createPresentationData(
+          token,
+          data
+        );
         if (newItem) {
           await fetchItems();
           return newItem;
@@ -123,10 +135,21 @@ export const useScopeSheetPresentation = (token: string) => {
   );
 
   const updateItem = useCallback(
-    async (uuid: string, scope_sheet_uuid: string, data: ScopeSheetPresentationUpdateDTO, files: File[] = []) => {
+    async (
+      uuid: string,
+      scope_sheet_uuid: string,
+      data: ScopeSheetPresentationUpdateDTO,
+      files: File[] = []
+    ) => {
       try {
         setError(null);
-        const updatedItem = await presentationActions.updatePresentationData(token, uuid, scope_sheet_uuid, data, files);
+        const updatedItem = await presentationActions.updatePresentationData(
+          token,
+          uuid,
+          scope_sheet_uuid,
+          data,
+          files
+        );
         if (updatedItem) {
           setCurrentItem(updatedItem);
           await fetchItems();
@@ -145,7 +168,10 @@ export const useScopeSheetPresentation = (token: string) => {
     async (uuid: string) => {
       try {
         setError(null);
-        const response = await presentationActions.deletePresentationData(token, uuid);
+        const response = await presentationActions.deletePresentationData(
+          token,
+          uuid
+        );
         if (response.success) {
           await fetchItems();
         }
@@ -159,10 +185,16 @@ export const useScopeSheetPresentation = (token: string) => {
   );
 
   const reorderImages = useCallback(
-    async (reorderData: { id: number; photo_order: number }[]) => {
+    async (scope_sheet_uuid: string, new_order: string[]) => {
       try {
         setError(null);
-        const response = await presentationActions.reorderPresentationImages(token, reorderData);
+        const response = await presentationActions.reorderPresentationImages(
+          token,
+          {
+            scope_sheet_uuid,
+            new_order,
+          }
+        );
         if (response.success) {
           await fetchItems();
         }

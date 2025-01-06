@@ -24,71 +24,74 @@ interface ScopeSheetPresentationStore {
   getFilteredItems: () => ScopeSheetPresentationData[];
 }
 
-export const useScopeSheetPresentationStore = create<ScopeSheetPresentationStore>((set, get) => ({
-  items: [],
-  loading: false,
-  error: null,
-  searchTerm: "",
+export const useScopeSheetPresentationStore =
+  create<ScopeSheetPresentationStore>((set, get) => ({
+    items: [],
+    loading: false,
+    error: null,
+    searchTerm: "",
 
-  setItems: (items) => set({ items }),
-  setLoading: (loading) => set({ loading }),
-  setError: (error) => set({ error }),
-  setSearchTerm: (term) => set({ searchTerm: term }),
+    setItems: (items) => set(() => ({ items })),
+    setLoading: (isLoading) => set(() => ({ loading: isLoading })),
+    setError: (errorMessage) => set(() => ({ error: errorMessage })),
+    setSearchTerm: (term) => set(() => ({ searchTerm: term })),
 
-  addItem: (item) =>
-    set((state) => ({
-      items: [item, ...state.items].sort((a, b) =>
-        (a.photo_type || '').localeCompare(b.photo_type || '')
-      ),
-    })),
+    addItem: (item) =>
+      set((state) => ({
+        items: [item, ...state.items].sort((a, b) =>
+          (a.photo_type || "").localeCompare(b.photo_type || "")
+        ),
+      })),
 
-  updateItem: (uuid, updatedItem) =>
-    set((state) => ({
-      items: state.items.map((item) =>
-        item.uuid === uuid ? { ...item, ...updatedItem } : item
-      ),
-    })),
+    updateItem: (uuid, updatedItem) =>
+      set((state) => ({
+        items: state.items.map((item) =>
+          item.uuid === uuid ? { ...item, ...updatedItem } : item
+        ),
+      })),
 
-  updateItemStatus: (uuid, isDeleted) =>
-    set((state) => ({
-      items: state.items.map((item) =>
-        item.uuid === uuid
-          ? {
-              ...item,
-              deleted_at: isDeleted ? new Date().toISOString() : null,
-            }
-          : item
-      ),
-    })),
+    updateItemStatus: (uuid, isDeleted) =>
+      set((state) => ({
+        items: state.items.map((item) =>
+          item.uuid === uuid
+            ? {
+                ...item,
+                deleted_at: isDeleted ? new Date().toISOString() : null,
+              }
+            : item
+        ),
+      })),
 
-  reorderImages: (reorderedItems) => {
-    set({ items: reorderedItems });
-  },
+    reorderImages: (reorderedItems) => {
+      set({ items: reorderedItems });
+    },
 
-  getFilteredItems: () => {
-    const { items, searchTerm } = get();
-    if (!searchTerm) return items;
+    getFilteredItems: () => {
+      const { items, searchTerm } = get();
+      if (!searchTerm) return items;
 
-    const searchTermLower = searchTerm.toLowerCase();
-    
-    return items.filter((item) => {
-      const searchableFields = [
-        item.photo_type,
-        item.uuid,
-        item.scope_sheet_id,
-      ];
+      const searchTermLower = searchTerm.toLowerCase();
 
-      return searchableFields.some((field) => {
-        if (field === null || field === undefined) return false;
-        return String(field).toLowerCase().includes(searchTermLower);
+      return items.filter((item) => {
+        const searchableFields = [
+          item.photo_type,
+          item.uuid,
+          item.scope_sheet_id,
+        ];
+
+        return searchableFields.some((field) => {
+          if (field === null || field === undefined) return false;
+          return String(field).toLowerCase().includes(searchTermLower);
+        });
       });
-    });
-  },
-}));
+    },
+  }));
 
 // Auxiliary selectors
-export const selectActivePresentationItems = (store: ScopeSheetPresentationStore) =>
-  store.items.filter((item) => !item.deleted_at);
+export const selectActivePresentationItems = (
+  store: ScopeSheetPresentationStore
+) => store.items.filter((item) => !item.deleted_at);
 
-export const selectDeletedPresentationItems = (store: ScopeSheetPresentationStore) =>
-  store.items.filter((item) => item.deleted_at);
+export const selectDeletedPresentationItems = (
+  store: ScopeSheetPresentationStore
+) => store.items.filter((item) => item.deleted_at);
