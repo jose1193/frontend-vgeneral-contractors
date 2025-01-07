@@ -24,11 +24,10 @@ import { useScopeSheetStore } from "../../stores/scope-sheetStore";
 
 interface HeaderProps {
   scopeSheet: ScopeSheetData;
-  onGeneratePDF: () => void;
   onEdit: () => void;
 }
 
-const Header = ({ scopeSheet, onGeneratePDF, onEdit }: HeaderProps) => {
+const Header = ({ scopeSheet, onEdit }: HeaderProps) => {
   const currentScopeSheet = useScopeSheetStore((state) =>
     state.items.find((item) => item.uuid === scopeSheet.uuid)
   );
@@ -119,7 +118,7 @@ const Header = ({ scopeSheet, onGeneratePDF, onEdit }: HeaderProps) => {
           >
             🏷️ SCOPE SHEET
             <Typography variant="h6" component="span" sx={{ color: "#662401" }}>
-              / Claim #{scopeSheet.claim_id ?? "N/A"}
+              / Claim #{scopeSheet.claim?.claim_internal_id ?? "N/A"}
             </Typography>
           </Typography>
 
@@ -159,12 +158,21 @@ const Header = ({ scopeSheet, onGeneratePDF, onEdit }: HeaderProps) => {
         >
           <Button
             variant="contained"
-            color="primary"
+            sx={{
+              backgroundColor: "#5b21b6",
+              "&:hover": { backgroundColor: "#4c1d95" },
+              flex: { xs: "1", sm: "auto" },
+            }}
             startIcon={<ArticleIcon />}
-            onClick={onGeneratePDF}
+            onClick={() =>
+              window.open(
+                `/dashboard/claim/${scopeSheet.claim?.uuid}`,
+                "_blank"
+              )
+            }
             fullWidth={isMobile}
           >
-            Generate PDF
+            View Claim
           </Button>
           <Button
             variant="contained"

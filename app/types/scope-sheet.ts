@@ -1,6 +1,7 @@
 import { UserData } from "./user";
 import { ClaimsData } from "./claims";
 import { ScopeSheetPresentationData } from "./scope-sheet-presentation";
+import { ScopeSheetExportData } from "./scope-sheet-export";
 
 // Base data interface
 export interface ScopeSheetData {
@@ -15,7 +16,7 @@ export interface ScopeSheetData {
   deleted_at?: string | null;
   presentations_images?: ScopeSheetPresentationData[];
   zones?: any[];
-  scope_sheet_export?: any[];
+  scope_sheet_export?: ScopeSheetExportData;
 }
 
 // DTO types

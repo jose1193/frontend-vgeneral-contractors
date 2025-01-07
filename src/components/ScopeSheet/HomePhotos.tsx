@@ -45,6 +45,24 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { motion, AnimatePresence } from "framer-motion";
 import FeedbackSnackbar from "../../../app/components/FeedbackSnackbar";
+import Lightbox from "yet-another-react-lightbox";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import Video from "yet-another-react-lightbox/plugins/video";
+import Captions from "yet-another-react-lightbox/plugins/captions";
+import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
+import Slideshow from "yet-another-react-lightbox/plugins/slideshow";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+import "yet-another-react-lightbox/plugins/captions.css";
+import { Slide, SlideImage, SlideVideo } from "yet-another-react-lightbox";
+import Checkbox from "@mui/material/Checkbox";
+import ShareIcon from "@mui/icons-material/Share";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import EmailIcon from "@mui/icons-material/Email";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import { blue, green, red } from "@mui/material/colors";
 
 interface HomePhotosProps {
   onFileChange: (
@@ -57,6 +75,8 @@ interface HomePhotosProps {
   loading?: boolean;
   scope_sheet_uuid: string;
   onReorderImages: (newOrder: string[]) => Promise<void>;
+  onShareViaEmail?: (images: string[]) => void;
+  onShareViaWhatsApp?: (images: string[]) => void;
 }
 
 const SortableImage = ({
@@ -66,6 +86,8 @@ const SortableImage = ({
   onDownload,
   onEdit,
   onDelete,
+  selected,
+  onSelect,
 }: {
   image: { path: string; uuid: string };
   index: number;
@@ -73,6 +95,8 @@ const SortableImage = ({
   onDownload: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  selected: boolean;
+  onSelect: () => void;
 }) => {
   const {
     attributes,
@@ -105,6 +129,7 @@ const SortableImage = ({
           width: "100%",
           height: "100%",
           "&:hover .overlay": { opacity: 1 },
+          "&:hover .checkbox-overlay": { opacity: 1 },
         }}
       >
         <Box
@@ -199,6 +224,29 @@ const SortableImage = ({
             </IconButton>
           </Box>
         </Box>
+
+        <Box
+          className="checkbox-overlay"
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            opacity: 0,
+            transition: "opacity 0.2s",
+            zIndex: 2,
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            borderRadius: "4px",
+            ".MuiCheckbox-root": {
+              padding: 0.5,
+            },
+          }}
+        >
+          <Checkbox
+            checked={selected}
+            onChange={onSelect}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </Box>
       </Box>
     </motion.div>
   );
@@ -213,6 +261,8 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
   loading,
   scope_sheet_uuid,
   onReorderImages,
+  onShareViaEmail,
+  onShareViaWhatsApp,
 }) => {
   const editFrontHouseRef = useRef<HTMLInputElement>(null);
   const editHouseNumberRef = useRef<HTMLInputElement>(null);
@@ -250,6 +300,10 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     severity: "success",
   });
   const [editLoading, setEditLoading] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleEditClick = (
     uuid: string,
@@ -339,8 +393,51 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     setMainImage(filteredHouseNumberImage);
   }, [filteredHouseNumberImage]);
 
+  const getLightboxSlides = useMemo(() => {
+    const slides: Slide[] = [];
+
+    if (mainImage) {
+      slides.push({
+        src: mainImage.path,
+        title: "House Number",
+        description: "Main house number photo",
+      } as SlideImage);
+    }
+
+    presentationImages.forEach((image, index) => {
+      const isVideo = image.path.toLowerCase().endsWith(".mp4");
+      if (isVideo) {
+        slides.push({
+          type: "video",
+          src: image.path,
+          sources: [{ src: image.path, type: "video/mp4" }],
+          title: `Front House Video ${index + 1}`,
+          description: "Front house video presentation",
+        } as SlideVideo);
+      } else {
+        slides.push({
+          src: image.path,
+          title: `Front House Photo ${index + 1}`,
+          description: "Front house photo presentation",
+        } as SlideImage);
+      }
+    });
+
+    return slides;
+  }, [mainImage, presentationImages]);
+
   const handleImagePreview = (imagePath: string) => {
-    setSelectedImage(imagePath);
+    const index = getLightboxSlides.findIndex((slide) => {
+      if ("type" in slide && slide.type === "video") {
+        return slide.sources?.[0]?.src === imagePath;
+      }
+      return (slide as SlideImage).src === imagePath;
+    });
+
+    if (index !== -1) {
+      setLightboxIndex(index);
+      setLightboxOpen(true);
+    }
   };
 
   const handleMainImage = useCallback(
@@ -546,13 +643,149 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
     }
   };
 
+  const handleShareClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleShareClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleShareViaEmail = () => {
+    const selectedImageUrls = Array.from(selectedImages)
+      .map((uuid) => {
+        const image = presentationImages.find((img) => img.uuid === uuid);
+        return image?.path;
+      })
+      .filter(Boolean);
+
+    const subject = encodeURIComponent("Shared Photos");
+    const body = encodeURIComponent(
+      "Here are the shared photos:\n\n" + selectedImageUrls.join("\n")
+    );
+
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    handleShareClose();
+  };
+
+  const handleShareViaWhatsApp = () => {
+    const selectedImageUrls = Array.from(selectedImages)
+      .map((uuid) => {
+        const image = presentationImages.find((img) => img.uuid === uuid);
+        return image?.path;
+      })
+      .filter(Boolean);
+
+    const text = encodeURIComponent(
+      "Check out these photos:\n\n" + selectedImageUrls.join("\n")
+    );
+
+    // WhatsApp API URL
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${text}`;
+
+    // Open in new tab
+    window.open(whatsappUrl, "_blank");
+    handleShareClose();
+  };
+
+  const handleImageSelect = (uuid: string) => {
+    setSelectedImages((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(uuid)) {
+        newSet.delete(uuid);
+      } else {
+        newSet.add(uuid);
+      }
+      return newSet;
+    });
+  };
+
   return (
     <Box sx={{ maxWidth: "4xl", mx: 0, "& > *": { mb: 3 } }}>
       <Card>
         <CardContent>
-          <Typography variant="h5" sx={{ mb: 4, fontWeight: "bold" }}>
-            Front House Photos
-          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 4,
+            }}
+          >
+            <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+              Front House Photos
+            </Typography>
+
+            {/* Action buttons */}
+            {selectedImages.size > 0 && (
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <Button
+                  variant="contained"
+                  startIcon={<ShareIcon />}
+                  onClick={handleShareClick}
+                  sx={{
+                    bgcolor: blue[500],
+                    "&:hover": { bgcolor: blue[700] },
+                  }}
+                >
+                  Share Photos
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<DownloadIcon />}
+                  onClick={() => {
+                    Array.from(selectedImages).forEach((uuid) => {
+                      const image = presentationImages.find(
+                        (img) => img.uuid === uuid
+                      );
+                      if (image) handleDownload(image.path);
+                    });
+                  }}
+                  sx={{
+                    bgcolor: green[500],
+                    "&:hover": { bgcolor: green[700] },
+                  }}
+                >
+                  Download Selected
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<DeleteIcon />}
+                  onClick={() => {
+                    Array.from(selectedImages).forEach((uuid) => {
+                      const image = presentationImages.find(
+                        (img) => img.uuid === uuid
+                      );
+                      if (image) handleDeleteClick(image);
+                    });
+                  }}
+                  color="error"
+                  sx={{
+                    bgcolor: red[500],
+                    "&:hover": { bgcolor: red[700] },
+                  }}
+                >
+                  Delete Selected
+                </Button>
+              </Box>
+            )}
+          </Box>
+
+          {/* Share Menu */}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleShareClose}
+          >
+            <MenuItem onClick={handleShareViaEmail}>
+              <EmailIcon sx={{ mr: 1 }} /> Share via Email
+            </MenuItem>
+            <MenuItem onClick={handleShareViaWhatsApp}>
+              <WhatsAppIcon sx={{ mr: 1, color: green[500] }} /> Share via
+              WhatsApp
+            </MenuItem>
+          </Menu>
+
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -577,6 +810,8 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
                         onDelete={() =>
                           removePresentationImage(index, image.uuid)
                         }
+                        selected={selectedImages.has(image.uuid)}
+                        onSelect={() => handleImageSelect(image.uuid)}
                       />
                     </Grid>
                   ))}
@@ -875,6 +1110,44 @@ const HomePhotos: React.FC<HomePhotosProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        index={lightboxIndex}
+        slides={getLightboxSlides}
+        plugins={[Captions, Fullscreen, Slideshow, Thumbnails, Video, Zoom]}
+        carousel={{
+          spacing: 0,
+          padding: 0,
+        }}
+        thumbnails={{
+          position: "bottom",
+          width: 120,
+          height: 80,
+          gap: 2,
+        }}
+        zoom={{
+          maxZoomPixelRatio: 3,
+          scrollToZoom: true,
+        }}
+        video={{
+          autoPlay: false,
+          controls: true,
+          playsInline: true,
+          muted: false,
+          loop: false,
+          preload: "metadata",
+        }}
+        slideshow={{
+          autoplay: false,
+          delay: 5000,
+        }}
+        captions={{
+          showToggle: true,
+          descriptionTextAlign: "center",
+        }}
+      />
     </Box>
   );
 };
